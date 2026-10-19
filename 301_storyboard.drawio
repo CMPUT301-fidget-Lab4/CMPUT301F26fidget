@@ -1,0 +1,512 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="67kCOXkv9LTlfrxZeWU6">
+    <mxGraphModel dx="1413" dy="2310" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="iePj-jdP5jIBVJY3quP0-47" edge="1" parent="1" source="9iyswtV2L4d601HgLLyO-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-46">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-7" connectable="0" parent="iePj-jdP5jIBVJY3quP0-47" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;select&lt;/div&gt;&lt;div&gt;profile&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" relative="1" width="60" x="0.625" y="-5" as="geometry">
+            <mxPoint x="-5" y="15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-50" connectable="0" parent="iePj-jdP5jIBVJY3quP0-47" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click create account" vertex="1">
+          <mxGeometry height="30" relative="1" width="60" x="0.625" y="-5" as="geometry">
+            <mxPoint x="-285" y="135" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-51" connectable="0" parent="iePj-jdP5jIBVJY3quP0-47" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click login (assuming succesful login)" vertex="1">
+          <mxGeometry height="30" relative="1" width="60" x="0.625" y="-5" as="geometry">
+            <mxPoint x="-305" y="410" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-55" connectable="0" parent="iePj-jdP5jIBVJY3quP0-47" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click sign up" vertex="1">
+          <mxGeometry height="30" relative="1" width="60" x="0.625" y="-5" as="geometry">
+            <mxPoint x="-645" y="20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-56" connectable="0" parent="iePj-jdP5jIBVJY3quP0-47" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click login in" vertex="1">
+          <mxGeometry height="30" relative="1" width="60" x="0.625" y="-5" as="geometry">
+            <mxPoint x="-645" y="270" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="695" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-27" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Welcome User!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="120" x="790" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-29" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Welcome Admin!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="120" x="810" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;View campsites&amp;nbsp;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="20" width="130" x="770" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-37" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Location&lt;/font&gt;" vertex="1">
+          <mxGeometry height="12" width="40" x="770" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-39" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity&lt;/font&gt;" vertex="1">
+          <mxGeometry height="12" width="40" x="815" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-40" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Date&lt;/font&gt;" vertex="1">
+          <mxGeometry height="12" width="40" x="860" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-41" edge="1" parent="1" source="9iyswtV2L4d601HgLLyO-34" style="endArrow=classic;html=1;rounded=0;exitX=0.923;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="9iyswtV2L4d601HgLLyO-42" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="910" y="295" as="sourcePoint" />
+            <mxPoint x="970" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-42" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="975" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-44" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Displaying n campsites&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="140" x="1050" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-47" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity x, other details&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="12" width="100" x="1060" y="303" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-49" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity x, other details&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="12" width="100" x="1060" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-54" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity x, other details&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="12" width="100" x="1060" y="393" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-56" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity x, other details&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="12" width="100" x="1060" y="443" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-57" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Capacity x, other details&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="12" width="100" x="1060" y="493" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-60" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 1: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1060" y="279" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-61" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 2: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1060" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-62" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 3: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1060" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-63" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 4: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1060" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-64" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 5: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1060" y="473" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-65" edge="1" parent="1" source="9iyswtV2L4d601HgLLyO-60" style="endArrow=classic;html=1;rounded=0;exitX=0.9;exitY=0.3;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="9iyswtV2L4d601HgLLyO-72" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1190" y="415" as="sourcePoint" />
+            <mxPoint x="1260" y="285" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-3" edge="1" parent="1" source="9iyswtV2L4d601HgLLyO-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-66" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1225" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-67" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Campsite 1: City, Province&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="4" width="130" x="1300" y="258" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-68" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 53px;&quot;&gt;🏕️&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(0, 0, 0); font-size: 8px;&quot;&gt;(photo)&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="61" width="100" x="1330" y="284" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-71" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Lottery and Waiting List Information&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="140" x="1300" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-72" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;List of features and amenities&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="1290" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-73" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 6px;&quot;&gt;Cost $$$&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="30" x="1310" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="9iyswtV2L4d601HgLLyO-74" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Lottery Information" vertex="1">
+          <mxGeometry height="20" width="110" x="770" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1545" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Lottery Screen&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="1640" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1345" y="-355" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Lottery is won&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1470" y="-397.5" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=8;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Available dates&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="70" x="1465" y="-362.5" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Join waiting list" vertex="1">
+          <mxGeometry height="20" width="100" x="1650" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Leave waiting list" vertex="1">
+          <mxGeometry height="20" width="100" x="1650" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1615" y="-60" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-38" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Reservation is booked!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1730" y="-67.5" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-39" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Decline Reservation" vertex="1">
+          <mxGeometry height="20" width="110" x="1450" y="-217.5" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-41" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Download CSV" vertex="1">
+          <mxGeometry height="20" width="110" x="1715" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-42" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Profile" vertex="1">
+          <mxGeometry height="20" width="140" x="780" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-1" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-76">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-3" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-46" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="695" y="-100" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="User Profile" vertex="1">
+          <mxGeometry height="30" width="60" x="820" y="-155" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-49" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="View all reservations" vertex="1">
+          <mxGeometry height="20" width="140" x="780" y="-105" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-52" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Update Profile" vertex="1">
+          <mxGeometry height="20" width="140" x="780" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-53" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Delete Profile" vertex="1">
+          <mxGeometry height="20" width="140" x="780" y="75" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-54" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="App policy &amp;amp; guidelines" vertex="1">
+          <mxGeometry height="20" width="140" x="780" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-71" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-68">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="935" y="-775" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-56" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Registrations&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1060" y="-830" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-57" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font size=&quot;1&quot; style=&quot;color: rgb(0, 0, 0);&quot;&gt;Most recent reservation&lt;/font&gt;" vertex="1">
+          <mxGeometry height="12" width="120" x="1030" y="-770" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-61" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 1: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1040" y="-794" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-62" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 2: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1040" y="-753" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-63" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Campsite 3: City, Province&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1040" y="-703" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-66" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font size=&quot;1&quot; style=&quot;color: rgb(0, 0, 0);&quot;&gt;Least recent reservation&lt;/font&gt;" vertex="1">
+          <mxGeometry height="12" width="120" x="1030" y="-680" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-67" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Click to delete a reservation&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="120" x="1030" y="-575" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-73" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-72">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-68" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1250" y="-775" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-69" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Cancel Reservation&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1375" y="-830" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-70" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Cancel (this) reservation?" vertex="1">
+          <mxGeometry height="40" width="120" x="1345" y="-760" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-72" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1520" y="-775" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-74" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Reservation Cancelled" vertex="1">
+          <mxGeometry height="30" width="60" x="1645" y="-830" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-75" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Download CSV" vertex="1">
+          <mxGeometry height="20" width="100" x="1625" y="-770" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-76" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="695" y="-480" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-77" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Update Profile" vertex="1">
+          <mxGeometry height="30" width="60" x="815" y="-535" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-78" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Edit Name" vertex="1">
+          <mxGeometry height="20" width="100" x="800" y="-485" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-79" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;Edit Email&lt;/div&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="800" y="-445" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-80" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Edit Phone" vertex="1">
+          <mxGeometry height="20" width="100" x="800" y="-405" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-81" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Save Changes" vertex="1">
+          <mxGeometry height="20" width="100" x="800" y="-325" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-83" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Add this Device" vertex="1">
+          <mxGeometry height="20" width="100" x="800" y="-365" as="geometry" />
+        </mxCell>
+        <mxCell id="iePj-jdP5jIBVJY3quP0-84" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Opt In/Out of Notifications" vertex="1">
+          <mxGeometry height="40" width="130" x="785" y="-285" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click&lt;/div&gt;&lt;div&gt;update&lt;/div&gt;&lt;div&gt;profile&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="850" y="-215" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click&lt;/div&gt;&lt;div&gt;view all&lt;/div&gt;&lt;div&gt;reservations&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="930" y="-215" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click on a&lt;/div&gt;&lt;div&gt;reservation&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1215" y="-730" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;This part is just for profile, where you can view things that are specific to your profile (e.g reservations, details, etc)&lt;/div&gt;&lt;div&gt;If you are an entrant this displays your reservations, if you are a camp site owner this displays the reservations at your campsite(s), if you are an admin this displays all reservations.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;You can also cancel a reservation inside the profile&lt;/div&gt;" vertex="1">
+          <mxGeometry height="165" width="455" x="980" y="-1020" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-9" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click lottery&lt;/div&gt;&lt;div&gt;info&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1500" y="258" as="geometry" />
+        </mxCell>
+        <mxCell id="1FO89WrJ9S4i-ddB0yIx-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Screens when entrant wins lottery. Select which dates and which campsite (if multiple) that you want to book. You can also decline the reservation if no dates work or you changed your mind.&lt;br&gt;&lt;br&gt;Allow for downloadable CSV." vertex="1">
+          <mxGeometry height="100" width="290" x="1280" y="-517.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="-45" y="275" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Welcome to campsite reservation system!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="40" width="150" x="30" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Sign Up" vertex="1">
+          <mxGeometry height="25" width="110" x="50" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Login" vertex="1">
+          <mxGeometry height="25" width="110" x="50" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-7" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-4" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R5aeW7_TR6O1EoT2adED-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="275" y="300" as="sourcePoint" />
+            <mxPoint x="305" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="230" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-9" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-5" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R5aeW7_TR6O1EoT2adED-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="305" y="400" as="sourcePoint" />
+            <mxPoint x="335" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="260" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Entrant" vertex="1">
+          <mxGeometry height="25" width="110" x="330" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Campsite Owner" vertex="1">
+          <mxGeometry height="25" width="110" x="330" y="143.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Admin" vertex="1">
+          <mxGeometry height="25" width="110" x="330" y="177.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;What type of user are you?&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="160" x="315" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Enter Phone Number&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="315" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Enter Email Address&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="315" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-19" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Enter Name&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="315" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Create Account" vertex="1">
+          <mxGeometry height="25" width="110" x="330" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Login" vertex="1">
+          <mxGeometry height="25" width="110" x="360" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Enter Phone Number&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="345" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Welcome Back!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="140" x="345" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-26" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-20" style="endArrow=classic;html=1;rounded=0;" target="9iyswtV2L4d601HgLLyO-20" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="780" y="380" as="sourcePoint" />
+            <mxPoint x="830" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-28" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-10" style="endArrow=classic;html=1;rounded=0;exitX=0.485;exitY=0.017;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.524;entryY=0.998;entryDx=0;entryDy=0;entryPerimeter=0;" target="9iyswtV2L4d601HgLLyO-20" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="520" y="480" as="sourcePoint" />
+            <mxPoint x="570" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-29" parent="1" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.bell;" value="" vertex="1">
+          <mxGeometry height="20" width="24" x="900" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="965" y="-290" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-32" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R5aeW7_TR6O1EoT2adED-31" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="915" y="255" as="sourcePoint" />
+            <mxPoint x="965" y="205" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-33" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Notification Center&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="140" x="1055" y="-335" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-34" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;You won lottery at campsite A!&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="150" x="1040" y="-305" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Book Campsite A" vertex="1">
+          <mxGeometry height="20" width="100" x="1045" y="-280" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-37" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;You lost lottery at campsite B!&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="150" x="1040" y="-240" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-38" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Look for more campsites" vertex="1">
+          <mxGeometry height="20" width="140" x="1040" y="-210" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-39" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click notification bell&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="70" x="980" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-40" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-31" style="endArrow=classic;html=1;rounded=0;exitX=0.403;exitY=-0.002;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.374;entryY=0.999;entryDx=0;entryDy=0;entryPerimeter=0;" target="iePj-jdP5jIBVJY3quP0-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1270" y="60" as="sourcePoint" />
+            <mxPoint x="1320" y="10" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-41" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Click book campsite. single campsite reservation" vertex="1">
+          <mxGeometry height="30" width="60" x="1240" y="-332.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-44" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Lottery Information&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1310" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-45" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;You join the lottery waitlist for campsite C!&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="150" x="1040" y="-165" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-46" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-31" style="endArrow=classic;html=1;rounded=0;exitX=1.003;exitY=0.557;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9iyswtV2L4d601HgLLyO-42" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1210" y="240" as="sourcePoint" />
+            <mxPoint x="1260" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-47" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click search for more campsites&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="70" x="1020" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click join campsite lottery" vertex="1">
+          <mxGeometry height="30" width="60" x="1445" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-49" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click view campsites&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="70" x="960" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-52" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="click campsite 1" vertex="1">
+          <mxGeometry height="30" width="60" x="1230" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-53" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;div&gt;click cancel reservation&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1505" y="-745" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-57" edge="1" parent="1" source="9iyswtV2L4d601HgLLyO-66" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1.001;entryY=0.801;entryDx=0;entryDy=0;entryPerimeter=0;" target="iePj-jdP5jIBVJY3quP0-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1260" y="-96" as="sourcePoint" />
+            <mxPoint x="1380" y="-150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-58" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1155" y="-65" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-61" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#00188D;shape=mxgraph.mscae.enterprise.calendar" value="" vertex="1">
+          <mxGeometry height="98.4" width="120" x="1435" y="-326" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-62" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Check in at xx:00 PM!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="1715" y="-15" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-63" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Address is 123 main st, edmonton!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="1715" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-64" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;site #1!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="100" x="1720" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-65" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-10" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-36" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1600" y="-110" as="sourcePoint" />
+            <mxPoint x="1650" y="-160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-67" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Click book campsite. Multi campsite reservation" vertex="1">
+          <mxGeometry height="30" width="60" x="1270" y="-197.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-68" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-31" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="R5aeW7_TR6O1EoT2adED-58" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1240" y="-116" as="sourcePoint" />
+            <mxPoint x="1440" y="-190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-69" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Lottery is won&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="1282.5" y="-95" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-70" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=8;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Available dates&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="70" x="1277.5" y="-60" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-71" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Decline Reservation" vertex="1">
+          <mxGeometry height="20" width="110" x="1262.5" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-72" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#00188D;shape=mxgraph.mscae.enterprise.calendar" value="" vertex="1">
+          <mxGeometry height="98.4" width="120" x="1247.5" y="-23.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-73" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-58" style="endArrow=classic;html=1;rounded=0;exitX=0.715;exitY=-0.019;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="iePj-jdP5jIBVJY3quP0-36" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1480" y="20" as="sourcePoint" />
+            <mxPoint x="1760" y="-190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-74" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="select date" vertex="1">
+          <mxGeometry height="30" width="60" x="1600" y="-53.5" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-80" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="select date" vertex="1">
+          <mxGeometry height="30" width="60" x="1495" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-81" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#eeeeee;strokeColor=#36393d;" value="" vertex="1">
+          <mxGeometry height="180" width="310" x="1615" y="-385" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-82" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Reservation is declined, another camper will get the site!&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="1700" y="-385" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-83" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Explore more campsites!" vertex="1">
+          <mxGeometry height="35" width="110" x="1715" y="-260" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-87" edge="1" parent="1" source="R5aeW7_TR6O1EoT2adED-58" style="endArrow=classic;html=1;rounded=0;exitX=0.468;exitY=-0.009;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="R5aeW7_TR6O1EoT2adED-81" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1510" y="-50" as="sourcePoint" />
+            <mxPoint x="1520" y="-90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-88" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="decline reservation" vertex="1">
+          <mxGeometry height="30" width="60" x="1600" y="-315" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-89" edge="1" parent="1" source="iePj-jdP5jIBVJY3quP0-10" style="endArrow=classic;html=1;rounded=0;exitX=0.579;exitY=-0.002;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.55;entryY=0.993;entryDx=0;entryDy=0;entryPerimeter=0;" target="R5aeW7_TR6O1EoT2adED-81" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1600" y="-140" as="sourcePoint" />
+            <mxPoint x="1650" y="-190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-91" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-size: 8px; color: rgb(255, 255, 255);&quot;&gt;Edit campsite&lt;/span&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="1310" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="R5aeW7_TR6O1EoT2adED-93" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Edit campsite button only displayed to campsite owner" vertex="1">
+          <mxGeometry height="30" width="180" x="1280" y="555" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
