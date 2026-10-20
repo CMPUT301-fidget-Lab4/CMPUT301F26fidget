@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Page-1" id="zSObSZfOj3cRguJugUqI">
-    <mxGraphModel dx="2146" dy="1171" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="1493" dy="1020" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -25,8 +25,8 @@
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Search for a campsite&lt;/div&gt;&lt;div&gt;Join &amp;amp; Leave a lottery waiting list for a campsite&lt;/div&gt;&lt;div&gt;Reserve a campsite for a specific date and time&lt;/div&gt;&lt;div&gt;Opt In/Out of notifications&lt;/div&gt;&lt;div&gt;View active and past reservations&lt;/div&gt;&lt;div&gt;Update personal information&lt;/div&gt;&lt;div&gt;Cancel a reservation&lt;/div&gt;&lt;div&gt;View app policy &amp;amp; guidelines&lt;/div&gt;&lt;div&gt;Rate a campsite&lt;/div&gt;&lt;div&gt;View QR Codes&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="70" width="335" x="370" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="N1zu7QbnfyO-yqRdBsRI-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Campsite&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Notifications&lt;/div&gt;&lt;div&gt;Reservations&lt;/div&gt;&lt;div&gt;App Policy &amp;amp; Guidelines&lt;/div&gt;&lt;div&gt;QR Codes&lt;/div&gt;&lt;div&gt;Time and Date&lt;/div&gt;&lt;div&gt;Messages&lt;/div&gt;" vertex="1">
-          <mxGeometry height="70" width="335" x="710" y="410" as="geometry" />
+        <mxCell id="N1zu7QbnfyO-yqRdBsRI-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Campsite&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Notifications&lt;/div&gt;&lt;div&gt;Reservations&lt;/div&gt;&lt;div&gt;App Policy &amp;amp; Guidelines&lt;/div&gt;&lt;div&gt;QR Codes&lt;/div&gt;&lt;div&gt;Time and Date&lt;/div&gt;&lt;div&gt;Messages&lt;/div&gt;&lt;div&gt;Admin&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="335" x="710" y="440" as="geometry" />
         </mxCell>
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
           <mxGeometry height="520" width="670" x="1140" y="230" as="geometry" />
@@ -97,8 +97,8 @@
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-29" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div&gt;Give out notifications on reserving a site&lt;/div&gt;&lt;div&gt;Give out notifications on winning or losing a lottery&lt;/div&gt;&lt;div&gt;Give out notifications on cancelling a reservation&lt;/div&gt;&lt;div&gt;Give out notifications to waitlist people from campsite owner&lt;/div&gt;&lt;div&gt;Save notifications for campsite owner&lt;/div&gt;" vertex="1">
           <mxGeometry height="330" width="335" x="1140" y="930" as="geometry" />
         </mxCell>
-        <mxCell id="N1zu7QbnfyO-yqRdBsRI-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Reservation&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Entrant&lt;/div&gt;&lt;div&gt;Campsite Owner&lt;/div&gt;" vertex="1">
-          <mxGeometry height="70" width="335" x="1480" y="930" as="geometry" />
+        <mxCell id="N1zu7QbnfyO-yqRdBsRI-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Reservation&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Entrant&lt;/div&gt;&lt;div&gt;Campsite Owner&lt;br&gt;Admin&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="335" x="1472.5" y="960" as="geometry" />
         </mxCell>
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
           <mxGeometry height="520" width="670" x="367.5" y="1340" as="geometry" />
@@ -145,8 +145,8 @@
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-41" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div&gt;Entrants can search for a campsite&lt;/div&gt;&lt;div&gt;Have information (name, location, occupancy, rating)&lt;/div&gt;&lt;div&gt;Host lottery for a campsite&lt;/div&gt;&lt;div&gt;Have a schedule so the site can be booked&lt;/div&gt;&lt;div&gt;Show if the campsite is reserved&lt;/div&gt;&lt;div&gt;Have a specific QR Code for each site&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="370" width="335" x="1145" y="1480" as="geometry" />
         </mxCell>
-        <mxCell id="N1zu7QbnfyO-yqRdBsRI-42" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Entrants&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Reservation&lt;/div&gt;&lt;div&gt;QR Code&lt;/div&gt;" vertex="1">
-          <mxGeometry height="70" width="335" x="1480" y="1490" as="geometry" />
+        <mxCell id="N1zu7QbnfyO-yqRdBsRI-42" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="&lt;div&gt;Entrants&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Reservation&lt;/div&gt;&lt;div&gt;QR Code&lt;/div&gt;&lt;div&gt;Campsite Owner&lt;br&gt;Admin&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="335" x="1475" y="1520" as="geometry" />
         </mxCell>
         <mxCell id="N1zu7QbnfyO-yqRdBsRI-43" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
           <mxGeometry height="520" width="670" x="370" y="1890" as="geometry" />
@@ -241,7 +241,7 @@
         <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-13" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="Send messages from campsite owner to entrant reserving the site&lt;div&gt;Send messages from person reserving site to camp owner&lt;/div&gt;" vertex="1">
           <mxGeometry height="390" width="335" x="1133.75" y="2600" as="geometry" />
         </mxCell>
-        <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="Entrants&lt;div&gt;Campsite Owner&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="Entrants&lt;div&gt;Campsite Owner&lt;/div&gt;&lt;div&gt;Admin&lt;/div&gt;" vertex="1">
           <mxGeometry height="370" width="335" x="1480" y="2600" as="geometry" />
         </mxCell>
         <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
@@ -265,8 +265,32 @@
         <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-19" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div&gt;Submit campsites&lt;/div&gt;&lt;div&gt;Edit Campsite Information&lt;/div&gt;&lt;div&gt;View all their campsites&lt;/div&gt;&lt;div&gt;Message reservees&lt;/div&gt;&lt;div&gt;Send notifications to those in waitlist&lt;/div&gt;&lt;div&gt;See active, past, and cancelled reservations&lt;/div&gt;&lt;div&gt;See entrants in waitlist and notifications sent&lt;/div&gt;&lt;div&gt;Edit lottery and waitlist settings&lt;/div&gt;&lt;div&gt;View reservation dates&lt;/div&gt;" vertex="1">
           <mxGeometry height="390" width="335" x="372.5" y="3160" as="geometry" />
         </mxCell>
-        <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;Campsites&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Waitlist&lt;/div&gt;&lt;div&gt;Reservations&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Messages&lt;/div&gt;&lt;div&gt;Notifications&lt;/div&gt;&lt;div&gt;Time and Date&lt;/div&gt;" vertex="1">
+        <mxCell id="K2YFyGA_Zk7QUjKBv7ZP-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;Campsites&lt;/span&gt;&lt;/div&gt;&lt;div&gt;Waitlist&lt;/div&gt;&lt;div&gt;Reservations&lt;/div&gt;&lt;div&gt;Lottery&lt;/div&gt;&lt;div&gt;Messages&lt;/div&gt;&lt;div&gt;Notifications&lt;/div&gt;&lt;div&gt;Time and Date&lt;br&gt;Admin&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="330" width="335" x="715" y="3160" as="geometry" />
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="520" width="670" x="1135" y="3030" as="geometry" />
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-8" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;defaultLabelBackgroundColor=gap;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="mH8ijLYiGHHg5wAeTc7x-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1470" y="3160" as="sourcePoint" />
+            <mxPoint x="1469.5" y="3660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-9" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;defaultLabelBackgroundColor=gap;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="mH8ijLYiGHHg5wAeTc7x-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="1135" y="3160" as="sourcePoint" />
+            <mxPoint x="1185" y="3110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=18;" value="Admin" vertex="1">
+          <mxGeometry height="70" width="130" x="1405" y="3070" as="geometry" />
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="&lt;div style=&quot;text-align: left;&quot;&gt;Browse and remove campsites&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Browse and remove profiles&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Browse and remove images&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Remove owners&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Review logs of notifications&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Switch between profile types&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Review logs of messages&lt;/div&gt;" vertex="1">
+          <mxGeometry height="390" width="335" x="1132.5" y="3160" as="geometry" />
+        </mxCell>
+        <mxCell id="mH8ijLYiGHHg5wAeTc7x-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=top;rounded=0;fontSize=18;" value="Entrant&lt;div&gt;Notifications&lt;/div&gt;&lt;div&gt;Campsite&lt;br&gt;Campsite Owner&lt;/div&gt;&lt;div&gt;Messages&lt;/div&gt;" vertex="1">
+          <mxGeometry height="330" width="335" x="1470" y="3160" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
