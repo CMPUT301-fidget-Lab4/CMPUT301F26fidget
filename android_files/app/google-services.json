@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "344741400178",
+    "project_id": "fidget-campsite",
+    "storage_bucket": "fidget-campsite.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344741400178:android:abf47eca3dcba5e0dffceb",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCViuhcJSeIwxMqcLm4uuOhxrHH8Km-fzo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
