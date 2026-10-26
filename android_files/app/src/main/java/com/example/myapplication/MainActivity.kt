@@ -11,7 +11,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val userRepository = UserRepository()
-        val getAndroidID = AndroidID()
 
         setContent {
             MyApplicationTheme {
@@ -21,7 +20,7 @@ class MainActivity : ComponentActivity() {
                     onDeleteUser = userRepository::deleteUser,
                     onUpdateUser = userRepository::updateUser,
                     findUser = userRepository::findUser,
-                    getAndroidId = getAndroidID::getAndroidID
+                    getAndroidId = userRepository::getDeviceID
                 )
             }
         }

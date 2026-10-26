@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,7 +13,7 @@ fun CampsiteApp(
     onDeleteUser: (User) -> Unit,
     onUpdateUser: (User, User) -> Unit,
     findUser : (String) -> User?,
-    getAndroidId: () -> String
+    getAndroidId: (Context) -> String
 ) {
 
     val navController = rememberNavController()

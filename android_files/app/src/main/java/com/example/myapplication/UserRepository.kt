@@ -3,6 +3,8 @@ package com.example.myapplication
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import android.content.Context
+import android.provider.Settings
 
 
 class UserRepository {
@@ -16,25 +18,32 @@ class UserRepository {
 
 
     fun updateUser(newUser: User, oldUser: User) {
-        userDataBase.document(oldUser.phoneNumber).set(newUser)
+        userDataBase.document(oldUser.phoneID).set(newUser)
     }
 
     fun addUser(newUser: User) {
-        userDataBase.document(newUser.phoneNumber).set(newUser)
+        userDataBase.document(newUser.phoneID).set(newUser)
     }
 
     fun deleteUser(user: User) {
-        userDataBase.document(user.phoneNumber).delete()
+        userDataBase.document(user.phoneID).delete()
     }
 
-    fun findUser(phoneNumber: String): User? {
+    fun findUser(deviceID: String): User? {
         users.forEach { user ->
-            if (user.phoneNumber == phoneNumber){
+            if (user.phoneID == deviceID){
                 return user
             }
         }
 
         return null
+    }
+
+    fun getDeviceID(context: Context): String {
+        return Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ANDROID_ID
+        )
     }
 
     init {

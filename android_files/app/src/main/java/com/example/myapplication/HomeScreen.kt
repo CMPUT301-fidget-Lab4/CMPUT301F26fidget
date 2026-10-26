@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -7,29 +8,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     findUser: (String) -> User?,
-    getAndroidID: () -> String
+    getDeviceID: (Context) -> String
 ) {
 
-    var inputPhoneNumber by remember { mutableStateOf("") }
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
@@ -41,7 +37,7 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = {
@@ -52,17 +48,18 @@ fun HomeScreen(
             Text("Sign up")
         }
 
-        OutlinedTextField(
-            value = inputPhoneNumber,
-            onValueChange = { inputPhoneNumber = it },
-            label = { Text("Enter Phone Number to Login") },
-        )
+        val userContext: Context = LocalContext.current
 
-        if (inputPhoneNumber.isNotEmpty()){
-            if (findUser(inputPhoneNumber) != null){
+        val userDeviceID: String = getDeviceID(userContext)
+
+            if (findUser(userDeviceID) != null){
                 navController.navigate("MainScreen")
             }
-        }
 
+            else {
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text("Device Account Not Found. Continue To Sign In")
+            }
     }
 }

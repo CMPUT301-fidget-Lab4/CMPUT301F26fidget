@@ -6,7 +6,7 @@ class User(
     val userType: String = "",
     val name: String = "",
     val email : String = "",
+    val phoneNumber : String = "",
     @set:DocumentId
-    var phoneNumber : String = "",
-//    val phoneID : String = ""
+    var phoneID : String = ""
 )
