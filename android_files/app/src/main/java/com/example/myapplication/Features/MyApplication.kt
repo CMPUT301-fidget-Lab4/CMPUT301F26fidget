@@ -1,4 +1,5 @@
-package com.example.myapplication
+package com.example.myapplication.Features
+
 import android.app.Application
 
 /**

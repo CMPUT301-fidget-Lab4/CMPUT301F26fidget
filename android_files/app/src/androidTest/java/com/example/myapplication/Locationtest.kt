@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.location.Geocoder
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.myapplication.Features.CampsiteLocation
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue

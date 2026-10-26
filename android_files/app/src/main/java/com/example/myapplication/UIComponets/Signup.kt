@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.UIComponets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.myapplication.Features.User
 
 
 @Composable

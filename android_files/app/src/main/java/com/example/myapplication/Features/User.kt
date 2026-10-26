@@ -1,6 +1,4 @@
-package com.example.myapplication
-
-import com.google.firebase.firestore.DocumentId
+package com.example.myapplication.Features
 
 class User(
     val userType: String = "",

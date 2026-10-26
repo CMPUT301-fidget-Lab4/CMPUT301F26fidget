@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.UIComponets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
+import com.example.myapplication.Features.User
 
 @Composable
 fun HomeScreen(

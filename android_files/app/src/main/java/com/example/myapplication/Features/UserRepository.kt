@@ -1,9 +1,8 @@
-package com.example.myapplication
+package com.example.myapplication.Features
 
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-
 
 class UserRepository {
 

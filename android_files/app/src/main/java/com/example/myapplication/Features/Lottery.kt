@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.Features
 
 /**
  * ** Purpose ** : lottery handles the logic in how a given individual can win the lottery.
