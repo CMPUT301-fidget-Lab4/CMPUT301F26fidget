@@ -1,4 +1,4 @@
-package com.example.myapplication.Features
+package com.example.myapplication.features
 
 import android.location.Geocoder
 import com.google.firebase.firestore.GeoPoint
@@ -22,11 +22,10 @@ class CampsiteLocation(
     fun addressExists(address: String): Boolean {
         return try {
             val geocoder = Geocoder(MyApplication.instance, Locale.ENGLISH)
-
             val matches = geocoder.getFromLocationName(address, 1)
             if (matches == null) {
                 false
-            } else if (matches.size == 0) {
+            } else if (matches.isEmpty()) {
                 false
             } else {
                 val match = matches[0]
