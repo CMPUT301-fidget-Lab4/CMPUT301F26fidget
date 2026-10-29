@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui_components.screens
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -23,9 +23,21 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.features.User
 
 
-
+/**
+ * Signup screen where new users enter their account type, name, email address, and phone number.
+ * User's Android ID is fetched automatically.
+ *
+ * When a user has entered all fields, and presses Create Account, their already fetched Android ID
+ * and input information is compiled into a [User] object and added to the Firestore collection.
+ * The user is directed to the main page.
+ *
+ * @param navController
+ * @param onAddUser Function to add a [User] object to the Firestore "users" collection.
+ * @param getAndroidId Function to fetch a user's Android ID.
+ */
 @Composable
 fun Signup(
     navController: NavController,
