@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import com.example.myapplication.features.User
 
 
@@ -64,7 +65,8 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "entrant"
-                }
+                },
+                modifier = Modifier.testTag("entrantButton") // for testing
             ) {
                 Text("Entrant")
             }
@@ -75,7 +77,8 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "campsite owner"
-                }
+                },
+                modifier = Modifier.testTag("campsiteOwnerButton") // for testing
             ) {
                 Text("Campsite Owner")
             }
@@ -85,7 +88,8 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "admin"
-                }
+                },
+                modifier = Modifier.testTag("adminButton") // for testing
             ) {
                 Text("Admin")
             }
@@ -97,6 +101,7 @@ fun Signup(
             value = userName,
             onValueChange = { userName = it },
             label = { Text("Enter Name") },
+            modifier = Modifier.testTag("nameTextField") // for testing
         )
 
 
@@ -106,6 +111,7 @@ fun Signup(
             value = userEmail,
             onValueChange = { userEmail = it },
             label = { Text("Enter Email") },
+            modifier = Modifier.testTag("emailTextField") // for testing
         )
 
 
@@ -115,6 +121,7 @@ fun Signup(
             value = userPhoneNumber,
             onValueChange = { userPhoneNumber = it },
             label = { Text("Enter Phone Number") },
+            modifier = Modifier.testTag("phoneNumberTextField") // for testing
         )
 
 
@@ -140,7 +147,8 @@ fun Signup(
                 else {
                     incompleteEntry = true
                 }
-            }
+            },
+            modifier = Modifier.testTag("createAccountButton") // for testing
         ) {
             Text("Create account")
         }
