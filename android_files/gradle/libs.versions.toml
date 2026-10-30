@@ -12,6 +12,7 @@ firebaseCommonKtx = "23.0.0"
 material3 = "1.4.0"
 remoteCreationCore = "1.0.0-alpha21"
 firebaseCrashlyticsBuildtools = "3.0.8"
+uiTest = "1.12.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-k
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-remote-creation-core = { group = "androidx.compose.remote", name = "remote-creation-core", version.ref = "remoteCreationCore" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test", version.ref = "uiTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

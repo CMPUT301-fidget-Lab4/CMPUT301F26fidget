@@ -13,7 +13,7 @@ import com.google.firebase.firestore.DocumentId
  * @property phoneNumber The user's phone number
  * @property deviceID The user's unique Android ID
  */
-class User(
+data class User(
     val userType: String = "",
     val name: String = "",
     val email : String = "",
