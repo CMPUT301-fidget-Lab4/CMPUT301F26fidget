@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.ui_components.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,24 +11,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.myapplication.features.User
 
 @Composable
 fun MainScreen(
-    navController: NavController
-//    userProfile: User
+    navController: NavController,
+    userProfile: User?
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text("Welcome User!")
-        Button(
-            onClick = {
-                return@Button
+        if (userProfile != null){
+
+            Text("Welcome ${userProfile.name}!")
+            Button(
+                onClick = {
+                    return@Button
+                }
+            ) {
+                Text("Search for campsites")
             }
-        ) {
-            Text("Search for campsites")
         }
     }
 }
