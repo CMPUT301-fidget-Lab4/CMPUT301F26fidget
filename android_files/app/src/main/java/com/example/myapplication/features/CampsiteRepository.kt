@@ -1,6 +1,7 @@
-package com.example.myapplication
+package com.example.myapplication.features
 
 import androidx.compose.runtime.mutableStateListOf
+import com.example.myapplication.features.Campsite
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 

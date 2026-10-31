@@ -1,12 +1,17 @@
-package com.example.myapplication
+package com.example.myapplication.features
 
+import com.example.myapplication.features.CampsiteLocation
 import java.util.Date
 
 /**
  * Purpose: Create  campsite with the needed descriptions that a owner can own or a admin own or edit.
- * @param String : The wanted name CampsiteName.
- * @param CampsiteLocation : CampsiteLocation object takes String or optional geoPoint
- * @
+ * @param name : The wanted name CampsiteName.
+ * @param location : [CampsiteLocation] object takes String or optional geoPoint
+ * @param description
+ * @param occupancy
+ * @param photo
+ * @param tags
+ * @param ownerID
  * */
  class Campsite(
     val name: String = "",
