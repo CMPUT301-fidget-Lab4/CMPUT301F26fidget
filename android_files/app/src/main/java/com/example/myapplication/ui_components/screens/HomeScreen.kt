@@ -2,7 +2,9 @@ package com.example.myapplication.ui_components.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,12 +25,12 @@ import com.example.myapplication.features.AuthState
 
 
 /**
- * Home screen where the app initially loads. A returning user is automatically redirected to the
+ * Home screen is where the app initially loads. A returning user is automatically redirected to the
  * main screen. A new user presses sign in to create an account.
  *
  * The user's Android ID is fetched. If a Firestore document exists with that ID, the user is
  * redirected to the main screen. Otherwise, the user must create an account. When they press
- * Sign Up they are redirected to the sign-up screen.
+ * sign in they are redirected to the sign-up screen.
  *
  * @param navController
  * @param authState StateFlow for AuthState. Updates function when Firestore fetching finishes on
@@ -59,6 +61,8 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
                 navController.navigate("Signup")
@@ -68,9 +72,11 @@ fun HomeScreen(
             Text("Sign up")
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         when (val state = currentAuthState) {
             AuthState.Loading       -> CircularProgressIndicator()
-            AuthState.NotRegistered -> Text("Device Account Not Found. Continue To Sign In")
+            AuthState.NotRegistered -> Text("Account Not Found. Continue To Sign In")
             AuthState.Error         -> Text("Something went wrong")
             is AuthState.LoggedIn   -> Text("Welcome back, ${state.user.name}")  // use whatever field User has
         }

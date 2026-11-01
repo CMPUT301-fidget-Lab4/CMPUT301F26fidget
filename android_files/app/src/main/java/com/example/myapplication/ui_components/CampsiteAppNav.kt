@@ -9,6 +9,7 @@ import com.example.myapplication.features.AuthState
 import com.example.myapplication.features.User
 import com.example.myapplication.ui_components.screens.HomeScreen
 import com.example.myapplication.ui_components.screens.MainScreen
+import com.example.myapplication.ui_components.screens.ProfileScreen
 import com.example.myapplication.ui_components.screens.Signup
 import kotlinx.coroutines.flow.StateFlow
 
@@ -26,9 +27,10 @@ fun CampsiteApp(
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") { HomeScreen(navController, authState) }
+    NavHost(navController = navController, startDestination = "HomeScreen") {
+        composable("HomeScreen") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
+        composable("ProfileScreen") { ProfileScreen(navController, user, onUpdateUser, onDeleteUser) }
     }
 }

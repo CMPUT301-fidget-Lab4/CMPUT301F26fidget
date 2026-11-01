@@ -53,6 +53,8 @@ class UserRepository(currentDeviceID: String) {
      */
     fun deleteUser(user: User) {
         userDataBase.document(user.deviceID).delete()
+        authState.value = AuthState.NotRegistered
+        _currentUser.value = null
     }
 
     /**
