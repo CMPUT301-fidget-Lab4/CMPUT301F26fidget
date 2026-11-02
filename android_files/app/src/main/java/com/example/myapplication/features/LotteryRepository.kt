@@ -25,6 +25,44 @@ class LotteryRepository {
 
 
 
+    /**
+     * Adds an entrant to a lottery's waitlist and saves it.
+     *
+     * @param campsiteName Any campsite participating in the lottery.
+     * @param user The entrant joining the lottery.
+     * @param onResult Returns true if joining and saving succeeded.
+     */
+    fun joinLotteryWaitlist(
+        campsiteName: String,
+        user: User,
+        onResult: (Boolean) -> Unit
+    ) {
+        getLottery(campsiteName) { lottery ->
+
+            if (lottery == null) {
+                onResult(false)
+                return@getLottery
+            }
+
+            // Check registration dates, role, duplicates and capacity.
+            if (!lottery.joinWaitlist(user)) {
+                onResult(false)
+                return@getLottery
+            }
+
+            // Your saveLottery updates all participating campsites.
+            saveLottery(campsiteName, lottery)
+                .addOnSuccessListener {
+                    onResult(true)
+                }
+                .addOnFailureListener {
+                    onResult(false)
+                }
+        }
+    }
+
+
+
 
     /**
      * Saves the lottery to all participating campsites.
