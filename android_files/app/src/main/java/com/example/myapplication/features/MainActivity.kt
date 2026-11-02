@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 CampsiteApp(
                     user = userRepository.currentUser,
+                    users = userRepository.users,
                     onAddUser = userRepository::addUser,
                     onDeleteUser = userRepository::deleteUser,
                     onUpdateUser = userRepository::updateUser,

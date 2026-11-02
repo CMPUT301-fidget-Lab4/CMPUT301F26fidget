@@ -2,13 +2,16 @@ package com.example.myapplication.ui_components.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.features.User
@@ -26,12 +29,26 @@ fun MainScreen(
         if (userProfile != null){
 
             Text("Welcome ${userProfile.name}!")
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
-                onClick = {
-                    return@Button
-                }
+                onClick = { },
+                modifier = Modifier.testTag("campsiteSearch")
             ) {
                 Text("Search for campsites")
+            }
+
+            if (userProfile.userType == "admin") {
+
+                Button(
+                    onClick = {
+                        navController.navigate("AdminProfilesView")
+                    },
+                    modifier = Modifier.testTag("adminProfileBrowse")
+                ) {
+                    Text("View Profiles")
+                }
             }
         }
     }
