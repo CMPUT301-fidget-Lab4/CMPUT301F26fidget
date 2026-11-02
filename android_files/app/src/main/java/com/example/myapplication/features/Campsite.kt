@@ -65,22 +65,21 @@ class Campsite(
 
 
     /**
-     * Creates a new lottery for this campsite. Though  after you should use campsite service
-     * to then save this into firebase.This only sets a campsite locally.
-     * @param numWinners how many winners will be drawn, must be at least 1
-     * @param waitlistCapacity the most entrants allowed on the waitlist, 0 means
-     * no limit and it can't be negative
-     * @param otherCampsites names of other campsites to include in this lottery,
-     * pass an empty list if the lottery is only for this campsite
-     * @return true if the lottery was created and saved, false if a number is
-     * invalid, a campsite does not exist, or a campsite is already in a lottery
+     * Creates a lottery for this campsite and any additional campsites.
+     *
+     * @param numWinners Number of winners, between 1 and occupancy.
+     * @param waitlistCapacity Maximum entrants, or 0 for unlimited.
+     * @param otherCampsites Other campsites sharing this lottery.
+     * @return true if created locally, false if the inputs are invalid.
      */
     fun createLottery(
         numWinners: Int,
         waitlistCapacity: Int,
         otherCampsites: List<String>
     ): Boolean {
-        if (numWinners < 1) {
+
+        // Winners cannot exceed maximum occupancy.
+        if (numWinners < 1 || numWinners > occupancy) {
             return false
         }
 
@@ -88,10 +87,18 @@ class Campsite(
             return false
         }
 
+        // Do not replace an existing lottery.
+        if (inLottery) {
+            return false
+        }
+
         val ids = mutableListOf(name)
 
         for (other in otherCampsites) {
-            if (other != name && !ids.contains(other)) {
+            if (other.isNotBlank() &&
+                other != name &&
+                !ids.contains(other)
+            ) {
                 ids.add(other)
             }
         }
@@ -104,9 +111,9 @@ class Campsite(
         )
 
         inLottery = true
-
         return true
     }
+
 
 
     /**
@@ -144,16 +151,6 @@ class Campsite(
 
         return true
     }
-
-
-    /**
-     * Sets the booking period for the lottery or the booking period that can be shown
-     * to the user.
-     *
-     * @param start Booking start date.
-     * @param end Booking end date.
-     * @return true if the dates are valid, false otherwise.
-     */
 
 
     /**

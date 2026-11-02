@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                LotteryManualTest()
+               // LotteryManualTest()
 
 //                CampsiteApp(
 //                    user = userRepository.currentUser,

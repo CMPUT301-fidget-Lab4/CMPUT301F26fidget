@@ -6,6 +6,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LotteryRepository {
 
@@ -24,19 +25,54 @@ class LotteryRepository {
         campsiteRef.document(campsiteName).collection("lottery").document("current")
 
 
+    /**
+     * Draws winners after registration closes.
+     *
+     * Saves the winning entrants to every campsite
+     * participating in the lottery.
+     *
+     * @param campsiteName Any campsite in the lottery.
+     * @param onResult The selected winner IDs, or null on failure.
+     */
+    fun drawLotteryWinners(
+        campsiteName: String,
+        onResult: (List<String>?) -> Unit
+    ) {
+        getLottery(campsiteName) { lottery ->
+
+            if (lottery == null || !lottery.drawWinners()) {
+                onResult(null)
+                return@getLottery
+            }
+
+            // Save winners and drawn = true to every campsite.
+            saveLottery(campsiteName, lottery)
+                .addOnSuccessListener {
+                    onResult(lottery.winners)
+                }
+                .addOnFailureListener {
+                    onResult(null)
+                }
+        }
+    }
+
+
+
 
     /**
-     * Adds an entrant to a lottery's waitlist and saves it.
+     * Adds an entrant to the waitlist and records
+     * the joined lottery in the user's Firestore document.
      *
-     * @param campsiteName Any campsite participating in the lottery.
-     * @param user The entrant joining the lottery.
-     * @param onResult Returns true if joining and saving succeeded.
+     * @param campsiteName The campsite the entrant selected.
+     * @param user The entrant joining.
+     * @param onResult true when both saves succeed.
      */
     fun joinLotteryWaitlist(
         campsiteName: String,
         user: User,
         onResult: (Boolean) -> Unit
     ) {
+
         getLottery(campsiteName) { lottery ->
 
             if (lottery == null) {
@@ -44,22 +80,50 @@ class LotteryRepository {
                 return@getLottery
             }
 
-            // Check registration dates, role, duplicates and capacity.
+            // Validate registration time, role,
+            // duplicate entries, and waitlist capacity.
             if (!lottery.joinWaitlist(user)) {
                 onResult(false)
                 return@getLottery
             }
 
-            // Your saveLottery updates all participating campsites.
+            // Save the updated waitlist to every campsite.
             saveLottery(campsiteName, lottery)
                 .addOnSuccessListener {
-                    onResult(true)
+
+                    val entry = mapOf(
+                        "lotteryId" to lottery.id,
+                        "campsiteName" to campsiteName
+                    )
+
+                    // Save the signup in the User document.
+                    db.collection("users")
+                        .document(user.deviceID)
+                        .update(
+                            "joinedLotteries",
+                            com.google.firebase.firestore.FieldValue
+                                .arrayUnion(entry)
+                        )
+                        .addOnSuccessListener {
+
+                            // Update the local User object too.
+                            user.addJoinedLottery(
+                                lottery.id,
+                                campsiteName
+                            )
+
+                            onResult(true)
+                        }
+                        .addOnFailureListener {
+                            onResult(false)
+                        }
                 }
                 .addOnFailureListener {
                     onResult(false)
                 }
         }
     }
+
 
 
 
@@ -139,37 +203,69 @@ class LotteryRepository {
      * @param onResult called with the loaded [Lottery], or with null if the
      * campsite has no saved lottery or the read fails
      */
-    fun getLottery(campsiteName: String, onResult: (Lottery?) -> Unit) {
+
+    /**
+     * Gets a lottery from Firestore using a campsite name.
+     *
+     * Loads its registration dates, booking dates, waitlist,
+     * winners, and lottery status.
+     *
+     * @param campsiteName The campsite containing the lottery.
+     * @param onResult The lottery, or null if it cannot be loaded.
+     */
+    fun getLottery(
+        campsiteName: String,
+        onResult: (Lottery?) -> Unit
+    ) {
+        if (campsiteName.isBlank()) {
+            onResult(null)
+            return
+        }
+
         lotteryDoc(campsiteName).get()
             .addOnSuccessListener { doc ->
+
                 if (!doc.exists()) {
                     onResult(null)
                     return@addOnSuccessListener
                 }
 
-                val period = Reservation(
-                    readDate(doc, "registrationStart"),
-                    readDate(doc, "registrationEnd"),
-                    readDate(doc, "bookingStart"),
-                    readDate(doc, "bookingEnd")
-                )
+                try {
+                    val period = Reservation(
+                        registrationStart = readDate(doc, "registrationStart"),
+                        registrationEnd = readDate(doc, "registrationEnd"),
+                        bookingStart = readDate(doc, "bookingStart"),
+                        bookingEnd = readDate(doc, "bookingEnd")
+                    )
 
-                val lottery = Lottery(
-                    id = doc.getString("id") ?: "",
-                    campsiteIds = (doc.get("campsiteIds") as? List<String>) ?: listOf(),
-                    period = period,
-                    numWinners = doc.getLong("numWinners")?.toInt() ?: 1,
-                    waitlistCapacity = doc.getLong("waitlistCapacity")?.toInt() ?: 0,
-                    waitlist = (doc.get("waitlist") as? List<String>) ?: listOf(),
-                    winners = (doc.get("winners") as? List<String>) ?: listOf(),
-                    drawn = doc.getBoolean("drawn") ?: false
-                )
-                onResult(lottery)
+                    val lottery = Lottery(
+                        id = doc.getString("id") ?: "",
+                        campsiteIds = (
+                                doc.get("campsiteIds") as? List<*>
+                                )?.filterIsInstance<String>() ?: emptyList(),
+                        period = period,
+                        numWinners = doc.getLong("numWinners")?.toInt() ?: 1,
+                        waitlistCapacity = doc.getLong("waitlistCapacity")?.toInt() ?: 0,
+                        waitlist = (
+                                doc.get("waitlist") as? List<*>
+                                )?.filterIsInstance<String>() ?: emptyList(),
+                        winners = (
+                                doc.get("winners") as? List<*>
+                                )?.filterIsInstance<String>() ?: emptyList(),
+                        drawn = doc.getBoolean("drawn") ?: false
+                    )
+
+                    onResult(lottery)
+
+                } catch (e: Exception) {
+                    onResult(null)
+                }
             }
             .addOnFailureListener {
                 onResult(null)
             }
     }
+
 
 
     /**
@@ -226,8 +322,14 @@ class LotteryRepository {
     }
 
 
-    private fun readDate(doc: DocumentSnapshot, field: String): LocalDate {
-        val text = doc.getString(field) ?: return LocalDate.now()
-        return LocalDate.parse(text)
+    private fun readDate(
+        doc: DocumentSnapshot,
+        field: String
+    ): LocalDateTime {
+
+        val text = doc.getString(field)
+            ?: throw IllegalArgumentException("Missing $field")
+
+        return LocalDateTime.parse(text)
     }
 }

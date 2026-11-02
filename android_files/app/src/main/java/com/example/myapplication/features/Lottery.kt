@@ -2,7 +2,7 @@ package com.example.myapplication.features
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-
+import kotlin.random.Random
 data class Lottery(
     var id: String = "",
     var campsiteIds: List<String> = listOf(),   // one or more campsites
@@ -83,7 +83,74 @@ data class Lottery(
         // Add entrant to the waitlist
         waitlist = waitlist + user.deviceID
 
+        // Should update our firebase
         return true
     }
+
+
+    /**
+     * Randomly selects lottery winners from the waitlist.
+     *
+     * The draw is allowed only after registration closes.
+     * Each entrant can win only once, and the lottery
+     * cannot be drawn more than once.
+     *
+     * @param now Current date and time.
+     * @param random Random generator used for selecting winners.
+     * @return true if winners were successfully drawn.
+     */
+    fun drawWinners(
+        now: LocalDateTime = LocalDateTime.now(),
+        random: Random = Random.Default
+    ): Boolean {
+
+        // Check that the lottery exists.
+        if (id.isBlank()) {
+            return false
+        }
+
+        // Do not draw more than once.
+        if (drawn) {
+            return false
+        }
+
+        // Wait until registration closes.
+        if (now.isBefore(period.registrationEnd)) {
+            return false
+        }
+
+        // No entrants means no winners.
+        val entrants = waitlist
+            .filter { it.isNotBlank() }
+            .distinct()
+
+        if (entrants.isEmpty()) {
+            return false
+        }
+
+        // Randomly select up to numWinners unique entrants.
+        winners = entrants
+            .shuffled(random)
+            .take(numWinners)
+
+        //TODO(" Then attach notificaiton function later in the future")
+        //TODo("Figure a way for the firebase to automatically draw a user")
+        drawn = true
+
+        return true
+    }
+
+    /**
+     * Checks whether an entrant won this lottery.
+     *
+     * @param user User whose result is being checked.
+     * @return true if the lottery was drawn and the user won.
+     */
+    fun hasWon(user: User): Boolean {
+        return drawn &&
+                user.deviceID.isNotBlank() &&
+                winners.contains(user.deviceID)
+    }
+
 
 }
