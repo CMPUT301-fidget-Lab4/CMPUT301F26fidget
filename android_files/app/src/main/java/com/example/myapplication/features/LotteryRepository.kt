@@ -215,20 +215,7 @@ class LotteryRepository {
 
 
 
-    /**
-     * Loads the lottery saved for a campsite from Firestore.
-     *
-     * The lottery is read from campsites/<campsiteName>/lottery/current. The date
-     * fields are stored as text (like "2026-11-01") and are converted back into
-     * LocalDate objects.
-     *
-     * The data loads in the background, so the result is not returned directly.
-     * It is passed to [onResult] when it is ready.
-     *
-     * @param campsiteName the name of the campsite, which is also its document id
-     * @param onResult called with the loaded [Lottery], or with null if the
-     * campsite has no saved lottery or the read fails
-     */
+
 
     /**
      * Gets a lottery from Firestore using a campsite name.

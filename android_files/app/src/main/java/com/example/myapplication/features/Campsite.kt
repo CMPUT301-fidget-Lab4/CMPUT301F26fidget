@@ -57,13 +57,6 @@ class Campsite(
     }
 
 
-    // true if the start is not after the end
-    private fun startIsBeforeEnd(start: LocalDate, end: LocalDate): Boolean {
-        return !start.isAfter(end)
-    }
-
-
-
     /**
      * Creates a lottery for this campsite and any additional campsites.
      *

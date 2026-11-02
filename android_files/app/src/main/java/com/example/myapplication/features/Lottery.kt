@@ -14,17 +14,6 @@ data class Lottery(
     var drawn: Boolean = false
 ) {
 
-    /**
-     * Adds an entrant to the lottery waitlist.
-     *
-     * Entrants can only join while registration is open.
-     * Capacity 0 means the waitlist is unlimited.
-     *
-     * This function only updates the Lottery object locally.
-     *
-     * @param user The user joining the lottery.
-     * @return true if the entrant was added, false otherwise.
-     */
 
     /**
      * Adds an entrant to the lottery waitlist.
