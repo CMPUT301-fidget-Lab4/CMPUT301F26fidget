@@ -5,8 +5,12 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.firestore
+import com.google.firebase.Timestamp
+
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
 
 class LotteryRepository {
 
@@ -138,10 +142,22 @@ class LotteryRepository {
      * @param lottery The lottery being saved.
      * @return Task indicating whether all changes succeeded.
      */
+
     fun saveLottery(
         campsiteName: String,
         lottery: Lottery
     ): Task<Void> {
+
+        // Use the time zone where the campsite operates.
+        // Replace this if your campsites use another time zone.
+        val zone = ZoneId.of("America/Edmonton")
+
+        val closingTime = Timestamp(
+            lottery.period.registrationEnd
+                .atZone(zone)
+                .toEpochSecond(),
+            lottery.period.registrationEnd.nano
+        )
 
         val data = hashMapOf(
             "id" to lottery.id,
@@ -154,26 +170,36 @@ class LotteryRepository {
             "registrationStart" to lottery.period.registrationStart.toString(),
             "registrationEnd" to lottery.period.registrationEnd.toString(),
             "bookingStart" to lottery.period.bookingStart.toString(),
-            "bookingEnd" to lottery.period.bookingEnd.toString()
+            "bookingEnd" to lottery.period.bookingEnd.toString(),
+            // Used to automatically trigger the lottery draw.
+            "registrationEndAt" to closingTime
         )
 
-        // Create one batch for all database changes
         val batch = db.batch()
 
-        // Find every campsite participating in the lottery
-        val ids = (lottery.campsiteIds + campsiteName).distinct()
+        val ids = (
+                lottery.campsiteIds + campsiteName
+                ).filter { it.isNotBlank() }.distinct()
+
+        val mainCampsite = lottery.campsiteIds.firstOrNull()
+            ?: campsiteName
 
         for (id in ids) {
 
             val campsiteDoc = campsiteRef.document(id)
 
-            // Save lottery information under each campsite
+            // Mark only ONE copy as the primary lottery.
+            // This prevents the scheduled function from
+            // drawing the same lottery multiple times.
+            val lotteryData = data.toMutableMap()
+
+            lotteryData["isPrimary"] = id == mainCampsite
+
             batch.set(
                 lotteryDoc(id),
-                data
+                lotteryData
             )
 
-            // Mark each campsite as participating
             batch.update(
                 campsiteDoc,
                 mapOf(
@@ -184,9 +210,9 @@ class LotteryRepository {
             )
         }
 
-        // Save all changes together
         return batch.commit()
     }
+
 
 
     /**
