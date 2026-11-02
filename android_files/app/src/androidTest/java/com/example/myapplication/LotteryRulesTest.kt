@@ -130,7 +130,6 @@ class LotteryRulesTest {
         val campsite = Campsite(name = "TestCampsite", occupancy = 2)
 
         // This will FAIL unless createLottery checks:
-        // if (numWinners < 1 || numWinners > occupancy) return false
         assertFalse(campsite.createLottery(3, 0, emptyList()))
     }
 

@@ -3,7 +3,7 @@ package com.example.myapplication.features
 import com.google.firebase.firestore.DocumentId
 
 /**
- * Records a lottery joined by an entrant.
+ * Records a lottery joined by an entrant/Admin
  */
 data class JoinedLottery(
     var lotteryId: String = "",
@@ -21,6 +21,8 @@ data class JoinedLottery(
  * @property email The user's email address
  * @property phoneNumber The user's phone number
  * @property deviceID The user's unique Android ID
+ * @property campsiteIds  IDs of campsites associated with this user. Only for admins/owners.
+ * @property joinedLotteries A list of the lotteries that a entrant/admin is in
  */
 data class User(
     val userType: String = "",
@@ -38,10 +40,53 @@ data class User(
     var joinedLotteries: List<JoinedLottery> = emptyList()
 ) {
 
+
+    /**
+     * Removes a lottery that an entrant or admin joined.
+     * Only changes the User object locally.
+     *
+     * @param lotteryId The ID of the lottery to leave.
+     * @return true if the lottery was removed, false otherwise.
+     */
+    fun leaveLottery(lotteryId: String): Boolean {
+
+        // Only entrants and admins can leave lotteries.
+        if (!canJoinLottery()) {
+            return false
+        }
+
+        if (lotteryId.isBlank()) {
+            return false
+        }
+
+        // Check whether the user joined this lottery.
+        if (joinedLotteries.none { it.lotteryId == lotteryId }) {
+            return false
+        }
+
+        // Remove the lottery from the user's list.
+        joinedLotteries = joinedLotteries.filterNot {
+            it.lotteryId == lotteryId
+        }
+
+        return true
+    }
+
+
+    /**
+     * Checks whether the user can join lotteries.
+     * Only entrants and admins are allowed.
+     */
+    fun canJoinLottery(): Boolean {
+        val type = userType.trim().lowercase()
+
+        return type == "entrant" || type == "admin"
+    }
+
+
     /**
      * Records a lottery that this entrant joined.
      * Only changes the User object locally.
-     *
      * @return true if the lottery was added.
      */
     fun addJoinedLottery(
@@ -49,7 +94,8 @@ data class User(
         campsiteName: String
     ): Boolean {
 
-        if (!userType.equals("entrant", ignoreCase = true)) {
+        // Only entrants and admins can join.
+        if (!canJoinLottery()) {
             return false
         }
 

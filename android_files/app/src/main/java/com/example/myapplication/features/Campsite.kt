@@ -41,6 +41,17 @@ class Campsite(
     var reservationSet: Boolean = false
     var bookingSet: Boolean = false
 
+
+    fun canJoinCampsite(
+        numberOfGuests: Int,
+        campsite: Campsite
+    ): Boolean {
+        return numberOfGuests > 0 &&
+                numberOfGuests <= campsite.occupancy
+    }
+
+
+
     /**
      * Updates the campsite's terms and conditions locally.
      *
@@ -71,20 +82,18 @@ class Campsite(
         otherCampsites: List<String>
     ): Boolean {
 
-        // Winners cannot exceed maximum occupancy.
-        if (numWinners < 1 || numWinners > occupancy) {
-            return false
-        }
-
-        if (waitlistCapacity < 0) {
-            return false
-        }
-
         // Do not replace an existing lottery.
         if (inLottery) {
             return false
         }
 
+        // Waitlist capacity cannot be negative.
+        // 0 means unlimited.
+        if (waitlistCapacity < 0) {
+            return false
+        }
+
+        // Collect all unique campsite IDs/names.
         val ids = mutableListOf(name)
 
         for (other in otherCampsites) {
@@ -96,6 +105,14 @@ class Campsite(
             }
         }
 
+        // Each campsite can have only one winner.
+        // Therefore winners cannot exceed the number
+        // of campsites available in this lottery.
+        if (numWinners < 1 || numWinners > ids.size) {
+            return false
+        }
+
+        // Create the lottery.
         lottery = Lottery(
             id = java.util.UUID.randomUUID().toString(),
             campsiteIds = ids,
@@ -106,6 +123,7 @@ class Campsite(
         inLottery = true
         return true
     }
+
 
 
 
