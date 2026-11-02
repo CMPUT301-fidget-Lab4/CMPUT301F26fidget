@@ -1,28 +1,34 @@
 package com.example.myapplication.features
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Reservation(
-    var registrationStart: LocalDate = LocalDate.now(),  // entrants can register from this day
-    var registrationEnd: LocalDate = LocalDate.now(),    // entrants can't register/book after this
-    var bookingStart: LocalDate = LocalDate.now(),       // first day winners may book
-    var bookingEnd: LocalDate = LocalDate.now()          // last day winners may book
+    var registrationStart: LocalDateTime = LocalDateTime.now(),
+    var registrationEnd: LocalDateTime = LocalDateTime.now(),
+    var bookingStart: LocalDateTime = LocalDateTime.now(),
+    var bookingEnd: LocalDateTime = LocalDateTime.now()
 ) {
 
-    fun hasValidDates(): Boolean {
-        return !registrationEnd.isBefore(registrationStart) &&
-                !bookingStart.isBefore(registrationEnd) &&
-                !bookingEnd.isBefore(bookingStart)
+    /**
+     * Registration is open from the start time
+     * until, but not including, the end time.
+     */
+    fun registrationIsOpen(
+        now: LocalDateTime = LocalDateTime.now()
+    ): Boolean {
+        return !now.isBefore(registrationStart) &&
+                now.isBefore(registrationEnd)
     }
 
-    fun registrationIsOpen(now: LocalDate = LocalDate.now()): Boolean {
-        return !now.isBefore(registrationStart) && now.isBefore(registrationEnd)
+    /**
+     * Checks whether the booking period is open.
+     */
+    fun bookingIsOpen(
+        now: LocalDateTime = LocalDateTime.now()
+    ): Boolean {
+        return !now.isBefore(bookingStart) &&
+                now.isBefore(bookingEnd)
     }
-
-    fun bookingIsOpen(now: LocalDate = LocalDate.now()): Boolean {
-        return !now.isBefore(bookingStart) && !now.isAfter(bookingEnd)
-    }
-
-
-
 }
+

@@ -3,6 +3,7 @@ package com.example.myapplication.features
 import com.example.myapplication.features.CampsiteLocation
 import com.google.firebase.firestore.Exclude
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 /**
@@ -117,38 +118,32 @@ class Campsite(
      */
 
     fun setReservation(
-        start: LocalDate,
-        end: LocalDate
+        start: LocalDateTime,
+        end: LocalDateTime
     ): Boolean {
 
-        // A lottery must exist first
         if (!inLottery || lottery.id.isBlank()) {
             return false
         }
 
-        // Registration cannot start in the past
-        if (start.isBefore(LocalDate.now())) {
+        if (start.isBefore(LocalDateTime.now())) {
             return false
         }
 
-        // Start must be before or equal to end
-        if (!startIsBeforeEnd(start, end)) {
+        if (!end.isAfter(start)) {
             return false
         }
 
-        // Registration must end before or on booking start
         if (bookingSet && end.isAfter(lottery.period.bookingStart)) {
             return false
         }
 
         lottery.period.registrationStart = start
         lottery.period.registrationEnd = end
-
         reservationSet = true
 
         return true
     }
-
 
 
     /**
@@ -160,28 +155,40 @@ class Campsite(
      * @return true if the dates are valid, false otherwise.
      */
 
+
+    /**
+     * Sets the lottery's booking start and end date/time.
+     *
+     * A lottery and registration period must already exist.
+     * The booking period cannot start in the past or before
+     * registration ends.
+     *
+     * @param start The booking start date and time.
+     * @param end The booking end date and time.
+     * @return true if the booking period was set, false otherwise.
+     */
     fun setBookingPeriod(
-        start: LocalDate,
-        end: LocalDate
+        start: LocalDateTime,
+        end: LocalDateTime
     ): Boolean {
 
-        // A lottery must exist first
+        // Check that a lottery exists
         if (!inLottery || lottery.id.isBlank()) {
             return false
         }
 
-        // Registration period must already be set
+        // Registration must already be set
         if (!reservationSet) {
             return false
         }
 
         // Booking cannot start in the past
-        if (start.isBefore(LocalDate.now())) {
+        if (start.isBefore(LocalDateTime.now())) {
             return false
         }
 
-        // Start must be before or equal to end
-        if (!startIsBeforeEnd(start, end)) {
+        // Booking end must be AFTER booking start
+        if (!end.isAfter(start)) {
             return false
         }
 
@@ -190,6 +197,7 @@ class Campsite(
             return false
         }
 
+        // Update locally
         lottery.period.bookingStart = start
         lottery.period.bookingEnd = end
 
@@ -197,6 +205,7 @@ class Campsite(
 
         return true
     }
+
 
 
 
