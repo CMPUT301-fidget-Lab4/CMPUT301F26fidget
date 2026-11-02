@@ -17,7 +17,7 @@ import java.util.Date
     val name: String = "",
     val location: CampsiteLocation? = null,
     val description: String = "",
-    val occupancy: Short,
+    val occupancy: Int = 0,
     val photo: String = "",
     val tags : String = "",
     val ownerID : String = "" // Phone ID for User
