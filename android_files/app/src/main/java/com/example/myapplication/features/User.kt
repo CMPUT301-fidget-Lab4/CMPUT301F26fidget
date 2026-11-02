@@ -19,5 +19,64 @@ data class User(
     val email : String = "",
     val phoneNumber : String = "",
     @set:DocumentId
-    var deviceID : String = ""
-)
+    var deviceID : String = "",
+    // Names of campsites associated with this user
+    var campsiteIds: List<String> = emptyList()
+) {
+    /**
+     * Checks whether the user can manage campsites.
+     */
+    fun canManageCampsites(): Boolean {
+        return userType.equals("admin", ignoreCase = true) ||
+                userType.equals("owner", ignoreCase = true) ||
+                userType.equals("campsite owner", ignoreCase = true)
+    }
+
+    /**
+     * Adds a campsite to the user's list.
+     *
+     * Returns false if the user does not have permission,
+     * the name is invalid, or the campsite is already listed.
+     */
+    fun addCampsite(campsiteName: String): Boolean {
+
+        if (!canManageCampsites()) {
+            return false
+        }
+
+        val id = campsiteName.trim()
+
+        if (id.isBlank() || id.contains("/")) {
+            return false
+        }
+
+        if (campsiteIds.contains(id)) {
+            return false
+        }
+
+        campsiteIds = campsiteIds + id
+
+        return true
+    }
+
+    /**
+     * Removes a campsite from the user's list.
+     */
+    fun removeCampsite(campsiteName: String): Boolean {
+
+        if (!canManageCampsites()) {
+            return false
+        }
+
+        if (!campsiteIds.contains(campsiteName)) {
+            return false
+        }
+
+        campsiteIds = campsiteIds - campsiteName
+
+        return true
+    }
+}
+
+
+

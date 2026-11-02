@@ -1,40 +1,204 @@
 package com.example.myapplication.features
 
 import com.example.myapplication.features.CampsiteLocation
-import java.util.Date
+import com.google.firebase.firestore.Exclude
+import java.time.LocalDate
+
 
 /**
- * Purpose: Create  campsite with the needed descriptions that a owner can own or a admin own or edit.
- * @param name : The wanted name CampsiteName.
- * @param location : [CampsiteLocation] object takes String or optional geoPoint
- * @param description
- * @param occupancy
- * @param photo
- * @param tags
- * @param ownerID
- * */
- class Campsite(
+ * Represents a campsite that can be owned by a campsite owner
+ * and managed or edited by an authorized administrator.
+ * Stores the campsite's information, including its location,
+ * capacity, owner, rating, and terms and conditions.
+ *
+ * @param name The unique name of the campsite.
+ * @param location The [CampsiteLocation] object containing the
+ * campsite's address and optional GeoPoint coordinates.
+ * @param description A description of the campsite and its features.
+ * @param occupancy The maximum number of people the campsite can accommodate.
+ * @param photo The URL or reference to the campsite's photo.
+ * @param tags Keywords or categories describing the campsite.
+ * @param ownerID The device ID of the [User] who owns the campsite.
+ * @param rating The campsite's rating, initially set to 0.0.
+ * @param termsAndConditions The rules and conditions for using the campsite.
+ */
+class Campsite(
     val name: String = "",
     val location: CampsiteLocation? = null,
     val description: String = "",
     val occupancy: Int = 0,
     val photo: String = "",
-    val tags : String = "",
-    val ownerID : String = "" // Phone ID for User
- )
+    val tags: String = "",
+    val ownerID: String = "",
+    var rating: Double = 0.0,
+    var termsAndConditions: String = ""
+)
 {
+    @get:Exclude
+    var lottery: Lottery = Lottery()
+    var inLottery: Boolean = false
+    var reservationSet: Boolean = false
+    var bookingSet: Boolean = false
 
+    /**
+     * Updates the campsite's terms and conditions locally.
+     *
+     * @param text The terms and conditions to set.
+     * @return true if the text is valid and updated, false if blank.
+     */
+    fun setTermsAndConditions(text: String): Boolean {
+        if (text.isBlank()) {
+            return false
+        }
 
-
-    public fun RegistrationPeriod(start: Date, end: Date)
-    {
-        TODO("develop logic and date class" )
-
+        termsAndConditions = text
+        return true
     }
-    ///
-    public fun BookingPeriod( )
-    {       TODO("develop logic " )
+
+
+    // true if the start is not after the end
+    private fun startIsBeforeEnd(start: LocalDate, end: LocalDate): Boolean {
+        return !start.isAfter(end)
     }
+
+
+
+    /**
+     * Creates a new lottery for this campsite. Though  after you should use campsite service
+     * to then save this into firebase.This only sets a campsite locally.
+     * @param numWinners how many winners will be drawn, must be at least 1
+     * @param waitlistCapacity the most entrants allowed on the waitlist, 0 means
+     * no limit and it can't be negative
+     * @param otherCampsites names of other campsites to include in this lottery,
+     * pass an empty list if the lottery is only for this campsite
+     * @return true if the lottery was created and saved, false if a number is
+     * invalid, a campsite does not exist, or a campsite is already in a lottery
+     */
+    fun createLottery(
+        numWinners: Int,
+        waitlistCapacity: Int,
+        otherCampsites: List<String>
+    ): Boolean {
+        if (numWinners < 1) {
+            return false
+        }
+
+        if (waitlistCapacity < 0) {
+            return false
+        }
+
+        val ids = mutableListOf(name)
+
+        for (other in otherCampsites) {
+            if (other != name && !ids.contains(other)) {
+                ids.add(other)
+            }
+        }
+
+        lottery = Lottery(
+            id = java.util.UUID.randomUUID().toString(),
+            campsiteIds = ids,
+            numWinners = numWinners,
+            waitlistCapacity = waitlistCapacity
+        )
+
+        inLottery = true
+
+        return true
+    }
+
+
+    /**
+     * Sets the lottery registration period.
+     * This will only update locally but a reservations must be updated by campsiteServices
+     * @param start Registration start date.
+     * @param end Registration end date.
+     * @return true if the dates are valid and updated, false otherwise.
+     */
+
+    fun setReservation(
+        start: LocalDate,
+        end: LocalDate
+    ): Boolean {
+
+        // A lottery must exist first
+        if (!inLottery || lottery.id.isBlank()) {
+            return false
+        }
+
+        // Registration cannot start in the past
+        if (start.isBefore(LocalDate.now())) {
+            return false
+        }
+
+        // Start must be before or equal to end
+        if (!startIsBeforeEnd(start, end)) {
+            return false
+        }
+
+        // Registration must end before or on booking start
+        if (bookingSet && end.isAfter(lottery.period.bookingStart)) {
+            return false
+        }
+
+        lottery.period.registrationStart = start
+        lottery.period.registrationEnd = end
+
+        reservationSet = true
+
+        return true
+    }
+
+
+
+    /**
+     * Sets the booking period for the lottery or the booking period that can be shown
+     * to the user.
+     *
+     * @param start Booking start date.
+     * @param end Booking end date.
+     * @return true if the dates are valid, false otherwise.
+     */
+
+    fun setBookingPeriod(
+        start: LocalDate,
+        end: LocalDate
+    ): Boolean {
+
+        // A lottery must exist first
+        if (!inLottery || lottery.id.isBlank()) {
+            return false
+        }
+
+        // Registration period must already be set
+        if (!reservationSet) {
+            return false
+        }
+
+        // Booking cannot start in the past
+        if (start.isBefore(LocalDate.now())) {
+            return false
+        }
+
+        // Start must be before or equal to end
+        if (!startIsBeforeEnd(start, end)) {
+            return false
+        }
+
+        // Booking cannot start before registration ends
+        if (start.isBefore(lottery.period.registrationEnd)) {
+            return false
+        }
+
+        lottery.period.bookingStart = start
+        lottery.period.bookingEnd = end
+
+        bookingSet = true
+
+        return true
+    }
+
+
 
 
 }

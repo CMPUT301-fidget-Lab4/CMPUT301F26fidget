@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import android.location.Geocoder
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.myapplication.features.User
@@ -14,7 +16,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.myapplication.features.AuthState
+import com.example.myapplication.features.CampsiteLocation
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Assert
+import org.junit.Assume
 import org.junit.runner.RunWith
 
 
