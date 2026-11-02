@@ -1,6 +1,7 @@
 package com.example.myapplication.features
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Lottery(
     var id: String = "",
@@ -24,49 +25,65 @@ data class Lottery(
      * @param user The user joining the lottery.
      * @return true if the entrant was added, false otherwise.
      */
-    fun joinWaitlist(user: User): Boolean {
 
-        // Only entrants can join.
-        if (!user.userType.equals("entrant", ignoreCase = true)) {
+    /**
+     * Adds an entrant to the lottery waitlist.
+     *
+     * Entrants can only join while registration is open.
+     * This function only updates the lottery locally.
+     *
+     * @param user The entrant joining the waitlist.
+     * @param now The current date and time.
+     * @return true if the entrant was added, false otherwise.
+     */
+    fun joinWaitlist(
+        user: User,
+        now: LocalDateTime = LocalDateTime.now()
+    ): Boolean {
+
+        // Only entrants can join
+        if (user.userType != "entrant") {
             return false
         }
 
-        // The user and lottery must have IDs.
-        if (user.deviceID.isBlank() || id.isBlank()) {
+        // Check that the lottery and entrant exist
+        if (id.isBlank() || user.deviceID.isBlank()) {
             return false
         }
 
-        // Registration must be open today.
-        val today = LocalDate.now()
-
-        if (today.isBefore(period.registrationStart) ||
-            today.isAfter(period.registrationEnd)
-        ) {
+        // Registration end must be after registration start
+        if (!period.registrationEnd.isAfter(period.registrationStart)) {
             return false
         }
 
-        // Cannot join after winners have been drawn.
+        // Registration must be open
+        if (!period.registrationIsOpen(now)) {
+            return false
+        }
+
+        // Cannot join after the lottery has been drawn
         if (drawn) {
             return false
         }
 
-        // Prevent duplicate entries.
+        // Prevent duplicate entries
         if (waitlist.contains(user.deviceID) ||
             winners.contains(user.deviceID)
         ) {
             return false
         }
 
-        // Check capacity (0 = unlimited).
+        // Check waitlist capacity (0 means unlimited)
         if (waitlistCapacity > 0 &&
             waitlist.size >= waitlistCapacity
         ) {
             return false
         }
 
-        // Add the entrant locally.
+        // Add entrant to the waitlist
         waitlist = waitlist + user.deviceID
 
         return true
     }
+
 }
