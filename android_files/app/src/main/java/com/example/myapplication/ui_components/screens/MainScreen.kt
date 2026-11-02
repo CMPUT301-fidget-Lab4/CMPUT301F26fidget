@@ -40,7 +40,7 @@ fun MainScreen(
 
             Button(
                 onClick = {
-                    return@Button
+                    navController.navigate("CampsiteList")
                 }
             ) {
                 Text("Search for campsites")
@@ -74,6 +74,17 @@ fun MainScreen(
                 }
             ) {
                 Text("View Messages")
+            }
+
+            if (userProfile.userType == "campsite owner") {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { navController.navigate("MyCampsiteList") },
+                    modifier = Modifier.testTag("viewMyCampsites")
+                ) {
+                    Text("View my campsites")
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
