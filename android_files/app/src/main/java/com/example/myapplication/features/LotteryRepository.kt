@@ -142,7 +142,6 @@ class LotteryRepository {
      * @param lottery The lottery being saved.
      * @return Task indicating whether all changes succeeded.
      */
-
     fun saveLottery(
         campsiteName: String,
         lottery: Lottery
@@ -216,7 +215,8 @@ class LotteryRepository {
 
 
 
-
+    // Might not be needed because loading in campsites already loads in all the lotteries
+    // because each campsite has a lottery.
     /**
      * Gets a lottery from Firestore using a campsite name.
      *

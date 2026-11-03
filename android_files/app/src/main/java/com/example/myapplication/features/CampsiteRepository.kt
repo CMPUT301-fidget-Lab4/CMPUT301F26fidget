@@ -22,7 +22,10 @@ class CampsiteRepository {
         "bookingSet"
     )
     private val campsiteRef = db.collection("campsites")
+
+    // Change the list of campsites to a hash map to make lookup faster then looping
     private val _campsites = mutableStateListOf<Campsite>()
+
 
     val campsites : List<Campsite>
         get() = _campsites

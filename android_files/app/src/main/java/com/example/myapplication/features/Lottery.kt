@@ -30,8 +30,8 @@ data class Lottery(
         now: LocalDateTime = LocalDateTime.now()
     ): Boolean {
 
-        // Only entrants can join
-        if (user.userType != "entrant") {
+        // Only entrants can join or admins can join
+        if (user.userType  != "entrant" && user.userType != "admin") {
             return false
         }
 
@@ -139,6 +139,8 @@ data class Lottery(
         return drawn &&
                 user.deviceID.isNotBlank() &&
                 winners.contains(user.deviceID)
+        //TODO(" Then attach notificaiton function later in the future")
+        //TODo("Figure a way for the firebase to automatically draw a user")
     }
 
 
