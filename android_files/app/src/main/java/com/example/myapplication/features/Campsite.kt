@@ -134,7 +134,6 @@ class Campsite(
      * @param end Registration end date.
      * @return true if the dates are valid and updated, false otherwise.
      */
-
     fun setReservation(
         start: LocalDateTime,
         end: LocalDateTime
