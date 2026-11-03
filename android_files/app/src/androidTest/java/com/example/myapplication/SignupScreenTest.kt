@@ -1,54 +1,57 @@
 package com.example.myapplication
 
-import android.annotation.SuppressLint
-import android.provider.Settings.Secure
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import com.example.myapplication.features.MainActivity
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
-import org.junit.After
+import com.example.myapplication.features.AuthState
+import com.example.myapplication.features.User
+import com.example.myapplication.ui_components.CampsiteApp
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
+
+/**
+ * Tests sign up screen correctly handles valid and invalid sign up input.
+ *
+ * Verifies empty fields blocks account creation and proper input fields allows the user to
+ * create an account. Uses a test double Campsite App instance.
+ */
 @RunWith(AndroidJUnit4::class)
 class SignupScreenTest {
 
     @get:Rule
-    val composeTestRule = createEmptyComposeRule()
+    val composeTestRule = createComposeRule()
 
-    @SuppressLint("HardwareIds")
-    private val currentDeviceID: String = Secure.getString(
-        InstrumentationRegistry.getInstrumentation().targetContext.contentResolver,
-        Secure.ANDROID_ID
-    )
+    private val authFlow = MutableStateFlow<AuthState>(AuthState.NotRegistered)
 
-    private lateinit var scenario: ActivityScenario<MainActivity>
+    private var currentUser by mutableStateOf<User?>(null)
 
-    // TODO: temporary - remove once tests no longer hit the real database
-    private fun deleteCurrentDeviceUser() {
-        Tasks.await(Firebase.firestore.collection("users").document(currentDeviceID).delete())
-    }
 
+    /**
+     * Test double Campsite App instance set up. Runs before every test function.
+     */
     @Before
     fun setUp() {
-        deleteCurrentDeviceUser()
-        scenario = ActivityScenario.launch(MainActivity::class.java)
-    }
-
-    @After
-    fun tearDown() {
-        scenario.close()
-        deleteCurrentDeviceUser()
+        composeTestRule.setContent {
+            CampsiteApp(
+                user = currentUser,
+                onUpdateUser = { _, _ -> },
+                authState = authFlow,
+                onAddUser = { newUser -> currentUser = newUser},
+                onDeleteUser = { _ -> },
+                findUser = { _ -> User() },
+                getAndroidId = { _ -> "" },
+            )
+        }
     }
 
     /**
