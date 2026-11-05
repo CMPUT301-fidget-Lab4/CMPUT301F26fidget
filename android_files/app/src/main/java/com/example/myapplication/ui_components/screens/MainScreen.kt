@@ -16,6 +16,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.features.User
 
+/**
+ * Main screen is where the User can navigate to the major features of the app.
+ *
+ * @param navController
+ * @param userProfile The current user's [User] object.
+ */
 @Composable
 fun MainScreen(
     navController: NavController,
@@ -33,7 +39,8 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { },
+                onClick = { navController.navigate("CampsiteList")
+                },
                 modifier = Modifier.testTag("campsiteSearch")
             ) {
                 Text("Search for campsites")
@@ -49,6 +56,57 @@ fun MainScreen(
                 ) {
                     Text("View Profiles")
                 }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    return@Button
+                }
+            ) {
+                Text("View Lottery Information")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    return@Button
+                }
+            ) {
+                Text("View Reservation Dates")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    return@Button
+                }
+            ) {
+                Text("View Messages")
+            }
+
+            if (userProfile.userType == "campsite owner") {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { navController.navigate("MyCampsiteList") },
+                    modifier = Modifier.testTag("viewMyCampsites")
+                ) {
+                    Text("View my campsites")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    navController.navigate("ProfileScreen")
+                },
+                modifier = Modifier.testTag("ProfileScreen")
+            ) {
+                Text("Profile")
             }
         }
     }

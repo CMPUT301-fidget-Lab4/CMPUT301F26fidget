@@ -1,6 +1,7 @@
 package com.example.myapplication.features
 
 import android.location.Geocoder
+import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.GeoPoint
 import java.io.IOException
 import java.util.Locale
@@ -12,34 +13,38 @@ import java.util.Locale
  * Citation: For implementation https://stackoverflow.com/questions/63030562/convert-address-to-geo-coordinates-in-android
  *
  */
-
 class CampsiteLocation(
     var address: String = "",
     var geoPoint: GeoPoint? = null
-)
-{
+) {
 
-    fun addressExists(address: String): Boolean {
-        return try {
+    // Not saved to Firestore
+    @get:Exclude
+    var isValid: Boolean = false
+
+    /**
+     * Looks up the address and fills in the geoPoint.
+     * Call this when the owner enters an address, not when loading from Firestore.
+     *
+     * @return true if the address was found, false if not
+     */
+    fun lookUpAddress(): Boolean {
+        try {
             val geocoder = Geocoder(MyApplication.instance, Locale.ENGLISH)
-
             val matches = geocoder.getFromLocationName(address, 1)
-            if (matches == null) {
-                false
-            } else if (matches.isEmpty()) {
-                false
-            } else {
-                val match = matches[0]
-                // Store the founded value
-                geoPoint = GeoPoint(match.latitude, match.longitude)
-                true
+
+            if (matches == null || matches.isEmpty()) {
+                isValid = false
+                return false
             }
 
-        } catch (_: IOException) {
-            false
+            val match = matches[0]
+            geoPoint = GeoPoint(match.latitude, match.longitude)
+            isValid = true
+            return true
+        } catch (e: IOException) {
+            isValid = false
+            return false
         }
     }
-
-    val  isValid  = addressExists(address )
-
 }

@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
 
         @SuppressLint("HardwareIds")
         val currentDeviceID: String = Secure.getString(this.contentResolver, Secure.ANDROID_ID)
-
+        val campsiteRepository = CampsiteRepository()
         val userRepository = UserRepository(currentDeviceID)
 
         setContent {
