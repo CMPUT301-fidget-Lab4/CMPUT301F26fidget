@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.features.AuthState
 import com.example.myapplication.features.User
+import com.example.myapplication.ui_components.screens.AdminProfilesView
 import com.example.myapplication.ui_components.screens.HomeScreen
 import com.example.myapplication.ui_components.screens.MainScreen
 import com.example.myapplication.ui_components.screens.ProfileScreen
@@ -19,6 +20,7 @@ import com.example.myapplication.ui_components.screens.RegisterCampsiteScreen
 @Composable
 fun CampsiteApp(
     user: User?,
+    users: List<User>,
     onAddUser: (User) -> Unit,
     onDeleteUser: (User) -> Unit,
     onUpdateUser: (User, User) -> Unit,
@@ -36,6 +38,7 @@ fun CampsiteApp(
         composable("HomeScreen") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
+        composable("AdminProfilesView") { AdminProfilesView(navController, users) }
         composable("ProfileScreen") { ProfileScreen(navController, user, onUpdateUser, onDeleteUser) }
         composable("CampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = false) }
         composable("MyCampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = true) }
