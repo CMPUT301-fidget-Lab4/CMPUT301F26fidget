@@ -21,10 +21,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-               // LotteryManualTest()
-
                 CampsiteApp(
                     user = userRepository.currentUser,
+                    users = userRepository.users,
                     onAddUser = userRepository::addUser,
                     onDeleteUser = userRepository::deleteUser,
                     onUpdateUser = userRepository::updateUser,

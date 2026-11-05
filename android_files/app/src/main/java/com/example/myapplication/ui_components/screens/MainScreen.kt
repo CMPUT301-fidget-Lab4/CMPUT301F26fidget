@@ -39,13 +39,24 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    navController.navigate("CampsiteList")
-                }
+                onClick = { navController.navigate("CampsiteList")
+                },
+                modifier = Modifier.testTag("campsiteSearch")
             ) {
                 Text("Search for campsites")
             }
 
+            if (userProfile.userType == "admin") {
+
+                Button(
+                    onClick = {
+                        navController.navigate("AdminProfilesView")
+                    },
+                    modifier = Modifier.testTag("adminProfileBrowse")
+                ) {
+                    Text("View Profiles")
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
