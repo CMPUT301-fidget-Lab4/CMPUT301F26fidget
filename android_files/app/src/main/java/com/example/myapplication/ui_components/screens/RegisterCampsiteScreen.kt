@@ -187,7 +187,7 @@ private fun RegisterCampsiteForm(
 
                     scope.launch {
                         val newLocation = withContext(Dispatchers.IO) {
-                            CampsiteLocation(newAddress)
+                            CampsiteLocation(newAddress).also { it.lookUpAddress() }
                         }
 
                         if (!newLocation.isValid) {
