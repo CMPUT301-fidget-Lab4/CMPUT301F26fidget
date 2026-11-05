@@ -23,18 +23,18 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                // LotteryManualTest()
 
-//                CampsiteApp(
-//                    user = userRepository.currentUser,
-//                    onAddUser = userRepository::addUser,
-//                    onDeleteUser = userRepository::deleteUser,
-//                    onUpdateUser = userRepository::updateUser,
-//                    findUser = userRepository::findUser,
-//                    getAndroidId = userRepository::getDeviceID,
-//                    authState = userRepository.authState,
-//                    campsites = campsiteRepository.campsites,
-//                    findCampsite = campsiteRepository::findCampsite,
-//                    onAddCampsite = campsiteRepository::addCampsite
-//                )
+                CampsiteApp(
+                    user = userRepository.currentUser,
+                    onAddUser = userRepository::addUser,
+                    onDeleteUser = userRepository::deleteUser,
+                    onUpdateUser = userRepository::updateUser,
+                    findUser = userRepository::findUser,
+                    getAndroidId = userRepository::getDeviceID,
+                    authState = userRepository.authState,
+                    campsites = campsiteRepository.campsites,
+                    findCampsite = campsiteRepository::findCampsite,
+                    onAddCampsite = campsiteRepository::addCampsite
+                )
             }
         }
     }
