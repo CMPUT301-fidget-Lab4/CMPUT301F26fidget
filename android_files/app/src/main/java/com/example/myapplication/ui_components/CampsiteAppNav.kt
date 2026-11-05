@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import com.example.myapplication.features.Campsite
 import com.example.myapplication.ui_components.screens.CampsiteListScreen
 import com.example.myapplication.ui_components.screens.RegisterCampsiteScreen
+import com.example.myapplication.ui_components.screens.CampsiteDetailsScreen
 
 @Composable
 fun CampsiteApp(
@@ -43,5 +44,9 @@ fun CampsiteApp(
         composable("CampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = false) }
         composable("MyCampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = true) }
         composable("RegisterCampsite") { RegisterCampsiteScreen(navController, user, onAddCampsite, findCampsite) }
+        composable("CampsiteDetails/{campsiteName}") { backStackEntry ->
+            val campsiteName = backStackEntry.arguments?.getString("campsiteName") ?: ""
+            CampsiteDetailsScreen(navController, campsiteName, findCampsite)
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.myapplication.ui_components.screens
 
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -61,8 +63,11 @@ fun CampsiteListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(shownCampsites) { campsite ->
-                // TODO: open the campsite details screen when it exists
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth().clickable {
+                    navController.navigate("CampsiteDetails/${Uri.encode(campsite.name)}") }
+                    .testTag("campsiteRow_${campsite.name}") // for testing
+                ) {
+
                     Text(campsite.name)
                     Text("Capacity ${campsite.occupancy}")
                 }
