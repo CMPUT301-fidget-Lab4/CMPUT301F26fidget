@@ -30,7 +30,8 @@ fun AdminProfilesView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().testTag("adminProfilesList")
+            modifier = Modifier.fillMaxWidth().weight(1f).testTag("adminProfilesList")
+
         ) {
             itemsIndexed(users) { index, user ->
                 ProfileRow(user = user)
