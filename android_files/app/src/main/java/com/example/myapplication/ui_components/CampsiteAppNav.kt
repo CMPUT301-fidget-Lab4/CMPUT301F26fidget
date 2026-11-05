@@ -32,6 +32,6 @@ fun CampsiteApp(
         composable("home") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
-        composable("AdminProfilesView") { AdminProfilesView(navController, users) }
+        composable("AdminProfilesView") { AdminProfilesView(navController, users, onDeleteUser) }
     }
 }
