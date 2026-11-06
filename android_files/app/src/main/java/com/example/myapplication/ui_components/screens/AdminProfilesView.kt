@@ -23,15 +23,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 
 @Composable
 fun AdminProfilesView(
     navController: NavController,
     users: List<User>,
-    onDelete: (User) -> Unit
+    onDeleteUser: (User) -> Unit
 ){
+
+    var userToDelete by remember { mutableStateOf<User?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +55,7 @@ fun AdminProfilesView(
 
         ) {
             itemsIndexed(users) { index, user ->
-                ProfileRow(user = user, onDelete)
+                ProfileRow(user = user, onDeleteClick = { userToDelete = user})
 
                 if (index < users.lastIndex) {
                         HorizontalDivider()
@@ -64,12 +72,40 @@ fun AdminProfilesView(
             Text("Back to Main Screen")
         }
     }
+
+    if (userToDelete != null) {
+
+        AlertDialog(
+            onDismissRequest = { userToDelete = null },
+            title = { Text("Delete Profile?") },
+            text = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteUser(userToDelete!!)
+                        userToDelete = null
+                    },
+                    modifier = Modifier.testTag("confirmUserDelete")
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { userToDelete = null },
+                    modifier = Modifier.testTag("cancelUserDelete")
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun ProfileRow(
     user: User,
-    onDelete: (User) -> Unit
+    onDeleteClick: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -82,7 +118,7 @@ fun ProfileRow(
         }
 
         IconButton(
-            onClick = { onDelete(user) },
+            onClick = { onDeleteClick() },
             modifier = Modifier.testTag("${user.deviceID} delete")
         ) {
             Icon(
