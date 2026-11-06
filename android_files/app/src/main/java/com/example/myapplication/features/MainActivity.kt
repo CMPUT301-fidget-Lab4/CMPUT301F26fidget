@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.myapplication.ui_components.theme.MyApplicationTheme
 import com.example.myapplication.ui_components.CampsiteApp
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,9 +22,16 @@ class MainActivity : ComponentActivity() {
         val scheduleRepository = BookingScheduleRepository()
         val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
+        val lotteryRepository = LotteryRepository()
 
         setContent {
             MyApplicationTheme {
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        lotteryRepository.drawClosedLotteries()
+                        delay(60_000)   // check once a minute
+                    }
+                }
                 CampsiteApp(
                     user = userRepository.currentUser,
                     users = userRepository.users,
