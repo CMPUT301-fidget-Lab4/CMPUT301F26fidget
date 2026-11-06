@@ -1,6 +1,7 @@
 package com.example.myapplication.features
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import com.example.myapplication.features.Campsite
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -26,9 +27,14 @@ class CampsiteRepository {
     // Change the list of campsites to a hash map to make lookup faster then looping
     private val _campsites = mutableStateListOf<Campsite>()
 
+    private val _campsitesMap = mutableStateMapOf<String, Campsite>()
+
 
     val campsites : List<Campsite>
         get() = _campsites
+
+    val campsitesMap: Map<String, Campsite>
+        get() = _campsitesMap
 
     init {
         campsiteRef.addSnapshotListener { snapshot, error ->
@@ -37,11 +43,13 @@ class CampsiteRepository {
             }
 
             _campsites.clear()
+            _campsitesMap.clear()
 
             snapshot?.documents?.forEach { document ->
                 val campsite = document.toObject(Campsite::class.java)
                 if (campsite!= null){
                     _campsites.add(campsite)
+                    _campsitesMap[document.id] = campsite
                 }
 
             }
@@ -136,8 +144,8 @@ class CampsiteRepository {
     }
 
     fun deleteCampsitesByOwner(ownerID: String) {
-        campsites.filter { it.ownerID == ownerID }
-            .forEach { deleteCampsite(it) }
+        campsitesMap.values.filter { it.ownerID == ownerID }
+            .forEach(::deleteCampsite)
     }
 
 
