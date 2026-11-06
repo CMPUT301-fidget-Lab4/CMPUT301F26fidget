@@ -81,7 +81,9 @@ fun ProfileRow(
             Text("Phone: ${user.phoneNumber}")
         }
 
-        IconButton(onClick = { onDelete(user) }
+        IconButton(
+            onClick = { onDelete(user) },
+            modifier = Modifier.testTag("${user.deviceID} delete")
         ) {
             Icon(
                 imageVector = Icons.Default.Delete,
