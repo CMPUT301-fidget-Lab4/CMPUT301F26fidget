@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     findUser = userRepository::findUser,
                     getAndroidId = userRepository::getDeviceID,
                     authState = userRepository.authState,
-                    campsites = campsiteRepository.campsites,
+                    campsites = campsiteRepository.campsitesMap,
                     findCampsite = campsiteRepository::findCampsite,
                     onAddCampsite = campsiteRepository::addCampsite,
                     reservationRepository = reservationRepository,
