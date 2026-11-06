@@ -95,6 +95,8 @@ private fun RegisterCampsiteForm(
     var name by remember { mutableStateOf("") }
     var addressNumber by remember { mutableStateOf("") }
     var streetName by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var province by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var occupancy by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
@@ -151,6 +153,33 @@ private fun RegisterCampsiteForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = city,
+                onValueChange = { city = it },
+                label = { Text("City") },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("registerCampsiteCity")
+            )
+
+            OutlinedTextField(
+                value = province,
+                onValueChange = { province = it },
+                label = { Text("Province") },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("registerCampsiteProvince")
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
@@ -191,12 +220,15 @@ private fun RegisterCampsiteForm(
                 val newName = name.trim()
                 val newAddressNumber = addressNumber.trim()
                 val newStreetName = streetName.trim()
-                val newAddress = "$newAddressNumber $newStreetName"
+                val newCity = city.trim()
+                val newProvince = province.trim()
+                val newAddress = "$newAddressNumber $newStreetName, $newCity, $newProvince"
                 val newDescription = description.trim()
                 val newOccupancy = occupancy.trim().toIntOrNull()
 
-                if (newName.isEmpty() || newAddressNumber.isEmpty() || newStreetName.isEmpty() || newDescription.isEmpty()) {
-                    errorMessage = "Fill in the name, address and description"
+                if (newName.isEmpty() || newAddressNumber.isEmpty() || newStreetName.isEmpty() ||
+                    newCity.isEmpty() || newProvince.isEmpty() || newDescription.isEmpty()) {
+                    errorMessage = "Fill in the name, address, city, province and description"
                 } else if (newName.contains("/")) {
                     // name is used as the Firestore document ID, cant contain "/"
                     errorMessage = "The name cannot contain a /"

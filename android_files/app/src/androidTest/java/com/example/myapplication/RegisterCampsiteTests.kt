@@ -63,10 +63,15 @@ class RegisterCampsiteTests {
             .performTextInput(text)
     }
 
-    private fun fillForm(name: String, addressNumber: String, streetName: String, description: String, occupancy: String) {
+    private fun fillForm(
+        name: String, addressNumber: String, streetName: String,
+        city: String, province: String, description: String, occupancy: String
+    ) {
         enterText("registerCampsiteName", name)
         enterText("registerCampsiteAddressNumber", addressNumber)
         enterText("registerCampsiteStreetName", streetName)
+        enterText("registerCampsiteCity", city)
+        enterText("registerCampsiteProvince", province)
         enterText("registerCampsiteDescription", description)
         enterText("registerCampsiteOccupancy", occupancy)
     }
@@ -137,7 +142,7 @@ class RegisterCampsiteTests {
     fun occupancyNotANumber_Test() {
         showScreen(owner)
 
-        fillForm("New Camp", "100", "Banff Avenue", "Fire pit", "abc")
+        fillForm("New Camp", "100", "Banff Avenue", "Banff", "AB","Fire pit", "abc")
         pressRegister()
 
         assertError("Maximum occupancy must be a positive number")
@@ -150,7 +155,7 @@ class RegisterCampsiteTests {
     fun occupancyZero_Test() {
         showScreen(owner)
 
-        fillForm("New Camp", "100", "Banff Avenue", "Fire pit", "0")
+        fillForm("New Camp", "100", "Banff Avenue", "Banff", "AB","Fire pit", "0")
         pressRegister()
 
         assertError("Maximum occupancy must be a positive number")
@@ -164,7 +169,7 @@ class RegisterCampsiteTests {
     fun nameWithSlash_Test() {
         showScreen(owner)
 
-        fillForm("Pine/Ridge", "100", "Banff Avenue", "Fire pit", "6")
+        fillForm("Pine/Ridge", "100", "Banff Avenue", "Banff", "AB","Fire pit", "6")
         pressRegister()
 
         assertError("The name cannot contain a /")
@@ -177,7 +182,7 @@ class RegisterCampsiteTests {
     fun duplicateName_Test() {
         showScreen(owner)
 
-        fillForm("Pine Ridge", "100", "Banff Avenue", "Fire pit", "6")
+        fillForm("Pine Ridge", "100", "Banff Avenue", "Banff", "AB","Fire pit", "6")
         pressRegister()
 
         assertError("A campsite with that name already exists")
