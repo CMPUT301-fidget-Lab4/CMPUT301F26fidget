@@ -55,6 +55,7 @@ class CampsiteDetailsTests {
             CampsiteDetailsScreen(
                 navController = rememberNavController(),
                 campsiteName = "Pine Ridge",
+                userProfile = null,
                 findCampsite = { campsite }
             )
         }
