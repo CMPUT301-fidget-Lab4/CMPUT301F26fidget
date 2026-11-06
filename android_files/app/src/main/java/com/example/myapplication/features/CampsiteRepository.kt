@@ -116,6 +116,11 @@ class CampsiteRepository {
         campsiteRef.document(campsite.name).delete()
     }
 
+    fun deleteCampsitesByOwner(ownerID: String) {
+        campsites.filter { it.ownerID == ownerID }
+            .forEach { deleteCampsite(it) }
+    }
+
 
     /**
      * Why don't you ues a hashmap? It would make search way faster
