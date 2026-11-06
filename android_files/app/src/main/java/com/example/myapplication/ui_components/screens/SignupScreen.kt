@@ -60,6 +60,8 @@ fun Signup(
 
         val userDeviceID: String = getAndroidId(userContext)
 
+        Text("Sign Up")
+
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp)){
 
             Button(
