@@ -168,8 +168,6 @@ class LotteryRepository {
             "drawn" to lottery.drawn,
             "registrationStart" to lottery.period.registrationStart.toString(),
             "registrationEnd" to lottery.period.registrationEnd.toString(),
-            "bookingStart" to lottery.period.bookingStart.toString(),
-            "bookingEnd" to lottery.period.bookingEnd.toString(),
             // Used to automatically trigger the lottery draw.
             "registrationEndAt" to closingTime
         )
@@ -244,11 +242,9 @@ class LotteryRepository {
                 }
 
                 try {
-                    val period = Reservation(
+                    val period = Registration(
                         registrationStart = readDate(doc, "registrationStart"),
                         registrationEnd = readDate(doc, "registrationEnd"),
-                        bookingStart = readDate(doc, "bookingStart"),
-                        bookingEnd = readDate(doc, "bookingEnd")
                     )
 
                     val lottery = Lottery(

@@ -37,7 +37,11 @@ class Campsite(
 {
     @get:Exclude
     var lotteryCollection: Collection<Lottery>? = null
+
+    @get:Exclude
     var bookingSchedules: MutableList<BookingSchedule<*>>? = null
+
+    var inLottery: Boolean = false
 
 
 //
