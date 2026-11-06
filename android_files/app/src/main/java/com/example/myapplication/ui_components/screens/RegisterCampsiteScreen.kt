@@ -191,7 +191,8 @@ private fun RegisterCampsiteForm(
                         }
 
                         if (!newLocation.isValid) {
-                            errorMessage = "Could not find that address"
+                            errorMessage = "Could not find that address. Enter a full street address," +
+                                    "e.g 20922 62 Ave NW"
                             isSaving = false
                         } else {
                             val newCampsite = Campsite(
