@@ -14,9 +14,11 @@ import com.example.myapplication.ui_components.screens.ProfileScreen
 import com.example.myapplication.ui_components.screens.Signup
 import kotlinx.coroutines.flow.StateFlow
 import com.example.myapplication.features.Campsite
+import com.example.myapplication.features.CampsiteLocation
 import com.example.myapplication.ui_components.screens.CampsiteListScreen
 import com.example.myapplication.ui_components.screens.RegisterCampsiteScreen
 import com.example.myapplication.ui_components.screens.CampsiteDetailsScreen
+import com.example.myapplication.ui_components.screens.EditCampsiteScreen
 
 @Composable
 fun CampsiteApp(
@@ -30,7 +32,8 @@ fun CampsiteApp(
     authState: StateFlow<AuthState>,
     campsites: List<Campsite> = emptyList(),
     findCampsite: (String) -> Campsite? = { null },
-    onAddCampsite: (Campsite) -> Unit = {}
+    onAddCampsite: (Campsite) -> Unit = {},
+    onUpdateCampsite: (String, CampsiteLocation, String, Int, String) -> Unit = { _, _, _, _, _ -> }
 ) {
 
     val navController = rememberNavController()
@@ -44,9 +47,14 @@ fun CampsiteApp(
         composable("CampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = false) }
         composable("MyCampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = true) }
         composable("RegisterCampsite") { RegisterCampsiteScreen(navController, user, onAddCampsite, findCampsite) }
+        composable("EditCampsite/{name}") { backStackEntry ->
+            val name = backStackEntry.arguments?.getString("name") ?: ""
+            EditCampsiteScreen(navController, user, findCampsite(name), onUpdateCampsite)
+        }
         composable("CampsiteDetails/{campsiteName}") { backStackEntry ->
             val campsiteName = backStackEntry.arguments?.getString("campsiteName") ?: ""
-            CampsiteDetailsScreen(navController, campsiteName, findCampsite)
+            CampsiteDetailsScreen(navController, campsiteName, user, findCampsite)
+        }
+
         }
     }
-}

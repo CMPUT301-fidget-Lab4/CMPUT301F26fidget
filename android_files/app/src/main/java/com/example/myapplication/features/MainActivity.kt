@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
                         campsiteRepository.deleteCampsitesByOwner(user.deviceID)
                         userRepository.deleteUser(user)
                     },
+                    onUpdateCampsite = campsiteRepository::updateCampsiteDetails,
                     onUpdateUser = userRepository::updateUser,
                     findUser = userRepository::findUser,
                     getAndroidId = userRepository::getDeviceID,

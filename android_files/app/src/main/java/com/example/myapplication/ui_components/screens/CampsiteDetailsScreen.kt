@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.features.Campsite
+import com.example.myapplication.features.User
 
 /**
  * CampsiteDetailsScreen shows the details of one campsite.
@@ -39,7 +40,8 @@ import com.example.myapplication.features.Campsite
  * (for example a new rating) show up without reopening the screen. If no campsite has that name,
  * for example because it was removed, a "Campsite not found" message is shown instead.
  *
- * Joining the lottery and the owner's Edit button have not been implemented on this screen yet.
+ * Joining the lottery has not been implemented yet. The owner of the campsite sees an Edit button
+ * that opens [EditCampsiteScreen]
  *
  * @param navController
  * @param campsiteName The name of the campsite to show, which is also its Firestore document ID.
@@ -49,6 +51,7 @@ import com.example.myapplication.features.Campsite
 fun CampsiteDetailsScreen(
     navController: NavController,
     campsiteName: String,
+    userProfile: User?,
     findCampsite: (String) -> Campsite?
 ) {
     val campsite = findCampsite(campsiteName)
@@ -68,6 +71,17 @@ fun CampsiteDetailsScreen(
             )
         } else {
             CampsiteDetails(campsite)
+
+
+            if (userProfile?.deviceID == campsite.ownerID) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { navController.navigate("EditCampsite/${campsite.name}") },
+                    modifier = Modifier.testTag("editCampsiteButton")
+                ) {
+                    Text("Edit Campsite")
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
