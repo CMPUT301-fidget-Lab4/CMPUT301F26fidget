@@ -48,6 +48,8 @@ fun MainScreen(
 
             if (userProfile.userType == "admin") {
 
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Button(
                     onClick = {
                         navController.navigate("AdminProfilesView")
