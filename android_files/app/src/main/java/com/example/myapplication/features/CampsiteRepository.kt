@@ -1,5 +1,6 @@
 package com.example.myapplication.features
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import com.example.myapplication.features.Campsite
 import com.google.firebase.Firebase
@@ -17,16 +18,23 @@ class CampsiteRepository {
         "photo",
         "tags",
         "rating",
-        "termsAndConditions"
+        "inLottery",
+        "reservationSet",
+        "bookingSet"
     )
     private val campsiteRef = db.collection("campsites")
 
-    // The key is the campsite name (which is also the document id), the value is the campsite.
-    // Looking up a campsite by name is now one step instead of looping through a list.
-    private val _campsites = mutableStateMapOf<String, Campsite>()
+    // Change the list of campsites to a hash map to make lookup faster then looping
+    private val _campsites = mutableStateListOf<Campsite>()
 
-    val campsites : Map<String, Campsite>
+    private val _campsitesMap = mutableStateMapOf<String, Campsite>()
+
+
+    val campsites : List<Campsite>
         get() = _campsites
+
+    val campsitesMap: Map<String, Campsite>
+        get() = _campsitesMap
 
     init {
         campsiteRef.addSnapshotListener { snapshot, error ->
@@ -35,19 +43,18 @@ class CampsiteRepository {
             }
 
             _campsites.clear()
+            _campsitesMap.clear()
 
             snapshot?.documents?.forEach { document ->
                 val campsite = document.toObject(Campsite::class.java)
                 if (campsite!= null){
-                    _campsites[campsite.name] = campsite
+                    _campsites.add(campsite)
+                    _campsitesMap[document.id] = campsite
                 }
 
             }
         }
     }
-
-
-
 
     fun addCampsite(campsite: Campsite): Boolean {
         if (campsite.name.isBlank()) {
@@ -74,21 +81,21 @@ class CampsiteRepository {
     /**
      * Checks if a campsite exists.
      *
-     * This looks in the campsites already loaded from Firestore, it does not
+     * This looks through the campsites already loaded from Firestore, it does not
      * make a new request to the database.
      *
      * @param campsiteName the name of the campsite, which is also its document id
      * @return true if a campsite with that name exists, false if not
      */
     fun campsiteExists(campsiteName: String): Boolean {
-        return _campsites.containsKey(campsiteName)
+        return findCampsite(campsiteName) != null
     }
 
     /**
      * Changes one field of a campsite in Firestore.
      *
      * Only the field you name is changed, every other field stays the same. The
-     * campsites map updates by itself once Firestore finishes saving.
+     * campsites list updates by itself once Firestore finishes saving.
      *
      * The name can't be changed with this function because it is the document id.
      * Use [updateCampsite] to rename a campsite.
@@ -113,38 +120,78 @@ class CampsiteRepository {
         return true
     }
 
-    /**
-     * Updates a campsite's terms and conditions in Firestore.
-     *
-     * Only the termsAndConditions field is changed, every other field stays the
-     * same. The campsites map updates by itself once Firestore finishes saving.
-     *
-     * @param campsiteName the name of the campsite, which is also its document id
-     * @param text the terms and conditions to set
-     * @return true if the update was sent, false if the text is blank or the
-     * campsite does not exist
-     */
-    fun setTermsAndConditions(campsiteName: String, text: String): Boolean {
-        if (text.isBlank()) {
-            return false   // can't set empty terms
-        }
-        return updateCampsiteField(campsiteName, "termsAndConditions", text)
+    fun updateCampsiteDetails(
+        campsiteName: String,
+        location: CampsiteLocation,
+        description: String,
+        occupancy: Int,
+        tags: String
+    ): Boolean {
+        if (!campsiteExists(campsiteName)) return false
+        campsiteRef.document(campsiteName).update(
+            mapOf(
+                "location" to location,
+                "description" to description,
+                "occupancy" to occupancy,
+                "tags" to tags
+            )
+        )
+        return true
     }
 
     fun deleteCampsite(campsite: Campsite){
         campsiteRef.document(campsite.name).delete()
     }
 
+    fun deleteCampsitesByOwner(ownerID: String) {
+        campsitesMap.values.filter { it.ownerID == ownerID }
+            .forEach(::deleteCampsite)
+    }
+
 
     /**
-     * Finds a campsite by name.
+     * Why don't you ues a hashmap? It would make search way faster
+     * */
+    fun findCampsite(campsiteName : String) : Campsite?{
+        campsites.forEach { campsite ->
+            if(campsite.name == campsiteName) {
+                return campsite
+            }
+        }
+        return null
+    }
+    /**
+     * Checks if any campsite in the list is already in a lottery.
      *
-     * This uses the map, so it does not loop through every campsite.
+     * @param names the campsite names to check
+     * @return true if at least one of them is in a lottery, false if none are
+     */
+    fun anyInLottery(names: List<String>): Boolean {
+        for (name in names) {
+            if (!campsiteExists(name)) {
+                return true   // doesn't exist
+            }
+            if (isInLottery(name)) {
+                return true   // already in a lottery
+            }
+        }
+        return false
+    }
+    /**
+     * Checks if a campsite is already in a lottery.
+     *
+     * This looks at the inLottery flag of the campsites already loaded from
+     * Firestore, it does not make a new request to the database.
      *
      * @param campsiteName the name of the campsite, which is also its document id
-     * @return the campsite, or null if there is no campsite with that name
+     * @return true if the campsite exists and is in a lottery, false if it is not
+     * in a lottery or does not exist
      */
-    fun findCampsite(campsiteName : String) : Campsite?{
-        return _campsites[campsiteName]
+    fun isInLottery(campsiteName: String): Boolean {
+        val campsite = findCampsite(campsiteName)
+        if (campsite == null) {
+            return false
+        }
+        return campsite.inLottery
     }
 }

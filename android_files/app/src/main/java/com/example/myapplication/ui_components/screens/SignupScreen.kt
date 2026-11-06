@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.example.myapplication.features.User
@@ -50,6 +52,9 @@ fun Signup(
     var userEmail by remember { mutableStateOf("") }
     var userType by remember { mutableStateOf("") }
     var incompleteEntry by remember { mutableStateOf(false) }
+    var isCampsiteOwnerClicked by remember { mutableStateOf(false) }
+    var isEntrantClicked by remember { mutableStateOf(false) }
+    var isAdminClicked by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -67,7 +72,11 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "entrant"
+                    isCampsiteOwnerClicked = false
+                    isEntrantClicked = true
+                    isAdminClicked = false
                 },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isEntrantClicked) Color.DarkGray else Color.Unspecified),
                 modifier = Modifier.testTag("entrantButton") // for testing
             ) {
                 Text("Entrant")
@@ -79,7 +88,11 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "campsite owner"
+                    isCampsiteOwnerClicked = true
+                    isEntrantClicked = false
+                    isAdminClicked = false
                 },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isCampsiteOwnerClicked) Color.DarkGray else Color.Unspecified),
                 modifier = Modifier.testTag("campsiteOwnerButton") // for testing
             ) {
                 Text("Campsite Owner")
@@ -90,7 +103,11 @@ fun Signup(
             Button(
                 onClick = {
                     userType = "admin"
+                    isCampsiteOwnerClicked = false
+                    isEntrantClicked = false
+                    isAdminClicked = true
                 },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isAdminClicked) Color.DarkGray else Color.Unspecified),
                 modifier = Modifier.testTag("adminButton") // for testing
             ) {
                 Text("Admin")

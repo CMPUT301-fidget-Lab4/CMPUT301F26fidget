@@ -46,7 +46,28 @@ fun MainScreen(
                 Text("Search for campsites")
             }
 
+
+            // Only admins and campsite owners can access Create Lottery
+            if (
+                userProfile.userType == "admin" ||
+                userProfile.userType == "campsite owner"
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        navController.navigate("CreateLotteryScreen")
+                    },
+                    modifier = Modifier.testTag("createLotteryButton")
+                ) {
+                    Text("Create Lottery")
+                }
+            }
+
+
             if (userProfile.userType == "admin") {
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {

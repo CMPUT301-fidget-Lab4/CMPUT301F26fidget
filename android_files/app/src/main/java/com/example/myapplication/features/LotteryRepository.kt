@@ -90,63 +90,79 @@ class LotteryRepository(
     // Drawing winners
     // ---------------------------------------------------------------------
 
-    /** Draws winners after registration closes and saves them to every copy. */
-    fun drawLotteryWinners(campsiteName: String, onResult: (List<String>?) -> Unit) {
-        if (!isDocumentId(campsiteName)) {
-            onResult(null)
-            return
-        }
-
-        drawLotteryWinnersTask(campsiteName)
-            .addOnSuccessListener { winners -> onResult(winners) }
-            .addOnFailureListener { onResult(null) }
-    }
-
-    /**
-     * Draws every eligible lottery and returns the new winners by primary campsite ID.
-     * Each draw commits on its own. A lookup or transaction error fails the returned task.
-     */
-    fun drawClosedLotteries(): Task<Map<String, List<String>>> {
-        return campsiteRef.whereEqualTo("inLottery", true).get(Source.SERVER)
-            .onSuccessTask { snapshot ->
-                val drawTasks = snapshot.documents.map { campsite ->
-                    drawLotteryWinnersTask(campsite.id, primaryOnly = true)
-                        .continueWith { draw -> campsite.id to draw.result }
-                }
-                Tasks.whenAllSuccess<Pair<String, List<String>?>>(drawTasks)
-            }
-            .continueWith { allDraws ->
-                val newWinners = mutableMapOf<String, List<String>>()
-                for ((campsiteId, winners) in allDraws.result) {
-                    if (winners != null) {
-                        newWinners[campsiteId] = winners
-                    }
-                }
-                newWinners
-            }
-    }
-
-    private fun drawLotteryWinnersTask(
-        campsiteName: String,
-        primaryOnly: Boolean = false
-    ): Task<List<String>?> {
-        return db.runTransaction<List<String>?> { transaction ->
-            val copies = readLotteryCopies(transaction, campsiteName, primaryOnly)
-                ?: return@runTransaction null
-            val lottery = readLottery(copies.primary)
-                ?: return@runTransaction null
-            if (!canDraw(lottery)) {
-                return@runTransaction null
-            }
-
-            val winners = lottery.waitlist.distinct().shuffled().take(lottery.numWinners)
-            val changes = mapOf("winners" to winners, "drawn" to true)
-            for (id in copies.campsiteIds) {
-                transaction.update(lotteryDoc(id), changes)
-            }
-            winners
-        }
-    }
+//    /** Draws winners after registration closes and saves them to every copy. */
+//    fun drawLotteryWinners(campsiteName: String, onResult: (List<String>?) -> Unit) {
+//        if (!isDocumentId(campsiteName)) {
+//            onResult(null)
+//            return
+//        }
+//
+//        drawLotteryWinnersTask(campsiteName)
+//            .addOnSuccessListener { winners -> onResult(winners) }
+//            .addOnFailureListener { onResult(null) }
+//    }
+//
+//    /**
+//     * Draws every eligible lottery and returns the new winners by primary campsite ID.
+//     * Each draw commits on its own. A lookup or transaction error fails the returned task.
+//     */
+//    fun drawClosedLotteries(): Task<Map<String, List<String>>> {
+//        return campsiteRef.whereEqualTo("inLottery", true).get(Source.SERVER)
+//            .onSuccessTask { snapshot ->
+//                val drawTasks = snapshot.documents.map { campsite ->
+//                    drawLotteryWinnersTask(campsite.id, primaryOnly = true)
+//                        .continueWith { draw -> campsite.id to draw.result }
+//                }
+//                Tasks.whenAllSuccess<Pair<String, List<String>?>>(drawTasks)
+//            }
+//            .continueWith { allDraws ->
+//                val newWinners = mutableMapOf<String, List<String>>()
+//                for ((campsiteId, winners) in allDraws.result) {
+//                    if (winners != null) {
+//                        newWinners[campsiteId] = winners
+//                    }
+//                }
+//                newWinners
+//            }
+//    }
+//
+//    private fun drawLotteryWinnersTask(
+//        campsiteName: String,
+//        primaryOnly: Boolean = false
+//    ): Task<List<String>?> {
+//        return db.runTransaction<List<String>?> { transaction ->
+//            val copies = readLotteryCopies(transaction, campsiteName, primaryOnly)
+//                ?: return@runTransaction null
+//            val lottery = readLottery(copies.primary)
+//                ?: return@runTransaction null
+//            if (!canDraw(lottery)) {
+//                return@runTransaction null
+//            }
+//
+//            // Look up the owner. Reads must come before any writes.
+//            val primaryCampsiteId = copies.primary.reference.parent.parent?.id ?: campsiteName
+//            val ownerId = transaction.get(campsiteRef.document(primaryCampsiteId))
+//                .getString("ownerID").orEmpty()
+//
+//            val winners = lottery.waitlist.distinct().shuffled().take(lottery.numWinners)
+//
+//            // Save winners to every copy
+//            val changes = mapOf("winners" to winners, "drawn" to true)
+//            for (id in copies.campsiteIds) {
+//                transaction.update(lotteryDoc(id), changes)
+//            }
+//
+//            // One INVITED reservation per winner
+//            val drawnLottery = lottery.copy(ownerId = ownerId, winners = winners, drawn = true)
+//            for (invitation in drawnLottery.createInvitations()) {
+//                val doc = db.collection("reservations").document()
+//                invitation.id = doc.id
+//                transaction.set(doc, invitation)
+//            }
+//
+//            winners
+//        }
+//    }
 
     private fun canDraw(lottery: Lottery): Boolean {
         val now = LocalDateTime.now(campsiteZone)

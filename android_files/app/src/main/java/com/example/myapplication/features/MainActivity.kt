@@ -6,11 +6,10 @@ import android.provider.Settings.Secure
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.remember
-import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui_components.CampsiteApp
 import com.example.myapplication.ui_components.theme.MyApplicationTheme
-import com.example.myapplication.ui_components.screens.CreateLotteryScreen
+import com.example.myapplication.ui_components.CampsiteApp
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,21 +19,24 @@ class MainActivity : ComponentActivity() {
         @SuppressLint("HardwareIds")
         val currentDeviceID: String = Secure.getString(this.contentResolver, Secure.ANDROID_ID)
         val campsiteRepository = CampsiteRepository()
-        // Don't remove this
-        val lotteryRepository = LotteryRepository()
         val scheduleRepository = BookingScheduleRepository()
         val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
+        val lotteryRepository = LotteryRepository()
 
         setContent {
             MyApplicationTheme {
-
-
+//                LaunchedEffect(Unit) {
+//                    while (true) {
+//                        lotteryRepository.drawClosedLotteries()
+//                        delay(60_000)   // check once a minute
+//                    }
+//                }
                 CampsiteApp(
                     user = userRepository.currentUser,
                     users = userRepository.users,
                     onAddUser = userRepository::addUser,
-                    onDeleteUser = {  user ->
+                    onDeleteUser = { user ->
                         campsiteRepository.deleteCampsitesByOwner(user.deviceID)
                         userRepository.deleteUser(user)
                     },
@@ -43,13 +45,13 @@ class MainActivity : ComponentActivity() {
                     findUser = userRepository::findUser,
                     getAndroidId = userRepository::getDeviceID,
                     authState = userRepository.authState,
-                    campsites = campsiteRepository.campsites,
+                    campsites = campsiteRepository.campsitesMap,
                     findCampsite = campsiteRepository::findCampsite,
                     onAddCampsite = campsiteRepository::addCampsite,
                     reservationRepository = reservationRepository,
-                    scheduleRepository = scheduleRepository
+                    scheduleRepository = scheduleRepository,
+                    lotteryRepository = lotteryRepository
                 )
-
             }
         }
     }
