@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.features.Campsite
 import com.example.myapplication.features.User
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 /**
  * CampsiteDetailsScreen shows the details of one campsite.
@@ -40,8 +43,8 @@ import com.example.myapplication.features.User
  * (for example a new rating) show up without reopening the screen. If no campsite has that name,
  * for example because it was removed, a "Campsite not found" message is shown instead.
  *
- * Joining the lottery has not been implemented yet. The owner of the campsite sees an Edit button
- * that opens [EditCampsiteScreen]
+ * Entrants and admins can join an active campsite lottery. The owner of the campsite sees an
+ * Edit button that opens [EditCampsiteScreen].
  *
  * @param navController
  * @param campsiteName The name of the campsite to show, which is also its Firestore document ID.
@@ -52,9 +55,22 @@ fun CampsiteDetailsScreen(
     navController: NavController,
     campsiteName: String,
     userProfile: User?,
-    findCampsite: (String) -> Campsite?
+    findCampsite: (String) -> Campsite?,
+    joinWaitlist: (String, User, (Boolean) -> Unit) -> Unit = { _, _, onResult -> onResult(false) }
 ) {
     val campsite = findCampsite(campsiteName)
+
+    var joined by remember(campsiteName, userProfile?.deviceID) {
+        mutableStateOf(
+            userProfile?.joinedLotteries?.any {
+                it.campsiteName == campsiteName
+            } == true
+        )
+    }
+
+    var joinMessage by remember(campsiteName, userProfile?.deviceID) {
+        mutableStateOf<String?>(null) }
+    var isJoining by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -72,11 +88,68 @@ fun CampsiteDetailsScreen(
         } else {
             CampsiteDetails(campsite)
 
+            // Only entrants and admins can join.
+            // Campsite owners cannot join their own lottery.
+            val eligibleUser = userProfile?.takeIf { user ->
+                val role = user.userType.trim().lowercase()
 
+                (role == "entrant" || role == "admin") &&
+                        user.deviceID != campsite.ownerID
+            }
+
+            if (eligibleUser != null && campsite.inLottery) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (joined) {
+                    Text(
+                        text = "You're on the waiting list!",
+                        modifier = Modifier.testTag("onWaitlistLabel")
+                    )
+                } else {
+                    Button(
+                        enabled = !isJoining,
+                        onClick = {
+                            isJoining = true
+                            joinMessage = null
+
+                            joinWaitlist(campsite.name, eligibleUser) { success ->
+                                isJoining = false
+
+                                if (success) {
+                                    joined = true
+                                    joinMessage = null
+                                } else {
+                                    joinMessage =
+                                        "Could not join the waiting list. " +
+                                                "Registration may be closed or the waiting list may be full."
+                                }
+                            }
+                        },
+                        modifier = Modifier.testTag("joinWaitlistButton")
+                    ) {
+                        Text(
+                            if (isJoining) "Joining..." else "Join Waiting List"
+                        )
+                    }
+                }
+
+                joinMessage?.let { message ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = message,
+                        modifier = Modifier.testTag("joinWaitlistMessage")
+                    )
+                }
+            }
+
+            // Existing owner Edit button
             if (userProfile?.deviceID == campsite.ownerID) {
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Button(
-                    onClick = { navController.navigate("EditCampsite/${campsite.name}") },
+                    onClick = {
+                        navController.navigate("EditCampsite/${campsite.name}")
+                    },
                     modifier = Modifier.testTag("editCampsiteButton")
                 ) {
                     Text("Edit Campsite")

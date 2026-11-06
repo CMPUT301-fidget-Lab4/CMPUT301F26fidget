@@ -40,7 +40,8 @@ fun CampsiteApp(
     onAddCampsite: (Campsite) -> Unit = {},
     onUpdateCampsite: (String, CampsiteLocation, String, Int, String) -> Unit = { _, _, _, _, _ -> },
     reservationRepository: ReservationRepository,
-    scheduleRepository: BookingScheduleRepository
+    scheduleRepository: BookingScheduleRepository,
+    joinWaitlist: (String, User, (Boolean) -> Unit) -> Unit = { _, _, onResult -> onResult(false) }
 ) {
 
     val navController = rememberNavController()
@@ -88,7 +89,7 @@ fun CampsiteApp(
         }
         composable("CampsiteDetails/{campsiteName}") { backStackEntry ->
             val campsiteName = backStackEntry.arguments?.getString("campsiteName") ?: ""
-            CampsiteDetailsScreen(navController, campsiteName, user, findCampsite)
+            CampsiteDetailsScreen(navController, campsiteName, user, findCampsite, joinWaitlist)
         }
         composable("Reservations") {
             ReservationScreen(

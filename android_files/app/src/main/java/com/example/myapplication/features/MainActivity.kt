@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
         val scheduleRepository = BookingScheduleRepository()
         val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
+        val lotteryRepository = LotteryRepository()
 
         setContent {
             MyApplicationTheme {
@@ -40,7 +41,8 @@ class MainActivity : ComponentActivity() {
                     findCampsite = campsiteRepository::findCampsite,
                     onAddCampsite = campsiteRepository::addCampsite,
                     reservationRepository = reservationRepository,
-                    scheduleRepository = scheduleRepository
+                    scheduleRepository = scheduleRepository,
+                    joinWaitlist = lotteryRepository::joinLotteryWaitlist
                 )
             }
         }
