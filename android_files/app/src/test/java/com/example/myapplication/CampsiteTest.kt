@@ -1,301 +1,215 @@
+
 package com.example.myapplication
 
 import com.example.myapplication.features.Campsite
+import com.example.myapplication.features.Lottery
+import com.example.myapplication.features.BookingSchedule
+import com.google.firebase.firestore.Exclude
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 class CampsiteTest {
 
     private lateinit var camp: Campsite
 
-    // Fixed starting point (tomorrow) so every date is in the future
-    // and the same day(n) call always gives the same value.
-    private val base: LocalDateTime = LocalDateTime.now().plusDays(1)
-
-    private fun day(n: Long): LocalDateTime {
-        return base.plusDays(n)
-    }
-
-    // Reservation and booking need a lottery to exist first
-    private fun startLottery() {
-        camp.createLottery(1, 10, emptyList())
-    }
-
     @Before
     fun setUp() {
-        camp = Campsite(name = "Lakeview", occupancy = 4)
-    }
-
-    // ---------- createLottery ----------
-
-    @Test
-    fun createLottery_zeroWinners_returnsFalse() {
-        val result = camp.createLottery(0, 10, emptyList())
-
-        assertFalse(result)
-        assertFalse(camp.inLottery)
-    }
-
-    @Test
-    fun createLottery_negativeWinners_returnsFalse() {
-        val result = camp.createLottery(-2, 10, emptyList())
-
-        assertFalse(result)
-        assertFalse(camp.inLottery)
-    }
-
-    @Test
-    fun createLottery_negativeCapacity_returnsFalse() {
-        val result = camp.createLottery(1, -1, emptyList())
-
-        assertFalse(result)
-        assertFalse(camp.inLottery)
-    }
-
-    @Test
-    fun createLottery_moreWinnersThanCampsites_returnsFalse() {
-        // Only one campsite, so only one winner is possible
-        val result = camp.createLottery(2, 10, emptyList())
-
-        assertFalse(result)
-        assertFalse(camp.inLottery)
-    }
-
-    @Test
-    fun createLottery_alreadyExists_returnsFalse() {
-        camp.createLottery(1, 10, emptyList())
-
-        val result = camp.createLottery(1, 20, emptyList())
-
-        assertFalse(result)
-        assertEquals(10, camp.lottery.waitlistCapacity)
-    }
-
-    @Test
-    fun createLottery_valid_setsLotteryDetails() {
-        val result = camp.createLottery(1, 50, emptyList())
-
-        assertTrue(result)
-        assertTrue(camp.inLottery)
-        assertEquals(1, camp.lottery.numWinners)
-        assertEquals(50, camp.lottery.waitlistCapacity)
-        assertEquals(listOf("Lakeview"), camp.lottery.campsiteIds)
-        assertFalse(camp.lottery.drawn)
-        assertTrue(camp.lottery.waitlist.isEmpty())
-        assertTrue(camp.lottery.winners.isEmpty())
-    }
-
-    @Test
-    fun createLottery_zeroCapacity_isAllowed() {
-        val result = camp.createLottery(1, 0, emptyList())
-
-        assertTrue(result)
-        assertEquals(0, camp.lottery.waitlistCapacity)
-    }
-
-    @Test
-    fun createLottery_multipleCampsites_storesAllNames() {
-        val others = listOf("Pinewood", "Riverside")
-
-        val result = camp.createLottery(3, 20, others)
-
-        assertTrue(result)
-        assertEquals(
-            listOf("Lakeview", "Pinewood", "Riverside"),
-            camp.lottery.campsiteIds
+        camp = Campsite(
+            name = "Lakeview",
+            occupancy = 4
         )
     }
 
-    @Test
-    fun createLottery_duplicateCampsites_removesDuplicates() {
-        val others = listOf(
-            "Lakeview",
-            "Pinewood",
-            "Pinewood"
-        )
-
-        val result = camp.createLottery(1, 10, others)
-
-        assertTrue(result)
-        assertEquals(
-            listOf("Lakeview", "Pinewood"),
-            camp.lottery.campsiteIds
-        )
-    }
+    // ---------- Initialization ----------
 
     @Test
-    fun createLottery_valid_generatesId() {
-        val result = camp.createLottery(1, 10, emptyList())
-
-        assertTrue(result)
-        assertTrue(camp.lottery.id.isNotEmpty())
-    }
-
-    // ---------- setReservation ----------
-
-    @Test
-    fun setReservation_noLottery_returnsFalse() {
-        val result = camp.setReservation(day(1), day(8))
-
-        assertFalse(result)
-        assertFalse(camp.reservationSet)
-    }
-
-    @Test
-    fun setReservation_startInPast_returnsFalse() {
-        startLottery()
-
-        val result = camp.setReservation(
-            LocalDateTime.now().minusDays(1),
-            day(8)
-        )
-
-        assertFalse(result)
-        assertFalse(camp.reservationSet)
-    }
-
-    @Test
-    fun setReservation_startAfterEnd_returnsFalse() {
-        startLottery()
-
-        val result = camp.setReservation(day(8), day(1))
-
-        assertFalse(result)
-        assertFalse(camp.reservationSet)
-    }
-
-    @Test
-    fun setReservation_validDates_updatesRegistrationPeriod() {
-        startLottery()
-
-        val result = camp.setReservation(day(1), day(8))
-
-        assertTrue(result)
-        assertTrue(camp.reservationSet)
-        assertEquals(day(1), camp.lottery.period.registrationStart)
-        assertEquals(day(8), camp.lottery.period.registrationEnd)
-    }
-
-    @Test
-    fun setReservation_sameStartAndEnd_returnsFalse() {
-        startLottery()
-
-        val result = camp.setReservation(day(5), day(5))
-
-        assertFalse(result)
-        assertFalse(camp.reservationSet)
-    }
-
-    @Test
-    fun setReservation_endAfterBookingStart_returnsFalse() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-        camp.setBookingPeriod(day(15), day(29))
-
-        val result = camp.setReservation(day(1), day(20))
-
-        assertFalse(result)
-        assertEquals(day(8), camp.lottery.period.registrationEnd)
-    }
-
-    @Test
-    fun setReservation_endOnBookingStart_isAllowed() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-        camp.setBookingPeriod(day(15), day(29))
-
-        val result = camp.setReservation(day(1), day(15))
-
-        assertTrue(result)
-        assertEquals(day(15), camp.lottery.period.registrationEnd)
-    }
-
-    // ---------- setBookingPeriod ----------
-
-    @Test
-    fun setBookingPeriod_noReservation_returnsFalse() {
-        startLottery()
-
-        val result = camp.setBookingPeriod(day(15), day(29))
-
-        assertFalse(result)
-        assertFalse(camp.bookingSet)
-    }
-
-    @Test
-    fun setBookingPeriod_startAfterEnd_returnsFalse() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-
-        val result = camp.setBookingPeriod(day(29), day(15))
-
-        assertFalse(result)
-        assertFalse(camp.bookingSet)
-    }
-
-    @Test
-    fun setBookingPeriod_startsBeforeRegistrationEnds_returnsFalse() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-
-        val result = camp.setBookingPeriod(day(5), day(29))
-
-        assertFalse(result)
-        assertFalse(camp.bookingSet)
-    }
-
-    @Test
-    fun setBookingPeriod_startsOnRegistrationEnd_isAllowed() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-
-        val result = camp.setBookingPeriod(day(8), day(29))
-
-        assertTrue(result)
-        assertTrue(camp.bookingSet)
-    }
-
-    @Test
-    fun setBookingPeriod_validDates_updatesPeriod() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-
-        val result = camp.setBookingPeriod(day(15), day(29))
-
-        assertTrue(result)
-        assertTrue(camp.bookingSet)
-        assertEquals(day(15), camp.lottery.period.bookingStart)
-        assertEquals(day(29), camp.lottery.period.bookingEnd)
-    }
-
-    @Test
-    fun setBookingPeriod_sameStartAndEnd_returnsFalse() {
-        startLottery()
-        camp.setReservation(day(1), day(8))
-
-        val result = camp.setBookingPeriod(day(15), day(15))
-
-        assertFalse(result)
-        assertFalse(camp.bookingSet)
-    }
-
-    // ---------- setTermsAndConditions ----------
-
-    @Test
-    fun setTermsAndConditions_blank_returnsFalse() {
-        val result = camp.setTermsAndConditions("   ")
-
-        assertFalse(result)
+    fun campsite_validInitialization_storesDetails() {
+        assertEquals("Lakeview", camp.name)
+        assertEquals(4, camp.occupancy)
+        assertEquals(0.0, camp.rating, 0.0)
         assertEquals("", camp.termsAndConditions)
     }
 
     @Test
-    fun setTermsAndConditions_validText_updatesTerms() {
-        val result = camp.setTermsAndConditions("No fires.")
+    fun campsite_defaultValues_areCorrect() {
+        val campsite = Campsite()
 
-        assertTrue(result)
+        assertEquals("", campsite.name)
+        assertNull(campsite.location)
+        assertEquals("", campsite.description)
+        assertEquals(0, campsite.occupancy)
+        assertEquals("", campsite.photo)
+        assertEquals("", campsite.tags)
+        assertEquals("", campsite.ownerID)
+        assertEquals(0.0, campsite.rating, 0.0)
+        assertEquals("", campsite.termsAndConditions)
+    }
+
+    @Test
+    fun campsite_allConstructorValues_areStored() {
+        val campsite = Campsite(
+            name = "Pinewood",
+            description = "Forest campsite",
+            occupancy = 5,
+            photo = "photo.jpg",
+            tags = "forest",
+            ownerID = "owner123",
+            rating = 4.5,
+            termsAndConditions = "No fires."
+        )
+
+        assertEquals("Pinewood", campsite.name)
+        assertEquals("Forest campsite", campsite.description)
+        assertEquals(5, campsite.occupancy)
+        assertEquals("photo.jpg", campsite.photo)
+        assertEquals("forest", campsite.tags)
+        assertEquals("owner123", campsite.ownerID)
+        assertEquals(4.5, campsite.rating, 0.0)
+        assertEquals("No fires.", campsite.termsAndConditions)
+    }
+
+    // ---------- Lottery Collection ----------
+
+    @Test
+    fun campsite_lotteryCollection_initiallyNull() {
+        assertNull(camp.lotteryCollection)
+    }
+
+    @Test
+    fun campsite_lotteryCollection_canBeAssigned() {
+        val lotteries = listOf<Lottery>()
+
+        camp.lotteryCollection = lotteries
+
+        assertNotNull(camp.lotteryCollection)
+        assertSame(lotteries, camp.lotteryCollection)
+        assertTrue(camp.lotteryCollection!!.isEmpty())
+    }
+
+    @Test
+    fun campsite_lotteryCollection_canBeResetToNull() {
+        camp.lotteryCollection = listOf<Lottery>()
+
+        camp.lotteryCollection = null
+
+        assertNull(camp.lotteryCollection)
+    }
+
+    // ---------- Booking Schedules ----------
+
+    @Test
+    fun campsite_bookingSchedules_initiallyNull() {
+        assertNull(camp.bookingSchedules)
+    }
+
+    @Test
+    fun campsite_bookingSchedules_canBeAssigned() {
+        val schedules = mutableListOf<BookingSchedule>()
+
+        camp.bookingSchedules = schedules
+
+        assertNotNull(camp.bookingSchedules)
+        assertSame(schedules, camp.bookingSchedules)
+        assertTrue(camp.bookingSchedules!!.isEmpty())
+    }
+
+    @Test
+    fun campsite_bookingSchedules_canBeResetToNull() {
+        camp.bookingSchedules = mutableListOf<BookingSchedule>()
+
+        camp.bookingSchedules = null
+
+        assertNull(camp.bookingSchedules)
+    }
+
+    // ---------- In Lottery ----------
+
+    @Test
+    fun campsite_inLottery_initiallyFalse() {
+        assertFalse(camp.inLottery)
+    }
+
+    @Test
+    fun campsite_inLottery_canBeSetTrue() {
+        camp.inLottery = true
+
+        assertTrue(camp.inLottery)
+    }
+
+    @Test
+    fun campsite_inLottery_canBeSetFalse() {
+        camp.inLottery = true
+        camp.inLottery = false
+
+        assertFalse(camp.inLottery)
+    }
+
+    // ---------- Rating ----------
+
+    @Test
+    fun campsite_rating_initiallyZero() {
+        assertEquals(0.0, camp.rating, 0.0)
+    }
+
+    @Test
+    fun campsite_rating_canBeUpdated() {
+        camp.rating = 4.5
+
+        assertEquals(4.5, camp.rating, 0.0)
+    }
+
+    // ---------- Terms And Conditions ----------
+
+    @Test
+    fun campsite_termsAndConditions_initiallyEmpty() {
+        assertEquals("", camp.termsAndConditions)
+    }
+
+    @Test
+    fun campsite_termsAndConditions_canBeUpdated() {
+        camp.termsAndConditions = "No fires."
+
         assertEquals("No fires.", camp.termsAndConditions)
+    }
+
+    @Test
+    fun campsite_termsAndConditions_canBeReplaced() {
+        camp.termsAndConditions = "No fires."
+        camp.termsAndConditions = "Pets allowed."
+
+        assertEquals("Pets allowed.", camp.termsAndConditions)
+    }
+
+    // ---------- Firestore Exclusion ----------
+
+    @Test
+    fun campsite_lotteryCollection_excludedFromFirestore() {
+        val getter = Campsite::class.java
+            .getMethod("getLotteryCollection")
+
+        assertNotNull(
+            getter.getAnnotation(Exclude::class.java)
+        )
+    }
+
+    @Test
+    fun campsite_bookingSchedules_excludedFromFirestore() {
+        val getter = Campsite::class.java
+            .getMethod("getBookingSchedules")
+
+        assertNotNull(
+            getter.getAnnotation(Exclude::class.java)
+        )
+    }
+
+    @Test
+    fun campsite_inLottery_excludedFromFirestore() {
+        val getter = Campsite::class.java
+            .getMethod("getInLottery")
+
+        assertNotNull(
+            getter.getAnnotation(Exclude::class.java)
+        )
     }
 }

@@ -1,97 +1,71 @@
-package com.example.myapplication
 
+package com.example.myapplication.features
 
-import com.example.myapplication.features.Campsite
-import org.junit.Assert.*
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
-import kotlin.collections.emptyList
 
-/**
- * US 02.04.03: Owner configures registration date/time.
- * Local JVM tests; does not require Firebase or an Android emulator.
- * Assumes Reservation and Campsite use LocalDateTime.
- */
-class RegistrationPeriodTest {
+class RegistrationTest {
 
-    private val start = LocalDateTime.now().plusDays(10).withSecond(0).withNano(0)
-    private val end = start.plusHours(8)
+    private lateinit var registration: Registration
 
-    private fun newCampsite() =
-        Campsite(name = "TestCampsite", occupancy = 5)
+    private val start = LocalDateTime.of(2026, 11, 5, 10, 0)
+    private val end = LocalDateTime.of(2026, 11, 10, 10, 0)
 
-    private fun newCampsiteWithLottery() =
-        newCampsite().apply {
-            assertTrue(createLottery(2, 0, emptyList()))
-        }
-
-    @Test
-    fun cannotSetRegistrationUntilLotteryExists() {
-        val campsite = newCampsite()
-        assertFalse(campsite.setReservation(start, end))
-        assertFalse(campsite.reservationSet)
-    }
-
-    @Test
-    fun canSetValidRegistrationDateAndTime() {
-        val campsite = newCampsiteWithLottery()
-        assertTrue(campsite.setReservation(start, end))
-        assertEquals(start, campsite.lottery.period.registrationStart)
-        assertEquals(end, campsite.lottery.period.registrationEnd)
-        assertTrue(campsite.reservationSet)
-    }
-
-    @Test
-    fun closingTimeMustBeAfterOpeningTime() {
-        val campsite = newCampsiteWithLottery()
-        assertFalse(campsite.setReservation(start, start))
-        assertFalse(campsite.setReservation(start, start.minusMinutes(1)))
-        assertFalse(campsite.reservationSet)
-    }
-
-    @Test
-    fun registrationCannotStartInThePast() {
-        val campsite = newCampsiteWithLottery()
-        val yesterday = LocalDateTime.now().minusDays(1)
-        assertFalse(campsite.setReservation(yesterday, yesterday.plusDays(2)))
-    }
-
-    @Test
-    fun missingAndInvalidFormValuesFailParsing() {
-        val badInputs = listOf(
-            "",
-            " ",
-            "not-a-date",
-            "2035-02-30T09:00",
-            "2035-06-10", // Date only; time is required
-            "2035-06-10T25:00"
-        )
-        for (input in badInputs) {
-            assertTrue(
-                "Expected parse error for '$input'",
-                runCatching { LocalDateTime.parse(input) }.isFailure
-            )
-        }
-        assertEquals(
-            LocalDateTime.of(2035, 6, 10, 9, 0),
-            LocalDateTime.parse("2035-06-10T09:00")
+    @Before
+    fun setUp() {
+        registration = Registration(
+            registrationStart = start,
+            registrationEnd = end
         )
     }
 
     @Test
-    fun bookingCannotBeginBeforeRegistrationCloses() {
-        val campsite = newCampsiteWithLottery()
-        assertTrue(campsite.setReservation(start, end))
-        assertFalse(campsite.setBookingPeriod(end.minusMinutes(1), end.plusDays(1)))
-        assertTrue(campsite.setBookingPeriod(end, end.plusDays(1)))
+    fun registrationIsOpenDuringRegistrationPeriod() {
+        val now = LocalDateTime.of(2026, 11, 7, 12, 0)
+
+        assertTrue(registration.registrationIsOpen(now))
     }
 
     @Test
-    fun changingRegistrationCannotOverlapExistingBooking() {
-        val campsite = newCampsiteWithLottery()
-        assertTrue(campsite.setReservation(start, end))
-        assertTrue(campsite.setBookingPeriod(end.plusHours(1), end.plusDays(1)))
-        assertFalse(campsite.setReservation(start, end.plusHours(2)))
-        assertEquals(end, campsite.lottery.period.registrationEnd)
+    fun registrationIsClosedBeforeStart() {
+        val now = LocalDateTime.of(2026, 11, 4, 10, 0)
+
+        assertFalse(registration.registrationIsOpen(now))
+    }
+
+    @Test
+    fun registrationIsOpenAtExactStart() {
+        assertTrue(registration.registrationIsOpen(start))
+    }
+
+    @Test
+    fun registrationIsClosedAtExactEnd() {
+        assertFalse(registration.registrationIsOpen(end))
+    }
+
+    @Test
+    fun registrationIsClosedAfterEnd() {
+        val now = LocalDateTime.of(2026, 11, 11, 10, 0)
+
+        assertFalse(registration.registrationIsOpen(now))
+    }
+
+    @Test
+    fun registrationIsClosedWhenStartEqualsEnd() {
+        registration.registrationEnd = start
+
+        assertFalse(registration.registrationIsOpen(start))
+    }
+
+    @Test
+    fun registrationIsClosedWhenEndIsBeforeStart() {
+        registration.registrationEnd = start.minusDays(1)
+
+        val now = start.minusHours(12)
+
+        assertFalse(registration.registrationIsOpen(now))
     }
 }
