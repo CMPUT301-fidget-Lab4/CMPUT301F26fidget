@@ -112,6 +112,25 @@ class CampsiteRepository {
         return true
     }
 
+    fun updateCampsiteDetails(
+        campsiteName: String,
+        location: CampsiteLocation,
+        description: String,
+        occupancy: Int,
+        tags: String
+    ): Boolean {
+        if (!campsiteExists(campsiteName)) return false
+        campsiteRef.document(campsiteName).update(
+            mapOf(
+                "location" to location,
+                "description" to description,
+                "occupancy" to occupancy,
+                "tags" to tags
+            )
+        )
+        return true
+    }
+
     fun deleteCampsite(campsite: Campsite){
         campsiteRef.document(campsite.name).delete()
     }
