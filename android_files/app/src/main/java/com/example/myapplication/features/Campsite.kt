@@ -33,135 +33,16 @@ class Campsite(
     val ownerID: String = "",
     var rating: Double = 0.0,
     var termsAndConditions: String = ""
-)
-{
+) {
     @get:Exclude
     var lotteryCollection: Collection<Lottery>? = null
-    var bookingSchedules: MutableList<BookingSchedule<*>>? = null
 
+    @get:Exclude
+    var bookingSchedules: MutableList<BookingSchedule>? = null
 
-//
-////    fun canJoinCampsite(
-////        numberOfGuests: Int,
-////        campsite: Campsite
-////    ): Boolean {
-////        return numberOfGuests > 0 &&
-////                numberOfGuests <= campsite.occupancy
-////    }
-//
-//
-//
-//    /**
-//     * Updates the campsite's terms and conditions locally.
-//     *
-//     * @param text The terms and conditions to set.
-//     * @return true if the text is valid and updated, false if blank.
-//     */
-//    fun setTermsAndConditions(text: String): Boolean {
-//        if (text.isBlank()) {
-//            return false
-//        }
-//
-//        termsAndConditions = text
-//        return true
-//    }
-//
-//
-//    /**
-//     * Creates a lottery for this campsite and any additional campsites.
-//     *
-//     * @param numWinners Number of winners, between 1 and occupancy.
-//     * @param waitlistCapacity Maximum entrants, or 0 for unlimited.
-//     * @param otherCampsites Other campsites sharing this lottery.
-//     * @return true if created locally, false if the inputs are invalid.
-//     */
-//    fun createLottery(
-//        numWinners: Int,
-//        waitlistCapacity: Int,
-//        otherCampsites: List<String>
-//    ): Boolean {
-//
-//        // Do not replace an existing lottery.
-//        if (inLottery) {
-//            return false
-//        }
-//
-//        // Waitlist capacity cannot be negative.
-//        // 0 means unlimited.
-//        if (waitlistCapacity < 0) {
-//            return false
-//        }
-//
-//        // Collect all unique campsite IDs/names.
-//        val ids = mutableListOf(name)
-//
-//        for (other in otherCampsites) {
-//            if (other.isNotBlank() &&
-//                other != name &&
-//                !ids.contains(other)
-//            ) {
-//                ids.add(other)
-//            }
-//        }
-//
-//        // Each campsite can have only one winner.
-//        // Therefore winners cannot exceed the number
-//        // of campsites available in this lottery.
-//        if (numWinners < 1 || numWinners > ids.size) {
-//            return false
-//        }
-//
-//        // Create the lottery.
-//        lottery = Lottery(
-//            id = java.util.UUID.randomUUID().toString(),
-//            campsiteIds = ids,
-//            numWinners = numWinners,
-//            waitlistCapacity = waitlistCapacity
-//        )
-//
-//        inLottery = true
-//        return true
-//    }
-//
-//
-//
-//
-//    /**
-//     * Sets the lottery registration period.
-//     * This will only update locally but a reservations must be updated by campsiteServices
-//     * @param start Registration start date.
-//     * @param end Registration end date.
-//     * @return true if the dates are valid and updated, false otherwise.
-//     */
-//    fun setReservation(
-//        start: LocalDateTime,
-//        end: LocalDateTime
-//    ): Boolean {
-//
-//        if (!inLottery || lottery.id.isBlank()) {
-//            return false
-//        }
-//
-//        if (start.isBefore(LocalDateTime.now())) {
-//            return false
-//        }
-//
-//        if (!end.isAfter(start)) {
-//            return false
-//        }
-//
-//        if (bookingSet && end.isAfter(lottery.period.bookingStart)) {
-//            return false
-//        }
-//
-//        lottery.period.registrationStart = start
-//        lottery.period.registrationEnd = end
-//        reservationSet = true
-//
-//        return true
-//    }
-//
-//
+    @get:Exclude
+    var inLottery = false
+}
 //    /**
 //     * Sets the lottery's booking start and end date/time.
 //     *
@@ -216,4 +97,3 @@ class Campsite(
 
 
 
-}
