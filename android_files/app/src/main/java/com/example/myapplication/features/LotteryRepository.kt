@@ -139,11 +139,27 @@ class LotteryRepository(
                 return@runTransaction null
             }
 
+            // Look up the owner. Reads must come before any writes.
+            val primaryCampsiteId = copies.primary.reference.parent.parent?.id ?: campsiteName
+            val ownerId = transaction.get(campsiteRef.document(primaryCampsiteId))
+                .getString("ownerID").orEmpty()
+
             val winners = lottery.waitlist.distinct().shuffled().take(lottery.numWinners)
+
+            // Save winners to every copy
             val changes = mapOf("winners" to winners, "drawn" to true)
             for (id in copies.campsiteIds) {
                 transaction.update(lotteryDoc(id), changes)
             }
+
+            // One INVITED reservation per winner
+            val drawnLottery = lottery.copy(ownerId = ownerId, winners = winners, drawn = true)
+            for (invitation in drawnLottery.createInvitations()) {
+                val doc = db.collection("reservations").document()
+                invitation.id = doc.id
+                transaction.set(doc, invitation)
+            }
+
             winners
         }
     }
