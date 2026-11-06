@@ -16,6 +16,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.runtime.mutableStateListOf
 
 
 /**
@@ -34,7 +35,7 @@ class AdminProfileScreenTests {
     private val adminUser = User("admin", "Admin User", "adminUser@ualberta.ca", "0129873456", "admin-device-id")
     private val authFlow = MutableStateFlow<AuthState>(AuthState.LoggedIn(adminUser))
     private var currentUser by mutableStateOf<User?>(adminUser)
-    private val usersList = mutableListOf(testUser1, testUser2, adminUser)
+    private val usersList = mutableStateListOf(testUser1, testUser2, adminUser)
 
     /**
      * Test double Campsite App instance set up. Runs before every test function.
@@ -48,7 +49,7 @@ class AdminProfileScreenTests {
                 onUpdateUser = { _, _ -> },
                 authState = authFlow,
                 onAddUser = { },
-                onDeleteUser = { _ -> },
+                onDeleteUser = { user -> usersList.remove(user) },
                 findUser = { _ -> User() },
                 getAndroidId = { _ -> "" },
             )
@@ -105,4 +106,43 @@ class AdminProfileScreenTests {
                 .assertExists()
         }
     }
+
+    @Test
+    fun adminProfileView_deleteUser_displayUpdate(){
+        composeTestRule
+            .onNodeWithTag("adminProfileBrowse")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("test1-device-id delete")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("confirmUserDelete")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("test1-device-id delete")
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun adminProfileView_cancelDeleteUser_displayUpdate(){
+        composeTestRule
+            .onNodeWithTag("adminProfileBrowse")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("test1-device-id delete")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("cancelUserDelete")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("test1-device-id delete")
+            .assertExists()
+    }
+
 }

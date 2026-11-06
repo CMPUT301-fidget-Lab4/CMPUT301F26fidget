@@ -50,6 +50,7 @@ class ProfileScreenTests {
         composeTestRule.setContent {
             CampsiteApp(
                 user = currentUser,
+                users = emptyList(),
                 onUpdateUser = { newUser, _ -> currentUser = newUser },
                 authState = authFlow,
                 onAddUser = { },
