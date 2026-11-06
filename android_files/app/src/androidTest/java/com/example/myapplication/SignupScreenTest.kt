@@ -44,6 +44,7 @@ class SignupScreenTest {
         composeTestRule.setContent {
             CampsiteApp(
                 user = currentUser,
+                users = emptyList(),
                 onUpdateUser = { _, _ -> },
                 authState = authFlow,
                 onAddUser = { newUser -> currentUser = newUser},
