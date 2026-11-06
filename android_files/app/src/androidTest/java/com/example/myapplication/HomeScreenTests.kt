@@ -45,6 +45,7 @@ class HomeScreenTests {
         composeTestRule.setContent {
             CampsiteApp(
                 user = currentUser,
+                users = emptyList(),
                 onUpdateUser = { _, _ -> },
                 authState = authFlow,
                 onAddUser = { _ -> },

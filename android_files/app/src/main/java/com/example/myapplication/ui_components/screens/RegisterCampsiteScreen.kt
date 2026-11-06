@@ -2,8 +2,10 @@ package com.example.myapplication.ui_components.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -91,7 +93,8 @@ private fun RegisterCampsiteForm(
     findCampsite: (String) -> Campsite?
 ) {
     var name by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
+    var addressNumber by remember { mutableStateOf("") }
+    var streetName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var occupancy by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
@@ -116,17 +119,35 @@ private fun RegisterCampsiteForm(
             value = name,
             onValueChange = { name = it },
             label = { Text("Campsite Name") },
-            modifier = Modifier.testTag("registerCampsiteName")
+            modifier = Modifier.fillMaxWidth().testTag("registerCampsiteName")
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text("Address") },
-            modifier = Modifier.testTag("registerCampsiteAddress")
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = addressNumber,
+                onValueChange = { addressNumber = it },
+                label = { Text("Address Number") },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("registerCampsiteAddressNumber")
+            )
+
+            OutlinedTextField(
+                value = streetName,
+                onValueChange = { streetName = it },
+                label = { Text("Street Name") },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("registerCampsiteStreetName")
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -134,7 +155,7 @@ private fun RegisterCampsiteForm(
             value = description,
             onValueChange = { description = it },
             label = { Text("Description (amenities)") },
-            modifier = Modifier.testTag("registerCampsiteDescription")
+            modifier = Modifier.fillMaxWidth().testTag("registerCampsiteDescription")
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -144,7 +165,7 @@ private fun RegisterCampsiteForm(
             onValueChange = { occupancy = it },
             label = { Text("Maximum Occupancy") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.testTag("registerCampsiteOccupancy")
+            modifier = Modifier.fillMaxWidth().testTag("registerCampsiteOccupancy")
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -153,7 +174,7 @@ private fun RegisterCampsiteForm(
             value = tags,
             onValueChange = { tags = it },
             label = { Text("Tags (optional)") },
-            modifier = Modifier.testTag("registerCampsiteTags")
+            modifier = Modifier.fillMaxWidth().testTag("registerCampsiteTags")
         )
 
         if (errorMessage.isNotEmpty()) {
@@ -168,11 +189,13 @@ private fun RegisterCampsiteForm(
             enabled = !isSaving,
             onClick = {
                 val newName = name.trim()
-                val newAddress = address.trim()
+                val newAddressNumber = addressNumber.trim()
+                val newStreetName = streetName.trim()
+                val newAddress = "$newAddressNumber $newStreetName"
                 val newDescription = description.trim()
                 val newOccupancy = occupancy.trim().toIntOrNull()
 
-                if (newName.isEmpty() || newAddress.isEmpty() || newDescription.isEmpty()) {
+                if (newName.isEmpty() || newAddressNumber.isEmpty() || newStreetName.isEmpty() || newDescription.isEmpty()) {
                     errorMessage = "Fill in the name, address and description"
                 } else if (newName.contains("/")) {
                     // name is used as the Firestore document ID, cant contain "/"

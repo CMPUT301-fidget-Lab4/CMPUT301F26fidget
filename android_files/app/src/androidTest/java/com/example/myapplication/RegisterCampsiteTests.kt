@@ -63,9 +63,10 @@ class RegisterCampsiteTests {
             .performTextInput(text)
     }
 
-    private fun fillForm(name: String, address: String, description: String, occupancy: String) {
+    private fun fillForm(name: String, addressNumber: String, streetName: String, description: String, occupancy: String) {
         enterText("registerCampsiteName", name)
-        enterText("registerCampsiteAddress", address)
+        enterText("registerCampsiteAddressNumber", addressNumber)
+        enterText("registerCampsiteStreetName", streetName)
         enterText("registerCampsiteDescription", description)
         enterText("registerCampsiteOccupancy", occupancy)
     }
@@ -136,7 +137,7 @@ class RegisterCampsiteTests {
     fun occupancyNotANumber_Test() {
         showScreen(owner)
 
-        fillForm("New Camp", "Banff Avenue, Banff, AB", "Fire pit", "abc")
+        fillForm("New Camp", "100", "Banff Avenue", "Fire pit", "abc")
         pressRegister()
 
         assertError("Maximum occupancy must be a positive number")
@@ -149,7 +150,7 @@ class RegisterCampsiteTests {
     fun occupancyZero_Test() {
         showScreen(owner)
 
-        fillForm("New Camp", "Banff Avenue, Banff, AB", "Fire pit", "0")
+        fillForm("New Camp", "100", "Banff Avenue", "Fire pit", "0")
         pressRegister()
 
         assertError("Maximum occupancy must be a positive number")
@@ -163,7 +164,7 @@ class RegisterCampsiteTests {
     fun nameWithSlash_Test() {
         showScreen(owner)
 
-        fillForm("Pine/Ridge", "Banff Avenue, Banff, AB", "Fire pit", "6")
+        fillForm("Pine/Ridge", "100", "Banff Avenue", "Fire pit", "6")
         pressRegister()
 
         assertError("The name cannot contain a /")
@@ -176,9 +177,25 @@ class RegisterCampsiteTests {
     fun duplicateName_Test() {
         showScreen(owner)
 
-        fillForm("Pine Ridge", "Banff Avenue, Banff, AB", "Fire pit", "6")
+        fillForm("Pine Ridge", "100", "Banff Avenue", "Fire pit", "6")
         pressRegister()
 
         assertError("A campsite with that name already exists")
+    }
+
+    /**
+     * Verifies that leaving the street name empty is rejected.
+     */
+    @Test
+    fun missingStreetName_Test() {
+        showScreen(owner)
+
+        enterText("registerCampsiteName", "New Camp")
+        enterText("registerCampsiteAddressNumber", "100")
+        enterText("registerCampsiteDescription", "Fire pit")
+        enterText("registerCampsiteOccupancy", "6")
+        pressRegister()
+
+        assertError("Fill in the name, address and description")
     }
 }
