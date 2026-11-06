@@ -39,7 +39,7 @@ fun CampsiteApp(
         composable("HomeScreen") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
-        composable("AdminProfilesView") { AdminProfilesView(navController, users) }
+        composable("AdminProfilesView") { AdminProfilesView(navController, users, onDeleteUser) }
         composable("ProfileScreen") { ProfileScreen(navController, user, onUpdateUser, onDeleteUser) }
         composable("CampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = false) }
         composable("MyCampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = true) }
