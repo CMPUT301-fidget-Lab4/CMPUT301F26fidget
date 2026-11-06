@@ -34,7 +34,7 @@ fun CampsiteApp(
     onAddUser: (User) -> Unit,
     onDeleteUser: (User) -> Unit,
     onUpdateUser: (User, User) -> Unit,
-    findUser: (String) -> User?,
+    findUser : (String) -> User?,
     getAndroidId: (Context) -> String,
     authState: StateFlow<AuthState>,
     campsites: Map<String, Campsite>,
@@ -43,8 +43,9 @@ fun CampsiteApp(
     onUpdateCampsite: (String, CampsiteLocation, String, Int, String) -> Unit = { _, _, _, _, _ -> },
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository,
+    joinWaitlist: (String, User, (Boolean) -> Unit) -> Unit = { _, _, onResult -> onResult(false) },
     lotteryRepository: LotteryRepository
-)  {
+) {
 
     val navController = rememberNavController()
 
@@ -91,7 +92,7 @@ fun CampsiteApp(
         }
         composable("CampsiteDetails/{campsiteName}") { backStackEntry ->
             val campsiteName = backStackEntry.arguments?.getString("campsiteName") ?: ""
-            CampsiteDetailsScreen(navController, campsiteName, user, findCampsite)
+            CampsiteDetailsScreen(navController, campsiteName, user, findCampsite, joinWaitlist)
         }
         composable("Reservations") {
             ReservationScreen(
