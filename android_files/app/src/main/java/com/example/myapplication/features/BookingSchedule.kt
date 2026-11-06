@@ -2,19 +2,21 @@ package com.example.myapplication.features
 
 import java.time.LocalDateTime
 
-class BookingSchedule<RegistrationType : Any>(
-    val registration: RegistrationType
+class BookingSchedule
+    (val registration: Registration
 ) {
     private val bookings = mutableListOf<Booking>()
 
     inner class Booking(
         val startDate: LocalDateTime = LocalDateTime.now(),
-        val endDate: LocalDateTime
+        val endDate: LocalDateTime,
     ) {
         init {
             require(endDate.isAfter(startDate)) { "End date must be after start date." }
         }
     }
+
+
 
     fun addBooking(booking: Booking): Boolean {
         if (booking in bookings) return false
