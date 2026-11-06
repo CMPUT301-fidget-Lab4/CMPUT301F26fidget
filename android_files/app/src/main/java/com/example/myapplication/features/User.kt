@@ -34,8 +34,7 @@ data class User(
     var deviceID: String = "",
 
     // IDs of campsites associated with this user
-    var campsiteIds: List<String> = emptyList(),
-
+    var campsiteIds: Map<String, Campsite> = emptyMap(),
     // Lotteries joined by this entrant
     var joinedLotteries: List<JoinedLottery> = emptyList()
 ) {

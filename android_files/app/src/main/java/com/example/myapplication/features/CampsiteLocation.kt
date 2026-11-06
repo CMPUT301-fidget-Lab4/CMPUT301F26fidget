@@ -25,7 +25,6 @@ class CampsiteLocation(
     /**
      * Looks up the address and fills in the geoPoint.
      * Call this when the owner enters an address, not when loading from Firestore.
-     *
      * @return true if the address was found, false if not
      */
     fun lookUpAddress(): Boolean {

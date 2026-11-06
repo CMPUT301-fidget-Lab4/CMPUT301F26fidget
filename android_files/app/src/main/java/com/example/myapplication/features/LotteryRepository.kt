@@ -162,6 +162,108 @@ class LotteryRepository(
     // ---------------------------------------------------------------------
 
 
+    /**
+     * Removes an entrant or admin from a lottery waitlist.
+     *
+     * Updates the waitlist on every participating campsite in Firestore
+     * and removes the lottery from the user's joinedLotteries.
+     *
+     * All Firestore changes are performed in one transaction.
+     * The local User object is updated only after the transaction succeeds.
+     *
+     * @param campsiteName The campsite associated with the lottery.
+     * @param user The user leaving the waitlist.
+     * @param onResult Returns true if the user successfully leaves,
+     *                 or false if the operation fails.
+     */
+    fun leaveLotteryWaitlist(
+        campsiteName: String,
+        user: User,
+        onResult: (Boolean) -> Unit
+    ) {
+        val entrantId = user.deviceID
+
+        if (!isDocumentId(campsiteName) || !isDocumentId(entrantId)) {
+            onResult(false)
+            return
+        }
+
+        val userRef = db.collection("users").document(entrantId)
+
+        db.runTransaction<String?> { transaction ->
+
+            val copies = readLotteryCopies(transaction, campsiteName)
+                ?: return@runTransaction null
+
+            val lottery = readLottery(copies.primary)
+                ?: return@runTransaction null
+
+            // Cannot leave after winners have been drawn.
+            if (lottery.drawn) {
+                return@runTransaction null
+            }
+
+            // User must currently be on the waitlist.
+            if (entrantId !in lottery.waitlist) {
+                return@runTransaction null
+            }
+
+            // Read user before performing any writes.
+            val userDoc = transaction.get(userRef)
+
+            val updatedWaitlist = lottery.waitlist.filterNot {
+                it == entrantId
+            }
+
+            // Update every campsite belonging to the lottery.
+            for (id in copies.campsiteIds) {
+                transaction.update(
+                    lotteryDoc(id),
+                    "waitlist",
+                    updatedWaitlist
+                )
+            }
+
+            // Update the user's joined lotteries in Firestore.
+            if (userDoc.exists()) {
+                val joined = (userDoc.get("joinedLotteries") as? List<*>)
+                    .orEmpty()
+                    .filterNotNull()
+
+                val updatedJoined = joined.filterNot { entry ->
+                    (entry as? Map<*, *>)?.get("lotteryId") == lottery.id
+                }
+
+                transaction.update(
+                    userRef,
+                    "joinedLotteries",
+                    updatedJoined
+                )
+            }
+
+            lottery.id
+
+        }.addOnSuccessListener { lotteryId ->
+
+            if (lotteryId != null) {
+
+                // Update the local User object.
+                user.joinedLotteries = user.joinedLotteries.filterNot {
+                    it.lotteryId == lotteryId
+                }
+
+                onResult(true)
+
+            } else {
+                onResult(false)
+            }
+
+        }.addOnFailureListener {
+            onResult(false)
+        }
+    }
+
+
 
     /**
      * Adds an entrant or admin to the lottery waitlist in Firestore, then updates

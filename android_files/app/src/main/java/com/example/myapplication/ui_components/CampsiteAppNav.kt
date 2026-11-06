@@ -20,6 +20,7 @@ import com.example.myapplication.ui_components.screens.CampsiteDetailsScreen
 import com.example.myapplication.ui_components.screens.ReservationScreen
 import com.example.myapplication.features.ReservationRepository
 import com.example.myapplication.features.BookingScheduleRepository
+import com.example.myapplication.features.LotteryRepository
 
 @Composable
 fun CampsiteApp(
