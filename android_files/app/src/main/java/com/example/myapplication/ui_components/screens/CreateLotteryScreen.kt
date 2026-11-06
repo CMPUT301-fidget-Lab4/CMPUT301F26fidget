@@ -140,7 +140,13 @@ fun CreateLotteryScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(
-                onClick = { navController.popBackStack() },
+                onClick = {
+                    if (!navController.popBackStack("MainScreen", inclusive = false)) {
+                        navController.navigate("MainScreen") {
+                            launchSingleTop = true
+                        }
+                    }
+                },
                 modifier = Modifier.testTag("createLotteryBackButton")
             ) {
                 Text("Back")
