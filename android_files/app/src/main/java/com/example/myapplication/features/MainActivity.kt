@@ -17,6 +17,8 @@ class MainActivity : ComponentActivity() {
         @SuppressLint("HardwareIds")
         val currentDeviceID: String = Secure.getString(this.contentResolver, Secure.ANDROID_ID)
         val campsiteRepository = CampsiteRepository()
+        val scheduleRepository = BookingScheduleRepository()
+        val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
 
         setContent {
@@ -29,7 +31,12 @@ class MainActivity : ComponentActivity() {
                     onUpdateUser = userRepository::updateUser,
                     findUser = userRepository::findUser,
                     getAndroidId = userRepository::getDeviceID,
-                    authState = userRepository.authState
+                    authState = userRepository.authState,
+                    campsites = campsiteRepository.campsites,
+                    findCampsite = campsiteRepository::findCampsite,
+                    onAddCampsite = campsiteRepository::addCampsite,
+                    reservationRepository = reservationRepository,
+                    scheduleRepository = scheduleRepository
                 )
             }
         }

@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.StateFlow
 import com.example.myapplication.features.Campsite
 import com.example.myapplication.ui_components.screens.CampsiteListScreen
 import com.example.myapplication.ui_components.screens.RegisterCampsiteScreen
+import com.example.myapplication.ui_components.screens.CampsiteDetailsScreen
+import com.example.myapplication.ui_components.screens.ReservationScreen
+import com.example.myapplication.features.ReservationRepository
+import com.example.myapplication.features.BookingScheduleRepository
 
 @Composable
 fun CampsiteApp(
@@ -29,19 +33,26 @@ fun CampsiteApp(
     authState: StateFlow<AuthState>,
     campsites: List<Campsite> = emptyList(),
     findCampsite: (String) -> Campsite? = { null },
-    onAddCampsite: (Campsite) -> Unit = {}
+    onAddCampsite: (Campsite) -> Unit = {},
+    reservationRepository: ReservationRepository,
+    scheduleRepository: BookingScheduleRepository
 ) {
 
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "HomeScreen") {
         composable("HomeScreen") { HomeScreen(navController, authState) }
+        composable("Reservations") { ReservationScreen(navController, user, campsites, reservationRepository, scheduleRepository) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
-        composable("AdminProfilesView") { AdminProfilesView(navController, users) }
+        composable("AdminProfilesView") { AdminProfilesView(navController, users, onDeleteUser) }
         composable("ProfileScreen") { ProfileScreen(navController, user, onUpdateUser, onDeleteUser) }
         composable("CampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = false) }
         composable("MyCampsiteList") { CampsiteListScreen(navController, user, campsites, ownedOnly = true) }
         composable("RegisterCampsite") { RegisterCampsiteScreen(navController, user, onAddCampsite, findCampsite) }
+        composable("CampsiteDetails/{campsiteName}") { backStackEntry ->
+            val campsiteName = backStackEntry.arguments?.getString("campsiteName") ?: ""
+            CampsiteDetailsScreen(navController, campsiteName, findCampsite)
+        }
     }
 }
