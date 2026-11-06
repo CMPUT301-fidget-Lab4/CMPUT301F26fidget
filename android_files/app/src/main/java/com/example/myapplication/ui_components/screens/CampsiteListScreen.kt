@@ -39,14 +39,14 @@ import com.example.myapplication.features.User
 fun CampsiteListScreen(
     navController: NavController,
     userProfile: User?,
-    campsites: List<Campsite>,
+    campsites: Map<String, Campsite>,
     ownedOnly: Boolean
 ) {
     val shownCampsites =
         if (ownedOnly) {
-            campsites.filter { it.ownerID == userProfile?.deviceID }
+            campsites.values.filter { it.ownerID == userProfile?.deviceID }
         } else {
-            campsites.toList()
+            campsites.values.toList()
         }
     Column(
         modifier = Modifier

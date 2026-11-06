@@ -67,7 +67,7 @@ private val dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy")
 fun ReservationScreen(
     navController: NavController,
     user: User?,
-    campsites: List<Campsite>,
+    campsites: Map<String, Campsite>,
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository
 ) {
@@ -279,7 +279,7 @@ private fun ReservationCard(
 @Composable
 private fun ReserveDialog(
     reservation: Reservation,
-    campsites: List<Campsite>,
+    campsites: Map<String, Campsite>,
     scheduleRepository: BookingScheduleRepository,
     onConfirm: (campsiteId: String, start: LocalDateTime, end: LocalDateTime, occupancy: Int) -> Unit,
     onDismiss: () -> Unit
@@ -299,7 +299,7 @@ private fun ReserveDialog(
 
     val loaded = schedule
     val chosenCampsite = campsiteId
-    val occupancy = campsites.find { it.name == chosenCampsite }?.occupancy ?: 0
+    val occupancy = chosenCampsite?.let { campsites[it]?.occupancy } ?: 0
     val available = if (loaded != null && chosenCampsite != null) {
         loaded.availableDates(chosenCampsite, occupancy)
     } else {

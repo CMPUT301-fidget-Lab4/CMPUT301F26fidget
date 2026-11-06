@@ -31,7 +31,7 @@ fun CampsiteApp(
     findUser : (String) -> User?,
     getAndroidId: (Context) -> String,
     authState: StateFlow<AuthState>,
-    campsites: List<Campsite> = emptyList(),
+    campsites: Map<String, Campsite>,
     findCampsite: (String) -> Campsite? = { null },
     onAddCampsite: (Campsite) -> Unit = {},
     reservationRepository: ReservationRepository,
