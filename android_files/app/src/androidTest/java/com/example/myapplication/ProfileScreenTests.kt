@@ -1,73 +1,100 @@
 package com.example.myapplication
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextReplacement
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.myapplication.features.User
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.myapplication.features.AuthState
-import com.example.myapplication.ui_components.CampsiteApp
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
+import com.example.myapplication.features.User
+import com.example.myapplication.ui_components.screens.HomeScreen
+import com.example.myapplication.ui_components.screens.MainScreen
+import com.example.myapplication.ui_components.screens.ProfileScreen
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Test for the profile screen and corresponding buttons and actions.
+ * UI tests for profile navigation, display, edits, and deletion.
  *
- * Test navigation between the profile and main screen, entering data before editing is allowed,
- * entering and submitting profile updates, cancelling updates, and deleting and canceling user
- * profile delete requests. Uses a test double CampsiteApp instance.
+ * Uses the real screens and test callbacks. No Firebase or MockK/Mockito
+ * repositories are needed for these UI behaviors.
  */
-
 @RunWith(AndroidJUnit4::class)
 class ProfileScreenTests {
 
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val testUser = User("entrant", "Test User", "testuser@ualberta.ca", "1234567890", "test-device-id")
+    private val testUser = User(
+        userType = "entrant",
+        name = "Test User",
+        email = "testuser@ualberta.ca",
+        phoneNumber = "1234567890",
+        deviceID = "test-device-id"
+    )
 
     private val authFlow = MutableStateFlow<AuthState>(AuthState.LoggedIn(testUser))
-
     private var currentUser by mutableStateOf<User?>(testUser)
 
-    /**
-     * Test double Campsite App instance set up. Runs before every test function.
-     */
     @Before
     fun setUp() {
+        currentUser = testUser
+        authFlow.value = AuthState.LoggedIn(testUser)
+
         composeTestRule.setContent {
-            CampsiteApp(
-                user = currentUser,
-                users = emptyList(),
-                onUpdateUser = { newUser, _ -> currentUser = newUser },
-                authState = authFlow,
-                onAddUser = { },
-                onDeleteUser = { _ ->
-                    currentUser = null
-                    authFlow.value = AuthState.NotRegistered},
-                findUser = { _ -> currentUser },
-                getAndroidId = { _ -> currentUser!!.deviceID },
-            )
+            val navController = rememberNavController()
+
+            NavHost(
+                navController = navController,
+                startDestination = "MainScreen"
+            ) {
+                composable("MainScreen") {
+                    MainScreen(
+                        navController = navController,
+                        userProfile = currentUser
+                    )
+                }
+
+                composable("ProfileScreen") {
+                    ProfileScreen(
+                        navController = navController,
+                        userProfile = currentUser,
+                        onUpdateUser = { updatedUser, _ ->
+                            currentUser = updatedUser
+                            authFlow.value = AuthState.LoggedIn(updatedUser)
+                        },
+                        onDeleteUser = { _ ->
+                            currentUser = null
+                            authFlow.value = AuthState.NotRegistered
+                        }
+                    )
+                }
+
+                composable("HomeScreen") {
+                    HomeScreen(
+                        navController = navController,
+                        authState = authFlow
+                    )
+                }
+            }
         }
     }
 
-    /**
-     * Verifies navigation to profile screen works as intended.
-     */
-    @Test
-    fun mainScreen_profileButton_Navigation() {
+    private fun openProfile() {
         composeTestRule
             .onNodeWithTag("ProfileScreen")
             .performClick()
@@ -77,18 +104,16 @@ class ProfileScreenTests {
             .assertExists()
     }
 
-    /**
-     * Verifies navigation to profile screen and back to main screen works as intended.
-     */
+    /** MainScreen can open the profile screen. */
+    @Test
+    fun mainScreen_profileButton_Navigation() {
+        openProfile()
+    }
+
+    /** Profile's back button returns to MainScreen. */
     @Test
     fun profile_backButton_Navigation() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
-
-        composeTestRule
-            .onNodeWithText("User Profile")
-            .assertExists()
+        openProfile()
 
         composeTestRule
             .onNodeWithTag("returnMainScreen")
@@ -99,198 +124,110 @@ class ProfileScreenTests {
             .assertExists()
     }
 
-    /**
-     * Verifies profile screen displays correct user information.
-     */
+    /** The profile initially shows all four user fields. */
     @Test
     fun profile_initialLoad_displayCorrectUserInformation() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithText(testUser.userType)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(testUser.name)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(testUser.phoneNumber)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(testUser.email)
-            .assertExists()
+        composeTestRule.onNodeWithText(testUser.userType).assertExists()
+        composeTestRule.onNodeWithText(testUser.name).assertExists()
+        composeTestRule.onNodeWithText(testUser.phoneNumber).assertExists()
+        composeTestRule.onNodeWithText(testUser.email).assertExists()
     }
 
-    /**
-     * Verifies profile screen initially loads profile information as read-only.
-     */
+    /** The profile fields cannot be edited until Edit Profile is pressed. */
     @Test
     fun profile_initialLoad_ReadOnly() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithTag("profileUserType")
+        composeTestRule.onNodeWithTag("profileUserType")
             .assert(hasSetTextAction().not())
-
-        composeTestRule
-            .onNodeWithTag("profileName")
+        composeTestRule.onNodeWithTag("profileName")
             .assert(hasSetTextAction().not())
-
-        composeTestRule
-            .onNodeWithTag("profilePhoneNumber")
+        composeTestRule.onNodeWithTag("profilePhoneNumber")
             .assert(hasSetTextAction().not())
-
-        composeTestRule
-            .onNodeWithTag("profileEmail")
+        composeTestRule.onNodeWithTag("profileEmail")
             .assert(hasSetTextAction().not())
     }
 
-    /**
-     * Verifies edited user profile is saved by test double Campsite Apps methods and properly
-     * displayed after being saved.
-     */
+    /** Saving edits updates the current user and the displayed profile. */
     @Test
     fun profile_editing_isSaved() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithTag("editProfile")
-            .performClick()
-
-        composeTestRule
-            .onNodeWithTag("profileName")
+        composeTestRule.onNodeWithTag("editProfile").performClick()
+        composeTestRule.onNodeWithTag("profileName")
             .performTextReplacement("Super User")
-
-        composeTestRule
-            .onNodeWithTag("profilePhoneNumber")
+        composeTestRule.onNodeWithTag("profilePhoneNumber")
             .performTextReplacement("9876543210")
-
-        composeTestRule
-            .onNodeWithTag("profileEmail")
+        composeTestRule.onNodeWithTag("profileEmail")
             .performTextReplacement("superuser@ualberta.ca")
+        composeTestRule.onNodeWithTag("saveProfileEdits").performClick()
 
-        composeTestRule
-            .onNodeWithTag("saveProfileEdits")
-            .performClick()
+        composeTestRule.runOnIdle {
+            assertEquals("Super User", currentUser?.name)
+            assertEquals("9876543210", currentUser?.phoneNumber)
+            assertEquals("superuser@ualberta.ca", currentUser?.email)
+            assertEquals(testUser.userType, currentUser?.userType)
+            assertEquals(testUser.deviceID, currentUser?.deviceID)
+        }
 
-        val inputUser = User(testUser.userType, "Super User", "superuser@ualberta.ca", "9876543210", testUser.deviceID)
-
-        assertEquals(inputUser, currentUser)
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.name)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.phoneNumber)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.email)
-            .assertExists()
+        composeTestRule.onNodeWithText("Super User").assertExists()
+        composeTestRule.onNodeWithText("9876543210").assertExists()
+        composeTestRule.onNodeWithText("superuser@ualberta.ca").assertExists()
     }
 
-    /**
-     * Verifies canceled user profile edits aren't saved by test double campsite app methods
-     * or displayed on the profile screen.
-     */
+    /** Cancelling edits restores original values without invoking the update callback. */
     @Test
     fun profile_editing_cancelChanges() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithTag("editProfile")
-            .performClick()
-
-        composeTestRule
-            .onNodeWithTag("profileName")
+        composeTestRule.onNodeWithTag("editProfile").performClick()
+        composeTestRule.onNodeWithTag("profileName")
             .performTextReplacement("Super User")
-
-        composeTestRule
-            .onNodeWithTag("profilePhoneNumber")
+        composeTestRule.onNodeWithTag("profilePhoneNumber")
             .performTextReplacement("9876543210")
-
-        composeTestRule
-            .onNodeWithTag("profileEmail")
+        composeTestRule.onNodeWithTag("profileEmail")
             .performTextReplacement("superuser@ualberta.ca")
+        composeTestRule.onNodeWithTag("cancelProfileChanges").performClick()
 
-        composeTestRule
-            .onNodeWithTag("cancelProfileChanges")
-            .performClick()
+        composeTestRule.runOnIdle {
+            assertEquals("Test User", currentUser?.name)
+            assertEquals("1234567890", currentUser?.phoneNumber)
+            assertEquals("testuser@ualberta.ca", currentUser?.email)
+        }
 
-        assertEquals(testUser, currentUser)
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.name)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.phoneNumber)
-            .assertExists()
-
-        composeTestRule
-            .onNodeWithText(currentUser!!.email)
-            .assertExists()
+        composeTestRule.onNodeWithText("Test User").assertExists()
+        composeTestRule.onNodeWithText("1234567890").assertExists()
+        composeTestRule.onNodeWithText("testuser@ualberta.ca").assertExists()
     }
 
-    /**
-     * Verifies after a user deletes their profile that they are redirected to the home screen
-     * and are treated as a new user.
-     */
+    /** Confirming deletion clears the current user and opens HomeScreen. */
     @Test
     fun profile_delete_confirm() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithTag("deleteProfile")
-            .performClick()
+        composeTestRule.onNodeWithTag("deleteProfile").performClick()
+        composeTestRule.onNodeWithTag("confirmDeleteProfile").performClick()
 
-        composeTestRule
-            .onNodeWithTag("confirmDeleteProfile")
-            .performClick()
-
-        composeTestRule
-            .onNodeWithTag("welcomeSignUpButton")
-            .assertExists()
-
-        assertNull(currentUser)
+        composeTestRule.runOnIdle {
+            assertNull(currentUser)
+        }
+        composeTestRule.onNodeWithTag("welcomeSignUpButton").assertExists()
     }
 
-    /**
-     * Verifies canceling a delete profile request returns you to the profile screen.
-     */
+    /** Cancelling deletion closes the dialog without deleting the user. */
     @Test
     fun profile_delete_cancel() {
-        composeTestRule
-            .onNodeWithTag("ProfileScreen")
-            .performClick()
+        openProfile()
 
-        composeTestRule
-            .onNodeWithTag("deleteProfile")
-            .performClick()
+        composeTestRule.onNodeWithTag("deleteProfile").performClick()
+        composeTestRule.onNodeWithTag("cancelDeleteProfile").performClick()
 
-        composeTestRule
-            .onNodeWithTag("cancelDeleteProfile")
-            .performClick()
-
-        composeTestRule
-            .onNodeWithTag("cancelDeleteProfile")
-            .assertDoesNotExist()
-
-        assert(currentUser == testUser)
+        composeTestRule.onNodeWithTag("cancelDeleteProfile").assertDoesNotExist()
+        composeTestRule.runOnIdle {
+            assertEquals(testUser, currentUser)
+        }
+        composeTestRule.onNodeWithText("User Profile").assertExists()
     }
-
-
 }

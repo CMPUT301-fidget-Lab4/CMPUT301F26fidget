@@ -6,8 +6,20 @@ plugins {
 
 android {
     namespace = "com.example.myapplication"
-    compileSdk {
-        version = release(37)
+    compileSdk { version = release(37) }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.md",
+                "META-INF/NOTICE.txt"
+            )
+        }
     }
 
     defaultConfig {
@@ -17,7 +29,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -48,20 +59,50 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
-//    implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.compose.material.icons.core)
-//    implementation(libs.firebase.common.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
-    debugImplementation(libs.androidx.compose.ui.tooling)
+    // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.8")
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:35.0.2"))
     implementation("com.google.firebase:firebase-firestore")
-    testImplementation("org.mockito:mockito-core:5.11.0")
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    // Local Unit Tests
+    testImplementation(libs.junit)
+    testImplementation(
+        "org.mockito:mockito-core:5.11.0"
+    )
+    // Android Instrumented Tests
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(
+        libs.androidx.compose.ui.test.junit4
+    )
+    androidTestImplementation(
+        libs.androidx.espresso.core
+    )
+    androidTestImplementation(
+        libs.androidx.junit
+    )
+    androidTestImplementation(
+        "androidx.test:runner:1.6.2"
+    )
+    androidTestImplementation(
+        "androidx.test.ext:junit:1.2.1"
+    )
+
+    // Mockito for Android Tests
+    androidTestImplementation(
+        "org.mockito:mockito-android:5.18.0"
+    )
+
+    // MockK for Kotlin Android Tests
+    androidTestImplementation(
+        "io.mockk:mockk-android:1.13.17"
+    )
+
+    // Debug Dependencies
+    debugImplementation(
+        libs.androidx.compose.ui.test.manifest
+    )
+    debugImplementation(
+        libs.androidx.compose.ui.tooling
+    )
 }

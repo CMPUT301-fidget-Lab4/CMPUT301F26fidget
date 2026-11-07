@@ -17,18 +17,39 @@ import java.util.UUID
 /**
  * A lottery can cover several campsites. Each campsite stores its own copy of the
  * lottery document, and the first campsite in the list holds the "primary" copy.
+ *
+ * @property primary the Firestore snapshot of the primary copy of the lottery
+ * @property campsiteIds the IDs of every campsite that holds a copy of the lottery
  */
 private class LotteryCopies(
     val primary: DocumentSnapshot,
     val campsiteIds: List<String>
 )
 
+/**
+ * Reads and writes lotteries in Firestore.
+ *
+ * Lotteries are stored at campsites/{campsiteName}/lottery/current. A lottery that
+ * covers several campsites is stored once per campsite, and every copy is kept in sync
+ * by doing all changes inside Firestore transactions.
+ *
+ * @property db the Firestore instance to use
+ */
 class LotteryRepository(
     private val db: FirebaseFirestore = Firebase.firestore
 ) {
+    /** The "campsites" collection in Firestore. */
     private val campsiteRef = db.collection("campsites")
+
+    /** The time zone used for registration dates and times. */
     private val campsiteZone = ZoneId.of("America/Edmonton")
 
+    /**
+     * Gets the reference to a campsite's lottery document.
+     *
+     * @param campsiteName the name of the campsite, which is also its document id
+     * @return the reference to campsites/{campsiteName}/lottery/current
+     */
     private fun lotteryDoc(campsiteName: String) =
         campsiteRef.document(campsiteName).collection("lottery").document("current")
 
@@ -164,6 +185,13 @@ class LotteryRepository(
 //        }
 //    }
 
+    /**
+     * Checks if a lottery is ready to have its winners drawn.
+     *
+     * @param lottery the lottery to check
+     * @return true if the lottery has not been drawn, registration has ended, the
+     * waitlist is not empty, and there is at least one winner to pick. Otherwise false.
+     */
     private fun canDraw(lottery: Lottery): Boolean {
         val now = LocalDateTime.now(campsiteZone)
         if (lottery.drawn) return false
@@ -284,6 +312,11 @@ class LotteryRepository(
     /**
      * Adds an entrant or admin to the lottery waitlist in Firestore, then updates
      * the supplied User object's joinedLotteries after the transaction succeeds.
+     *
+     * @param campsiteName the campsite associated with the lottery
+     * @param user the user joining the waitlist
+     * @param onResult gets true if the user joined, or false if the user is not an
+     * entrant or admin, the lottery can't be joined, or the operation failed
      */
     fun joinLotteryWaitlist(
         campsiteName: String,
@@ -329,6 +362,15 @@ class LotteryRepository(
         }
     }
 
+    /**
+     * Checks if an entrant is allowed to join a lottery's waitlist.
+     *
+     * @param lottery the lottery to join
+     * @param entrantId the ID of the user who wants to join
+     * @return true if the lottery has not been drawn, registration is open, the user is
+     * not already on the waitlist or a winner, and the waitlist is not full.
+     * Otherwise false.
+     */
     private fun canJoin(lottery: Lottery, entrantId: String): Boolean {
         val now = LocalDateTime.now(campsiteZone)
         if (lottery.drawn) return false
@@ -339,6 +381,12 @@ class LotteryRepository(
         return true
     }
 
+    /**
+     * Checks if a lottery's waitlist has reached its capacity.
+     *
+     * @param lottery the lottery to check
+     * @return true if the waitlist has a limit and has reached it, false otherwise
+     */
     private fun isWaitlistFull(lottery: Lottery): Boolean {
         // A capacity of 0 means the waitlist has no limit.
         return lottery.waitlistCapacity > 0 && lottery.waitlist.size >= lottery.waitlistCapacity
@@ -353,8 +401,15 @@ class LotteryRepository(
      * Saving the lottery also sets inLottery = true on every campsite document that
      * is part of it.
      *
+     * @param campsiteName the name of the primary campsite
+     * @param period the registration period of the lottery
+     * @param numWinners how many winners will be drawn
      * @param campsites the campsites map from CampsiteRepository (name -> campsite). It is
      * used to check that every campsite in the lottery exists, with one lookup each.
+     * @param waitlistCapacity the maximum waitlist size, where 0 means no limit
+     * @param additionalCampsiteIds other campsites that share this lottery
+     * @return a task that finishes with the new lottery, or fails if a campsite does not
+     * exist or the lottery could not be saved
      */
     fun createLottery(
         campsiteName: String,
@@ -386,10 +441,28 @@ class LotteryRepository(
             }
     }
 
-    /** Saves a configured lottery to all participating campsites. */
+    /**
+     * Saves a configured lottery to all participating campsites.
+     *
+     * @param campsiteName the name of the primary campsite
+     * @param lottery the lottery to save
+     * @return a task that finishes when every copy is saved, or fails if the lottery is
+     * invalid or changed since it was loaded
+     */
     fun saveLottery(campsiteName: String, lottery: Lottery): Task<Void> =
         saveLottery(campsiteName, lottery, createOnly = false)
 
+    /**
+     * Validates a lottery and saves a copy of it to every participating campsite in one
+     * transaction. Also sets inLottery = true on each of those campsites.
+     *
+     * @param campsiteName the name of the primary campsite
+     * @param lottery the lottery to save
+     * @param createOnly true if this is a brand new lottery, which means no campsite may
+     * already have a lottery and the primary campsite must have an occupancy set
+     * @return a task that finishes when every copy is saved, or fails if the lottery is
+     * invalid or the checks in the transaction do not pass
+     */
     private fun saveLottery(campsiteName: String, lottery: Lottery, createOnly: Boolean): Task<Void> {
         val ids = participatingCampsites(campsiteName, lottery.campsiteIds)
         if (!isDocumentId(campsiteName) || ids.any { !isDocumentId(it) }) {
@@ -422,7 +495,12 @@ class LotteryRepository(
         }
     }
 
-    /** Returns an error message if the lottery settings are invalid, or null if they are fine. */
+    /**
+     * Returns an error message if the lottery settings are invalid, or null if they are fine.
+     *
+     * @param lottery the lottery to check
+     * @return a message describing the problem, or null if there is none
+     */
     private fun findLotteryProblem(lottery: Lottery): String? {
         if (lottery.id.isBlank() || lottery.numWinners < 1 || lottery.waitlistCapacity < 0) {
             return "Set a lottery ID, at least one winner, and a nonnegative waitlist capacity."
@@ -433,6 +511,16 @@ class LotteryRepository(
         return null
     }
 
+    /**
+     * Converts a lottery into the map of fields that is stored in Firestore.
+     *
+     * Dates are stored as text, plus a Timestamp for the closing time so Firestore can
+     * sort and filter on it.
+     *
+     * @param lottery the lottery to convert
+     * @param campsiteIds the IDs of every campsite that holds a copy of the lottery
+     * @return the Firestore fields for the lottery
+     */
     private fun buildLotteryData(lottery: Lottery, campsiteIds: List<String>): Map<String, Any> {
         val closingTime = lottery.period.registrationEnd.atZone(campsiteZone).toInstant()
         return mapOf(
@@ -449,6 +537,16 @@ class LotteryRepository(
         )
     }
 
+    /**
+     * Checks that a campsite's occupancy can support the number of winners.
+     * Throws an IllegalStateException if the check fails. Must be called inside a
+     * transaction, before any writes.
+     *
+     * @param transaction the transaction to read with
+     * @param primaryId the ID of the campsite to check
+     * @param numWinners the number of winners the lottery promises
+     * @param createOnly true if the campsite must already have an occupancy set
+     */
     private fun checkOccupancy(
         transaction: Transaction,
         primaryId: String,
@@ -464,7 +562,16 @@ class LotteryRepository(
         }
     }
 
-    /** Makes sure saving will not overwrite a lottery that changed since it was loaded. */
+    /**
+     * Makes sure saving will not overwrite a lottery that changed since it was loaded.
+     * Throws an IllegalStateException if the check fails. Must be called inside a
+     * transaction, before any writes.
+     *
+     * @param transaction the transaction to read with
+     * @param ids the IDs of every campsite that will be saved
+     * @param lottery the lottery that is about to be saved
+     * @param createOnly true if no campsite is allowed to already have a lottery
+     */
     private fun checkExistingCopies(
         transaction: Transaction,
         ids: List<String>,
@@ -504,7 +611,15 @@ class LotteryRepository(
     // Focused lottery updates
     // ---------------------------------------------------------------------
 
-    /** Changes registration dates without replacing the rest of the lottery. */
+    /**
+     * Changes registration dates without replacing the rest of the lottery.
+     *
+     * @param user the user making the change, who must be an admin or own every campsite
+     * @param campsiteName the campsite associated with the lottery
+     * @param period the new registration period
+     * @return a task that finishes when every copy is updated, or fails if the dates are
+     * invalid or the user is not allowed to edit the lottery
+     */
     fun updateLotteryPeriod(
         user: User,
         campsiteName: String,
@@ -531,7 +646,16 @@ class LotteryRepository(
         }
     }
 
-    /** Changes the waitlist limit. Zero means unlimited. */
+    /**
+     * Changes the waitlist limit. Zero means unlimited.
+     *
+     * @param user the user making the change, who must be an admin or own every campsite
+     * @param campsiteName the campsite associated with the lottery
+     * @param waitlistCapacity the new limit, which can't be negative or smaller than the
+     * current waitlist unless it is zero
+     * @return a task that finishes when every copy is updated, or fails if the capacity is
+     * invalid or the user is not allowed to edit the lottery
+     */
     fun updateLotteryWaitlistCapacity(
         user: User,
         campsiteName: String,
@@ -553,7 +677,15 @@ class LotteryRepository(
         }
     }
 
-    /** Changes the number of winners; it must fit in every participating campsite. */
+    /**
+     * Changes the number of winners; it must fit in every participating campsite.
+     *
+     * @param user the user making the change, who must be an admin or own every campsite
+     * @param campsiteName the campsite associated with the lottery
+     * @param numWinners the new number of winners, which must be at least 1
+     * @return a task that finishes when every copy is updated, or fails if the number is
+     * invalid, too large for a campsite, or the user is not allowed to edit the lottery
+     */
     fun updateLotteryNumWinners(
         user: User,
         campsiteName: String,
@@ -576,6 +708,12 @@ class LotteryRepository(
     /**
      * Replaces the waitlist and synchronizes affected users' joinedLotteries entries.
      * Call only for an administrative edit; entrants should use join/leave operations.
+     *
+     * @param user the user making the change, who must be an admin or own every campsite
+     * @param campsiteName the campsite associated with the lottery
+     * @param waitlist the new waitlist as a list of unique user IDs
+     * @return a task that finishes when the waitlist and the users are updated, or fails
+     * if the list is invalid, exceeds the capacity, or the user is not allowed to edit
      */
     fun updateLotteryWaitlist(
         user: User,
@@ -643,6 +781,12 @@ class LotteryRepository(
     /**
      * Adds another campsite to the same lottery. The campsite must be unused,
      * owned by this user (unless admin), and large enough for the draw.
+     *
+     * @param user the user making the change
+     * @param campsiteName a campsite that is already in the lottery
+     * @param newCampsiteName the campsite to add
+     * @return a task that finishes when the campsite is added, or fails if the campsite is
+     * invalid, already in a lottery, too small, or the user is not allowed to add it
      */
     fun addCampsiteToLottery(
         user: User,
@@ -685,6 +829,12 @@ class LotteryRepository(
     /**
      * Removes one campsite from a shared lottery, leaving its other campsites intact.
      * The last campsite cannot be removed here; use deleteLottery instead.
+     *
+     * @param user the user making the change, who must be an admin or own every campsite
+     * @param campsiteName a campsite that is in the lottery
+     * @param removeCampsiteName the campsite to remove
+     * @return a task that finishes when the campsite is removed, or fails if the campsite
+     * is not in the lottery, is the last one, or the user is not allowed to edit
      */
     fun removeCampsiteFromLottery(
         user: User,
@@ -751,6 +901,13 @@ class LotteryRepository(
     /**
      * Shared editing checks: all copies must agree, the lottery must not be drawn,
      * and the caller must be an admin or own ALL participating campsites.
+     *
+     * @param user the user making the change
+     * @param campsiteName a campsite that is in the lottery
+     * @param edit the change to make, which gets the transaction, the lottery copies and
+     * the saved lottery. It must do all of its reads before any writes.
+     * @return a task that finishes when the transaction commits, or fails if a check
+     * does not pass
      */
     private fun editLottery(
         user: User,
@@ -780,10 +937,25 @@ class LotteryRepository(
         }
     }
 
+    /**
+     * Checks if a user is allowed to change a campsite's lottery.
+     *
+     * @param user the user to check
+     * @param campsite the Firestore snapshot of the campsite
+     * @return true if the user is an admin or is the campsite's owner, false otherwise
+     */
     private fun canEditCampsite(user: User, campsite: DocumentSnapshot): Boolean =
         user.userType.equals("admin", ignoreCase = true) ||
                 (user.deviceID.isNotBlank() && campsite.getString("ownerID") == user.deviceID)
 
+    /**
+     * Applies the same changes to the lottery document of every campsite in the lottery.
+     * Does nothing if there are no changes.
+     *
+     * @param transaction the transaction to write with
+     * @param campsiteIds the IDs of the campsites whose copies should be updated
+     * @param changes the fields to update and their new values
+     */
     private fun updateLotteryCopies(
         transaction: Transaction,
         campsiteIds: List<String>,
@@ -799,7 +971,13 @@ class LotteryRepository(
     // Loading and deleting
     // ---------------------------------------------------------------------
 
-    /** Loads the current lottery for a campsite. */
+    /**
+     * Loads the current lottery for a campsite.
+     *
+     * @param campsiteName the name of the campsite, which is also its document id
+     * @param onResult gets the lottery, or null if it does not exist, can't be read,
+     * or the lookup failed
+     */
     fun getLottery(campsiteName: String, onResult: (Lottery?) -> Unit) {
         if (!isDocumentId(campsiteName)) {
             onResult(null)
@@ -818,7 +996,13 @@ class LotteryRepository(
         }
     }
 
-    /** Deletes all copies of the current lottery and clears the campsite flags. */
+    /**
+     * Deletes all copies of the current lottery and clears the campsite flags.
+     *
+     * @param campsiteName a campsite that is in the lottery
+     * @return a task that finishes when every copy is deleted, or fails if the campsite
+     * ID is invalid or the lottery is missing or inconsistent
+     */
     fun deleteLottery(campsiteName: String): Task<Void> {
         if (!isDocumentId(campsiteName)) {
             return Tasks.forException(IllegalArgumentException("Invalid campsite ID."))
@@ -844,6 +1028,11 @@ class LotteryRepository(
      * Reads the primary copy and checks that every copy belongs to the same lottery.
      * Returns null if anything is missing or inconsistent.
      * If primaryOnly is true, campsiteName must be the primary campsite.
+     *
+     * @param transaction the transaction to read with
+     * @param campsiteName a campsite that is in the lottery
+     * @param primaryOnly true if campsiteName must be the primary campsite
+     * @return the primary copy and the IDs of every campsite in the lottery, or null
      */
     private fun readLotteryCopies(
         transaction: Transaction,
@@ -878,6 +1067,13 @@ class LotteryRepository(
         return LotteryCopies(primary, allIds)
     }
 
+    /**
+     * Converts a Firestore lottery document into a Lottery object.
+     * Missing numbers fall back to defaults (1 winner, no waitlist limit, not drawn).
+     *
+     * @param doc the Firestore snapshot of a lottery document
+     * @return the lottery, or null if the document does not exist
+     */
     private fun readLottery(doc: DocumentSnapshot): Lottery? {
         if (!doc.exists()) return null
 
@@ -897,11 +1093,27 @@ class LotteryRepository(
         )
     }
 
+    /**
+     * Reads a date that is stored as text in a Firestore document.
+     *
+     * @param doc the Firestore snapshot to read from
+     * @param field the name of the field that holds the date text
+     * @return the parsed date and time
+     * @throws IllegalArgumentException if the field is missing
+     */
     private fun readDate(doc: DocumentSnapshot, field: String): LocalDateTime {
         val text = requireNotNull(doc.getString(field)) { "Missing $field" }
         return LocalDateTime.parse(text)
     }
 
+    /**
+     * Reads a list of strings from a Firestore document.
+     *
+     * @param doc the Firestore snapshot to read from
+     * @param field the name of the field that holds the list
+     * @return the strings in the list, or an empty list if the field is missing or is
+     * not a list. Items that are not strings are skipped.
+     */
     private fun readIds(doc: DocumentSnapshot, field: String): List<String> {
         val list = doc.get(field) as? List<*> ?: return emptyList()
         return list.filterIsInstance<String>()
@@ -911,12 +1123,30 @@ class LotteryRepository(
     // Small helpers
     // ---------------------------------------------------------------------
 
-    /** Combines the IDs with the campsite name, dropping blanks and duplicates. */
+    /**
+     * Combines the IDs with the campsite name, dropping blanks and duplicates.
+     *
+     * @param campsiteName the name of a campsite that must be included
+     * @param campsiteIds the other campsite IDs
+     * @return the combined list of IDs, without blanks or duplicates
+     */
     private fun participatingCampsites(campsiteName: String, campsiteIds: List<String>): List<String> =
         (campsiteIds + campsiteName).filter { it.isNotBlank() }.distinct()
 
+    /**
+     * Builds the campsite fields that mark whether a campsite is in a lottery.
+     *
+     * @param active true if the campsite is in a lottery, false if it is not
+     * @return the map to write to the campsite document
+     */
     private fun campsiteLotteryFlags(active: Boolean) =
         mapOf("inLottery" to active)
 
+    /**
+     * Checks that a value can be used as a Firestore document ID in this repository.
+     *
+     * @param value the text to check
+     * @return true if it is not blank and has no "/" in it, false otherwise
+     */
     private fun isDocumentId(value: String): Boolean = value.isNotBlank() && '/' !in value
 }

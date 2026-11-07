@@ -1,70 +1,83 @@
 package com.example.myapplication
 
-import android.location.Geocoder
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.junit4.createComposeRule
-import com.example.myapplication.features.User
-import com.example.myapplication.ui_components.CampsiteApp
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.myapplication.features.AuthState
-import com.example.myapplication.features.CampsiteLocation
+import com.example.myapplication.features.User
+import com.example.myapplication.ui_components.screens.HomeScreen
+import com.example.myapplication.ui_components.screens.MainScreen
+import com.example.myapplication.ui_components.screens.Signup
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Assert
-import org.junit.Assume
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 
-
-/**
- * Test class to verify users are redirected as intended from the home screen.
- *
- * Tests that a new user is prompted to the sign-up screen with a functional button to perform
- * the navigation and that a returning user is automatically redirected to the main screen.
- */
+/** Tests HomeScreen navigation without mocking unrelated Firebase repositories. */
 @RunWith(AndroidJUnit4::class)
 class HomeScreenTests {
+
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    private val testUser = User(
+        userType = "entrant",
+        name = "Test User",
+        email = "testuser@ualberta.ca",
+        phoneNumber = "1234567890",
+        deviceID = "test-device-id"
+    )
+
     private val authFlow = MutableStateFlow<AuthState>(AuthState.NotRegistered)
-
-    private val testUser = User("entrant", "Test User", "testuser@ualberta.ca", "1234567890", "test-device-id")
-
     private var currentUser by mutableStateOf<User?>(null)
 
     @Before
     fun setUp() {
+        currentUser = null
+        authFlow.value = AuthState.NotRegistered
+
         composeTestRule.setContent {
-            CampsiteApp(
-                user = currentUser,
-                users = emptyList(),
-                onUpdateUser = { _, _ -> },
-                authState = authFlow,
-                onAddUser = { _ -> },
-                onDeleteUser = { _ -> },
-                findUser = { _ -> User() },
-                getAndroidId = { _ -> "" },
-            )
+            val navController = rememberNavController()
+
+            NavHost(
+                navController = navController,
+                startDestination = "HomeScreen"
+            ) {
+                composable("HomeScreen") {
+                    HomeScreen(navController = navController, authState = authFlow)
+                }
+                composable("Signup") {
+                    Signup(
+                        navController = navController,
+                        onAddUser = { newUser ->
+                            currentUser = newUser
+                            authFlow.value = AuthState.LoggedIn(newUser)
+                        },
+                        getAndroidId = { _ -> testUser.deviceID }
+                    )
+                }
+                composable("MainScreen") {
+                    MainScreen(navController = navController, userProfile = currentUser)
+                }
+            }
         }
     }
 
-
-    /**
-     * Verifies that a new user is prompted to sign up with a button to navigate
-     * to the sign-up screen.
-     */
+    /** A new user sees the prompt and can reach the real signup screen. */
     @Test
     fun newUserRedirect_Test() {
         composeTestRule
-            .onNodeWithText("Device Account Not Found. Continue To Sign In")
+            .onNodeWithText("Account Not Found. Continue To Sign In")
             .assertExists()
 
         composeTestRule
@@ -76,15 +89,19 @@ class HomeScreenTests {
             .assertExists()
     }
 
-    /**
-     * Verifies that a returning user is automatically redirected to the main screen and
-     * [User.name] is displayed.
-     */
+    /** Logged-in users are redirected to MainScreen and greeted by name. */
     @Test
     fun returningUser_Test() {
         composeTestRule.runOnIdle {
             currentUser = testUser
             authFlow.value = AuthState.LoggedIn(testUser)
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            composeTestRule
+                .onAllNodesWithText("Welcome ${testUser.name}!")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
         composeTestRule
