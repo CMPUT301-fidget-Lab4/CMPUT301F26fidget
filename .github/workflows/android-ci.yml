@@ -1,5 +1,9 @@
 name: Android CI
 
+defaults:
+  run:
+    working-directory: android_files
+
 on:
   pull_request:
     branches: [ main ]
@@ -22,6 +26,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: android_files
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -44,6 +50,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: android_files
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -60,4 +68,5 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
+          working-directory: android_files
           script: ./gradlew connectedDebugAndroidTest
