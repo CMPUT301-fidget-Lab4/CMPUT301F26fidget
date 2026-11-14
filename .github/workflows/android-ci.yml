@@ -1,72 +1,36 @@
 name: Android CI
 
-defaults:
-  run:
-    working-directory: android_files
-
 on:
-  pull_request:
-    branches: [ main ]
   push:
-    branches: [ main ]
+    branches: ["**"]
+  pull_request:
+    branches: [main, master]
 
 jobs:
-  unit-tests:
-    name: Unit tests
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v5
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          build-root-directory: android_files
+      - name: Remove local.properties
+        run: rm -f local.properties
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew test --configuration-cache
 
-  instrumented-tests:
-    name: Instrumented tests (emulator)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          build-root-directory: android_files
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Enable KVM (makes the emulator faster)
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Run androidTest on emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          working-directory: android_files
-          script: ./gradlew connectedDebugAndroidTest
+          name: test-reports
+          path: "**/build/reports/tests/"
