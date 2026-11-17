@@ -15,10 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -34,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.Lottery
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -61,7 +64,8 @@ fun CampsiteDetailsScreen(
     campsiteName: String,
     userProfile: User?,
     findCampsite: (String) -> Campsite?,
-    lotteryRepository: LotteryRepository? = null
+    lotteryRepository: LotteryRepository? = null,
+    onDeleteCampsite: (Campsite) -> Unit
 ) {
 
     val campsite = findCampsite(campsiteName)
@@ -102,6 +106,8 @@ fun CampsiteDetailsScreen(
         mutableStateOf<String?>(null)
     }
 
+    var showDeleteWarning by remember { mutableStateOf(false) }
+
     /**
      * Start with the campsite's matching lottery and refresh its saved status.
      * The campsite flag does not determine whether a waitlist can be joined.
@@ -125,7 +131,7 @@ fun CampsiteDetailsScreen(
         ) {
             loadingLottery = true
 
-            val currentLottery = suspendCancellableCoroutine<Lottery?> { continuation ->
+            val currentLottery = suspendCancellableCoroutine { continuation ->
                 lotteryRepository.getLottery(campsiteName) { savedLottery ->
                     if (continuation.isActive) continuation.resume(savedLottery)
                 }
@@ -324,6 +330,51 @@ fun CampsiteDetailsScreen(
                     Text("Edit Campsite")
                 }
             }
+
+            if (userProfile?.userType == "admin") {
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { showDeleteWarning = true },
+                    modifier = Modifier.testTag("deleteCampsiteButton"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Gray,
+                        disabledContentColor = Color.LightGray
+                    )
+                ) {
+                    Text("Delete Campsite")
+                }
+            }
+
+            if (showDeleteWarning) {
+
+                AlertDialog(
+                    onDismissRequest = { showDeleteWarning = false },
+                    title = { Text("Delete Campsite?") },
+                    text = { Text("This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                onDeleteCampsite(campsite)
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier.testTag("confirmDeleteCampsite")
+                        ) {
+                            Text("Confirm")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDeleteWarning = false },
+                            modifier = Modifier.testTag("cancelCampsiteDelete")
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -440,7 +491,7 @@ private fun CampsiteDetails(campsite: Campsite) {
 }
 
 /**
- * Displays one labelled campsite detail.
+ * Displays one labeled campsite detail.
  */
 @Composable
 private fun DetailRow(
@@ -467,8 +518,8 @@ private fun DetailRow(
 
 
 //  This should go into the image class. It is not the role of the CampsiteScreen.kt to
-//  decode the image though there is a image class which you can just place this as function.
-//  THough we should develop this in milestone 2 .
+//  decode the image though there is an image class which you can just place this as function.
+//  Though we should develop this in milestone 2 .
 /**
  * Converts a Base64 photo string into a Bitmap.
  *

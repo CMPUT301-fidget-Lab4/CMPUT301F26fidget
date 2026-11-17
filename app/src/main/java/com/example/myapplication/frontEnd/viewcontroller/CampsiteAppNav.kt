@@ -44,7 +44,8 @@ fun CampsiteApp(
     onUpdateCampsite: (String, CampsiteLocation, String, Int, String, String) -> Unit = { _, _, _, _, _, _ -> },
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository,
-    lotteryRepository: LotteryRepository
+    lotteryRepository: LotteryRepository,
+    onDeleteCampsite: (Campsite) -> Unit
 )  {
 
     val navController = rememberNavController()
@@ -104,7 +105,8 @@ fun CampsiteApp(
                 campsiteName = campsiteName,
                 userProfile = user,
                 findCampsite = findCampsite,
-                lotteryRepository = lotteryRepository
+                lotteryRepository = lotteryRepository,
+                onDeleteCampsite = onDeleteCampsite
             )
         }
         composable("Reservations") {

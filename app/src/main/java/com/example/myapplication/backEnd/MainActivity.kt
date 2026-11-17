@@ -82,7 +82,8 @@ class MainActivity : ComponentActivity() {
                     onAddCampsite = campsiteRepository::addCampsite,
                     reservationRepository = reservationRepository,
                     scheduleRepository = scheduleRepository,
-                    lotteryRepository = lotteryRepository
+                    lotteryRepository = lotteryRepository,
+                    onDeleteCampsite = campsiteRepository::deleteCampsite
                 )
             }
         }
