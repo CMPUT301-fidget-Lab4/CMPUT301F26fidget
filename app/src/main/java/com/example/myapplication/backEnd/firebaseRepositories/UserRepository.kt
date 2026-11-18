@@ -1,6 +1,7 @@
 package com.example.myapplication.backEnd.firebaseRepositories
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -116,11 +117,15 @@ class UserRepository(currentDeviceID: String) {
             _currentUser.value = null
 
             snapshots?.documents?.forEach { document ->
-                val user = document.toObject(User::class.java)
-                if (user != null){
+                val user = try {
+                    document.toObject(User::class.java)
+                } catch (e: Exception) {
+                    Log.e("UserRepository", "Skipping doc ${document.id}: ${e.message}", e)
+                    null
+                }
+                if (user != null) {
                     _users.add(user)
-
-                    if (user.deviceID == currentDeviceID){
+                    if (user.deviceID == currentDeviceID) {
                         _currentUser.value = user
                     }
                 }

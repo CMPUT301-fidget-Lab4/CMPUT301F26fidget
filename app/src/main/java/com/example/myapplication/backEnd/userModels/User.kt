@@ -1,5 +1,4 @@
 package com.example.myapplication.backEnd.userModels
-import com.example.myapplication.backEnd.featureModels.Campsite
 import com.google.firebase.firestore.DocumentId
 
 /**
@@ -34,7 +33,7 @@ data class User(
     var deviceID: String = "",
 
     // IDs of campsites associated with this user
-    var campsiteIds: Map<String, Campsite> = emptyMap(),
+    var campsiteIds: List<String> = emptyList(),
     // Lotteries joined by this entrant
     var joinedLotteries: List<JoinedLottery> = emptyList()
 ) {
