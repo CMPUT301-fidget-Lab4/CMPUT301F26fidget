@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.MainViews
+package com.example.myapplication.frontEnd.screens.MainViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ import androidx.navigation.NavController
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.runtime.getValue
-import com.example.myapplication.`Back-End`.AuthState
+import com.example.myapplication.backEnd.firebaseRepositories.AuthState
 
 
 /**
