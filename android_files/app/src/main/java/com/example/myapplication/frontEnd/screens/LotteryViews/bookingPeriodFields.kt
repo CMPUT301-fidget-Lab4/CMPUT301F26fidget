@@ -1,4 +1,4 @@
-package com.example.myapplication.frontEnd.screens.lotteryViews
+package com.example.myapplication.frontEnd.screens.LotteryViews
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Checkbox

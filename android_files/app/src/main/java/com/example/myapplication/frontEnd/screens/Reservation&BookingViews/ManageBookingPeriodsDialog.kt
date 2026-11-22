@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.backEnd.featureModels.*
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.userModels.User
-import com.example.myapplication.frontEnd.screens.lotteryViews.BookingPeriodFields
+import com.example.myapplication.frontEnd.screens.LotteryViews.BookingPeriodFields
 import java.time.LocalDateTime
 
 /** Uses the campsite collections kept current by CampsiteRepository. */

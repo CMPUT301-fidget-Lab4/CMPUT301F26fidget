@@ -15,8 +15,8 @@ import androidx.navigation.NavController
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.userModels.User
-import com.example.myapplication.frontEnd.screens.lotteryViews.CreateLotteryScreen
-import com.example.myapplication.frontEnd.screens.lotteryViews.PickBookingPeriodsScreen
+import com.example.myapplication.frontEnd.screens.LotteryViews.CreateLotteryScreen
+import com.example.myapplication.frontEnd.screens.LotteryViews.PickBookingPeriodsScreen
 import java.time.LocalDateTime
 import java.util.UUID
 
