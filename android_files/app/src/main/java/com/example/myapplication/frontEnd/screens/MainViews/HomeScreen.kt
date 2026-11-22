@@ -1,17 +1,19 @@
-package com.example.myapplication.`Front-End`.screens.MainViews
+package com.example.myapplication.frontEnd.screens.mainViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -20,38 +22,41 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.flow.StateFlow
-import androidx.compose.runtime.getValue
-import com.example.myapplication.`Back-End`.AuthState
+import com.example.myapplication.backEnd.firebaseRepositories.AuthState
 
 
-/**
- * Home screen is where the app initially loads. A returning user is automatically redirected to the
- * main screen. A new user presses sign in to create an account.
- *
- * The user's Android ID is fetched. If a Firestore document exists with that ID, the user is
- * redirected to the main screen. Otherwise, the user must create an account. When they press
- * sign in they are redirected to the sign-up screen.
- *
- * @param navController
- * @param authState StateFlow for AuthState. Updates function when Firestore fetching finishes on
- * whether the current user is new or retuning.
- */
+/** Displays account lookup status and signup, or redirects a registered user to MainScreen. */
 @Composable
 fun HomeScreen(
     navController: NavController,
     authState: StateFlow<AuthState>,
 ) {
-    val currentAuthState by authState.collectAsState()   // recomposes when it changes
+    val currentAuthState by authState.collectAsState()
 
     LaunchedEffect(currentAuthState) {
         if (currentAuthState is AuthState.LoggedIn) {
-            navController.navigate("MainScreen")
+            navController.navigate("MainScreen") {
+                popUpTo("HomeScreen") { inclusive = false }
+                launchSingleTop = true
+            }
         }
     }
 
+    val statusMessage = when (currentAuthState) {
+        AuthState.Loading -> null
+        AuthState.NotRegistered -> "No account found. Sign up to get started."
+        AuthState.Error -> "Unable to check your account. Please try again later."
+        // Hide the welcome page while navigation to MainScreen is being processed.
+        is AuthState.LoggedIn -> return
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -61,24 +66,19 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("Signup")
-            },
-            modifier = Modifier.testTag("welcomeSignUpButton") // for testing
-        ) {
-            Text("Sign up")
+        if (statusMessage == null) {
+            CircularProgressIndicator(modifier = Modifier.testTag("homeLoadingIndicator"))
+        } else {
+            Text(statusMessage, textAlign = TextAlign.Center)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when (val state = currentAuthState) {
-            AuthState.Loading       -> CircularProgressIndicator()
-            AuthState.NotRegistered -> Text("Account Not Found. Continue To Sign In")
-            AuthState.Error         -> Text("Something went wrong")
-            is AuthState.LoggedIn   -> Text("Welcome back, ${state.user.name}")  // use whatever field User has
+        if (currentAuthState == AuthState.NotRegistered) {
+            Button(
+                onClick = { navController.navigate("Signup") { launchSingleTop = true } },
+                modifier = Modifier.testTag("welcomeSignUpButton")
+            ) {
+                Text("Sign up")
+            }
         }
     }
 }

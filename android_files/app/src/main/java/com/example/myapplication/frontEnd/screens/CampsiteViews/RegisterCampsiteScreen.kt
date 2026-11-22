@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.CampsiteViews
+package com.example.myapplication.frontEnd.screens.campsiteViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +26,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.`Back-End`.Campsite
-import com.example.myapplication.`Back-End`.CampsiteLocation
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.featureModels.Campsite
+import com.example.myapplication.backEnd.featureModels.CampsiteLocation
+import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -100,6 +100,7 @@ private fun RegisterCampsiteForm(
     var description by remember { mutableStateOf("") }
     var occupancy by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
+    var policies by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -206,6 +207,13 @@ private fun RegisterCampsiteForm(
             modifier = Modifier.fillMaxWidth().testTag("registerCampsiteTags")
         )
 
+        OutlinedTextField(
+            value = policies, onValueChange = { policies = it },
+            label = { Text("Rules and policies (optional)") },
+            supportingText = { Text("List your rules here. You can include https:// links to policies.") },
+            minLines = 3, modifier = Modifier.fillMaxWidth().testTag("registerCampsitePolicies")
+        )
+
         if (errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -257,6 +265,7 @@ private fun RegisterCampsiteForm(
                                 occupancy = newOccupancy,
                                 photo = "",
                                 tags = tags.trim(),
+                                termsAndConditions = policies.trim(),
                                 ownerID = userProfile.deviceID
                             )
 

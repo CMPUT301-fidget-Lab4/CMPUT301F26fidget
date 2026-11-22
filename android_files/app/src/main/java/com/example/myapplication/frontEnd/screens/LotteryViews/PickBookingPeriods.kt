@@ -1,4 +1,4 @@
-package com.example.myapplication.frontEnd.screens.LotteryViews
+package com.example.myapplication.frontEnd.screens.lotteryViews
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +44,13 @@ fun PickBookingPeriodsScreen(
     onBookingStartChange: (String) -> Unit,
     onBookingEndChange: (String) -> Unit,
     onCreate: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    customPeriods: Boolean = false,
+    campsiteStarts: Map<String, String> = emptyMap(),
+    campsiteEnds: Map<String, String> = emptyMap(),
+    onCustomPeriodsChange: (Boolean) -> Unit = {},
+    onCampsiteStartChange: (String, String) -> Unit = { _, _ -> },
+    onCampsiteEndChange: (String, String) -> Unit = { _, _ -> }
 ) {
     // A pending save must finish before leaving; pressing back never submits a second request.
     BackHandler { if (!isCreating) onBack() }
@@ -78,22 +84,14 @@ fun PickBookingPeriodsScreen(
         Text("Campsites: ${(listOf(campsiteName) + additionalCampsiteIds).joinToString()}")
         Text("Winners: $numWinners")
         Text("Registration closes: ${formatDateTime(registrationEnd)}")
-        Text("This booking period applies to every selected campsite.")
+        Text(if (customPeriods) "Each campsite uses its own booking period." else "The default booking period applies to every selected campsite.")
         HorizontalDivider()
 
-        LotteryDateTimeFields(
-            label = "Booking Starts",
-            value = bookingStart,
-            onValueChange = onBookingStartChange,
-            testTagPrefix = "pickBookingStart",
-            enabled = !isCreating
-        )
-        LotteryDateTimeFields(
-            label = "Booking Ends",
-            value = bookingEnd,
-            onValueChange = onBookingEndChange,
-            testTagPrefix = "pickBookingEnd",
-            enabled = !isCreating
+        BookingPeriodFields(
+            listOf(campsiteName) + additionalCampsiteIds, bookingStart, bookingEnd,
+            customPeriods, campsiteStarts, campsiteEnds, !isCreating,
+            onBookingStartChange, onBookingEndChange, onCustomPeriodsChange,
+            onCampsiteStartChange, onCampsiteEndChange
         )
         Text(
             "Winners currently select whole nights. Midnight boundaries let them book all nights in this period.",

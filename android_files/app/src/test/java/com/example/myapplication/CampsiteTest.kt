@@ -1,9 +1,9 @@
 package com.example.myapplication
 
-import com.example.myapplication.features.BookingSchedule
-import com.example.myapplication.features.Campsite
-import com.example.myapplication.features.CampsiteLocation
-import com.example.myapplication.features.Lottery
+import com.example.myapplication.backEnd.featureModels.BookingSchedule
+import com.example.myapplication.backEnd.featureModels.Campsite
+import com.example.myapplication.backEnd.featureModels.CampsiteLocation
+import com.example.myapplication.backEnd.featureModels.Lottery
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.GeoPoint
 import org.junit.Assert.assertEquals
@@ -255,7 +255,7 @@ class CampsiteTest {
         val schedule = makeSchedule()
         campsite.bookingSchedules = mutableListOf(schedule)
 
-        val booking = schedule.Booking(
+        val booking = BookingSchedule.Booking(
             entrantId = "entrant-1",
             campsiteId = campsite.name,
             startDate = LocalDateTime.of(2035, 7, 2, 0, 0),

@@ -1,4 +1,4 @@
-package com.example.myapplication.`Back-End`
+package com.example.myapplication.backEnd
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -7,13 +7,15 @@ import android.provider.Settings.Secure
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.myapplication.`Front-End`.theme.MyApplicationTheme
-import com.example.myapplication.`Front-End`.Viewcontroller.CampsiteApp
+import com.example.myapplication.frontEnd.theme.MyApplicationTheme
+import com.example.myapplication.frontEnd.viewcontroller.CampsiteApp
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.BookingScheduleRepository
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.CampsiteRepository
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.LotteryRepository
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.ReservationRepository
+import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
+import com.example.myapplication.backEnd.firebaseRepositories.CampsiteRepository
+import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
+import com.example.myapplication.backEnd.firebaseRepositories.UserRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 
@@ -24,14 +26,19 @@ class MainActivity : ComponentActivity() {
 
         @SuppressLint("HardwareIds")
         val currentDeviceID: String = Secure.getString(this.contentResolver, Secure.ANDROID_ID)
-        val campsiteRepository = CampsiteRepository()
         val scheduleRepository = BookingScheduleRepository()
         val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
-        val lotteryRepository = LotteryRepository()
+        lateinit var campsiteRepository: CampsiteRepository
+        val lotteryRepository = LotteryRepository(campsiteLookup = { campsiteRepository.campsitesMap[it] }, userLookup = userRepository::findUser)
+        campsiteRepository = CampsiteRepository(sharedLotteryRepository = lotteryRepository)
 
         setContent {
             MyApplicationTheme {
+                LaunchedEffect(lotteryRepository, userRepository) {
+                    androidx.compose.runtime.snapshotFlow { userRepository.users.toList() }.collect { lotteryRepository.refreshReferences() }
+                }
+                DisposableEffect(campsiteRepository) { onDispose { campsiteRepository.close() } }
                 // Runs immediately and again one minute after each check completes.
                 // The Firestore draw transaction is safe if several devices do this.
                 LaunchedEffect(lotteryRepository) {

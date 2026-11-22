@@ -1,4 +1,4 @@
-package com.example.myapplication.frontEnd.screens.CampsiteViews
+package com.example.myapplication.frontEnd.screens.campsiteViews
 
 import com.example.myapplication.backEnd.time.AlbertaTime
 
@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.Lottery
-import com.example.myapplication.backEnd.`firebase-Repositories`.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume

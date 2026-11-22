@@ -12,16 +12,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.`firebase-Repositories`.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.userModels.User
-import com.example.myapplication.frontEnd.screens.LotteryViews.CreateLotteryScreen
-import com.example.myapplication.frontEnd.screens.LotteryViews.PickBookingPeriodsScreen
+import com.example.myapplication.frontEnd.screens.lotteryViews.CreateLotteryScreen
+import com.example.myapplication.frontEnd.screens.lotteryViews.PickBookingPeriodsScreen
 import java.time.LocalDateTime
 import java.util.UUID
 
+/** Navigation entry point that creates and remembers the lottery controller. */
 @Composable
-fun CreateLotteryFlow(
+fun CreateLotteryRoute(
     navController: NavController,
     lotteryRepository: LotteryRepository,
     user: User,
@@ -76,13 +77,17 @@ fun CreateLotteryFlow(
     var bookingEnd by rememberSaveable(user.deviceID) {
         mutableStateOf(initialBookingEnd ?: defaultBookingStart.plusDays(7).toString())
     }
+    var customPeriods by rememberSaveable(user.deviceID) { mutableStateOf(false) }
+    var campsiteStarts by rememberSaveable(user.deviceID) { mutableStateOf(hashMapOf<String, String>()) }
+    var campsiteEnds by rememberSaveable(user.deviceID) { mutableStateOf(hashMapOf<String, String>()) }
     var pickingBookingPeriod by rememberSaveable(user.deviceID) { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    // In side my controller there exist a read-one
     val creationState by controller.creationState.collectAsState()
     val isCreating = creationState.isCreating
 
     LaunchedEffect(controller, creationState.result) {
-        val result = controller.consumeCreationResult(campsites, lotteryId) ?: return@LaunchedEffect
+        val result = controller.consumeCreationResult(lotteryId) ?: return@LaunchedEffect
         result.onSuccess {
             navController.popBackStack("HomeScreen", inclusive = false)
         }.onFailure { error ->
@@ -100,6 +105,12 @@ fun CreateLotteryFlow(
             bookingEnd = bookingEnd,
             errorMessage = errorMessage,
             isCreating = isCreating,
+            customPeriods = customPeriods,
+            campsiteStarts = campsiteStarts,
+            campsiteEnds = campsiteEnds,
+            onCustomPeriodsChange = { customPeriods = it; errorMessage = null },
+            onCampsiteStartChange = { id, value -> campsiteStarts = HashMap(campsiteStarts + (id to value)); errorMessage = null },
+            onCampsiteEndChange = { id, value -> campsiteEnds = HashMap(campsiteEnds + (id to value)); errorMessage = null },
             onBookingStartChange = {
                 bookingStart = it
                 errorMessage = null
@@ -118,7 +129,7 @@ fun CreateLotteryFlow(
                 // Guard the callback as well as disabling the button during submission.
                 if (!isCreating) {
                     errorMessage = null
-                    controller.createLottery(
+                    controller.controllercreationLottery(
                         user = user,
                         campsites = campsites,
                         campsiteName = campsiteName,
@@ -129,12 +140,15 @@ fun CreateLotteryFlow(
                         registrationEndInput = registrationEnd,
                         bookingStartInput = bookingStart,
                         bookingEndInput = bookingEnd,
-                        lotteryId = lotteryId
+                        lotteryId = lotteryId,
+                        campsiteBookingStarts = if (customPeriods) (listOf(campsiteName) + additionalCampsiteIds).associateWith { campsiteStarts[it] ?: bookingStart } else emptyMap(),
+                        campsiteBookingEnds = if (customPeriods) (listOf(campsiteName) + additionalCampsiteIds).associateWith { campsiteEnds[it] ?: bookingEnd } else emptyMap()
                     )
                 }
             }
         )
     } else {
+        // Go all the way back to the home screen
         BackHandler {
             navController.popBackStack("HomeScreen", inclusive = false)
         }

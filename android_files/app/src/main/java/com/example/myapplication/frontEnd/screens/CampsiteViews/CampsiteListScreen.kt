@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.CampsiteViews
+package com.example.myapplication.frontEnd.screens.campsiteViews
 
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.`Back-End`.Campsite
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.featureModels.Campsite
+import com.example.myapplication.backEnd.userModels.User
 
 /**
  * CampsiteListScreen displays a list of campsites.
@@ -76,8 +76,7 @@ fun CampsiteListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Must change this line
-        if (userProfile?.userType == "campsite owner") {
+        if (userProfile?.userType == "campsite owner" || userProfile?.userType == "admin") {
             Button(
                 onClick = { navController.navigate("RegisterCampsite") },
                 modifier = Modifier.testTag("registerNewCampsite") // for testing

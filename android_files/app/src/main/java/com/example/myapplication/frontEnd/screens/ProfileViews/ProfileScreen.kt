@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.ProfileViews
+package com.example.myapplication.frontEnd.screens.profileViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.userModels.User
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.Button

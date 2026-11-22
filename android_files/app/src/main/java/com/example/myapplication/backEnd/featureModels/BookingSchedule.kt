@@ -8,37 +8,75 @@ import java.time.LocalDateTime
 /**
  * All the bookings that came out of one lottery.
  *
- * The owner sets a booking period (bookingStart to bookingEnd).
- * Winners pick dates inside that period, and each pick becomes a Booking.
+ * The owner sets a default booking period (bookingStart to bookingEnd),
+ * with optional overrides for individual campsites in the same lottery.
+ * Stay windows are unassigned Bookings; a winner's selected stay is a Booking with an entrant.
  * A campsite can have several of these, one per lottery.
  *
  * @param registration How people got the right to book (a Lottery).
  * @param bookingStart Start of the period winners can book in.
  * @param bookingEnd End of the period winners can book in.
+ * @param campsitePeriods Unassigned Bookings defining each campsite's stay window; absent entries use the default.
  */
 class BookingSchedule<RegistrationType : Any>(
     val registration: RegistrationType,
     var bookingStart: LocalDateTime = LocalDateTime.now(AlbertaTime.zone),
-    var bookingEnd: LocalDateTime = LocalDateTime.now(AlbertaTime.zone)
+    var bookingEnd: LocalDateTime = LocalDateTime.now(AlbertaTime.zone),
+    campsitePeriods: Map<String, Booking> = emptyMap()
 ) {
+    val campsitePeriods: Map<String, Booking> = campsitePeriods.toMap()
     private val bookings = mutableListOf<Booking>()
 
+    init {
+        require(campsitePeriods.all { (id, booking) ->
+            id.isNotBlank() && booking.campsiteId == id && booking.entrantId == null
+        }) { "Campsite stay windows must be unassigned bookings for their campsite." }
+    }
+
+    /** An unassigned Booking describing the dates allowed at this campsite. */
+    fun periodFor(campsiteId: String): Booking =
+        campsitePeriods[campsiteId] ?: Booking(campsiteId = campsiteId, startDate = bookingStart, endDate = bookingEnd)
+
     /**
-     * The dates one entrant booked one campsite for.
+     * A campsite's stay window or the dates one entrant booked it for.
+     * This nested class can be built before its schedule exists.
      *
-     * @param entrantId Device ID of the entrant.
-     * @param campsiteId The campsite they booked.
+     * @param entrantId Device ID for a confirmed stay; null for an available stay window.
+     * @param campsiteId The campsite, or empty for a shared window being validated.
      * @param startDate When their stay starts.
      * @param endDate When their stay ends.
      */
-    inner class Booking(
-        val entrantId: String,
-        val campsiteId: String,
+    data class Booking(
+        val entrantId: String? = null,
+        val campsiteId: String = "",
         val startDate: LocalDateTime,
         val endDate: LocalDateTime
     ) {
         init {
             require(endDate.isAfter(startDate)) { "End date must be after start date." }
+        }
+
+        fun validationError(registrationEnd: LocalDateTime): String? =
+            validationError(startDate, endDate, registrationEnd)
+
+        fun contains(start: LocalDateTime, end: LocalDateTime): Boolean =
+            end.isAfter(start) && !start.isBefore(startDate) && !end.isAfter(endDate)
+
+        fun overlaps(other: Booking): Boolean =
+            startDate.isBefore(other.endDate) && endDate.isAfter(other.startDate)
+
+        companion object {
+            /** Checks raw dates too, so invalid form values can be reported before constructing a Booking. */
+            fun validationError(start: LocalDateTime, end: LocalDateTime, registrationEnd: LocalDateTime): String? {
+                if (!end.isAfter(start)) return "Booking must end after it starts."
+                if (start.isBefore(registrationEnd)) return "Booking cannot start before registration closes."
+                val midnight = start.toLocalDate().atStartOfDay()
+                val firstNight = if (midnight.isBefore(start)) midnight.plusDays(1) else midnight
+                if (firstNight.plusDays(1).isAfter(end)) {
+                    return "Choose a booking period that includes at least one full night, from midnight to midnight."
+                }
+                return null
+            }
         }
 
         /** true if this booking covers any part of the given day. */
@@ -62,10 +100,11 @@ class BookingSchedule<RegistrationType : Any>(
      */
     fun addBooking(booking: Booking, occupancy: Int): Boolean {
 
+        // Available windows belong in campsitePeriods, never in the confirmed-booking list.
+        if (booking.entrantId.isNullOrBlank() || booking.campsiteId.isBlank()) return false
+
         // Must be inside the booking period
-        if (booking.startDate.isBefore(bookingStart) ||
-            booking.endDate.isAfter(bookingEnd)
-        ) {
+        if (!periodFor(booking.campsiteId).contains(booking.startDate, booking.endDate)) {
             return false
         }
 
@@ -89,6 +128,9 @@ class BookingSchedule<RegistrationType : Any>(
      * when it was first made. Only use this when loading.
      */
     fun restoreBooking(booking: Booking) {
+        require(!booking.entrantId.isNullOrBlank() && booking.campsiteId.isNotBlank()) {
+            "Only an entrant's confirmed booking can be restored."
+        }
         bookings.add(booking)
     }
 
@@ -156,19 +198,21 @@ class BookingSchedule<RegistrationType : Any>(
      * @param occupancy Maximum number of people the campsite holds.
      */
     fun availableDates(campsiteId: String, occupancy: Int): List<LocalDate> =
-        daysInPeriod().filter { bookingsOn(campsiteId, it).size < occupancy }
+        daysInPeriod(campsiteId).filter { bookingsOn(campsiteId, it).size < occupancy }
 
     /**
      * Days in the booking period where the campsite has at least one booking.
      * Used to show the owner their booked dates.
      */
     fun bookedDates(campsiteId: String): List<LocalDate> =
-        daysInPeriod().filter { bookingsOn(campsiteId, it).isNotEmpty() }
+        daysInPeriod(campsiteId).filter { bookingsOn(campsiteId, it).isNotEmpty() }
 
-    private fun daysInPeriod(): List<LocalDate> {
+    private fun daysInPeriod(campsiteId: String): List<LocalDate> {
+        val period = periodFor(campsiteId)
         val days = mutableListOf<LocalDate>()
-        var day = bookingStart.toLocalDate()
-        while (day.atStartOfDay().isBefore(bookingEnd)) {
+        var day = period.startDate.toLocalDate()
+        if (day.atStartOfDay().isBefore(period.startDate)) day = day.plusDays(1)
+        while (!day.plusDays(1).atStartOfDay().isAfter(period.endDate)) {
             days.add(day)
             day = day.plusDays(1)
         }

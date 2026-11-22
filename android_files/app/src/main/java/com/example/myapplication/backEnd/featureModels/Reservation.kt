@@ -95,6 +95,7 @@ data class Reservation(
      * @param start Start of their stay.
      * @param end End of their stay.
      * @param occupancy Maximum number of people the campsite holds.
+     * @param now Current time; stays must start in the future.
      * @return true if the reservation was made.
      */
     fun reserve(
@@ -102,11 +103,12 @@ data class Reservation(
         campsiteId: String,
         start: LocalDateTime,
         end: LocalDateTime,
-        occupancy: Int
+        occupancy: Int,
+        now: LocalDateTime = LocalDateTime.now(AlbertaTime.zone)
     ): Boolean {
 
-        // Must still be waiting for an answer
-        if (status != ReservationStatus.INVITED) {
+        // Entrant cancellation preserves the lottery win for rebooking.
+        if (status != ReservationStatus.INVITED && status != ReservationStatus.CANCELLED) {
             return false
         }
 
@@ -116,18 +118,18 @@ data class Reservation(
             return false
         }
 
-        // Campsite must be in the lottery
+        // Campsite must be in the lottery.
         if (campsiteId !in lottery.campsiteIds) {
             return false
         }
 
         // End must be after start (checked here so Booking's require() never throws)
-        if (!end.isAfter(start)) {
+        if (!end.isAfter(start) || !start.isAfter(now)) {
             return false
         }
 
         // Adds the booking only if the dates fit and there's room
-        val booking = schedule.Booking(entrantId, campsiteId, start, end)
+        val booking = BookingSchedule.Booking(entrantId, campsiteId, start, end)
         if (!schedule.addBooking(booking, occupancy)) {
             return false
         }
@@ -206,6 +208,16 @@ data class Reservation(
         return true
     }
 
+
+    /** Restores the invitation; previously released dates must be chosen again. */
+    fun unreject(): Boolean {
+        if (status != ReservationStatus.REJECTED) return false
+        campsiteId = ""
+        bookingStart = ""
+        bookingEnd = ""
+        moveTo(ReservationStatus.INVITED)
+        return true
+    }
 
     private fun moveTo(next: ReservationStatus) {
         status = next

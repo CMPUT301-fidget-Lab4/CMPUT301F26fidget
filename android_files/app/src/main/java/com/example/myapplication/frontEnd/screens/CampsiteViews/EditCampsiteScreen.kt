@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.CampsiteViews
+package com.example.myapplication.frontEnd.screens.campsiteViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,9 +25,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.`Back-End`.Campsite
-import com.example.myapplication.`Back-End`.CampsiteLocation
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.featureModels.Campsite
+import com.example.myapplication.backEnd.featureModels.CampsiteLocation
+import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +37,7 @@ fun EditCampsiteScreen(
     navController: NavController,
     userProfile: User?,
     campsite: Campsite?,
-    onUpdateCampsite: (String, CampsiteLocation, String, Int, String) -> Unit
+    onUpdateCampsite: (String, CampsiteLocation, String, Int, String, String) -> Unit
 ) {
     if (userProfile == null || campsite == null || campsite.ownerID != userProfile.deviceID) {
         Column(
@@ -59,6 +59,7 @@ fun EditCampsiteScreen(
     var description by remember { mutableStateOf(campsite.description) }
     var occupancy by remember { mutableStateOf(campsite.occupancy.toString()) }
     var tags by remember { mutableStateOf(campsite.tags) }
+    var policies by remember { mutableStateOf(campsite.termsAndConditions) }
     var errorMessage by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -102,6 +103,14 @@ fun EditCampsiteScreen(
             modifier = Modifier.fillMaxWidth().testTag("editCampsiteTags")
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = policies, onValueChange = { policies = it },
+            label = { Text("Rules and policies (optional)") },
+            supportingText = { Text("List your rules here. You can include https:// links to policies.") },
+            minLines = 3, modifier = Modifier.fillMaxWidth().testTag("editCampsitePolicies")
+        )
+
         if (errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(errorMessage, modifier = Modifier.testTag("editCampsiteError"))
@@ -136,7 +145,7 @@ fun EditCampsiteScreen(
                             errorMessage = "Could not find that address"
                             isSaving = false
                         } else {
-                            onUpdateCampsite(campsite.name, location, newDescription, newOccupancy, tags.trim())
+                            onUpdateCampsite(campsite.name, location, newDescription, newOccupancy, tags.trim(), policies.trim())
                             navController.popBackStack()
                         }
                     }

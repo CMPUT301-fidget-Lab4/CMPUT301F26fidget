@@ -11,9 +11,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
-        android:name=".features.MyApplication">
+        android:name=".backEnd.MyApplication">
         <activity
-            android:name=".features.MainActivity"
+            android:name=".backEnd.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication"

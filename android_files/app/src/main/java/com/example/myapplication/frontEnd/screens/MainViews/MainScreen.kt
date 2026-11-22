@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.screens.MainViews
+package com.example.myapplication.frontEnd.screens.mainViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.userModels.User
 
 /**
  * Main screen is where the User can navigate to the major features of the app.
@@ -107,7 +107,7 @@ fun MainScreen(
                 Text("View Messages")
             }
 
-            if (userProfile.userType == "campsite owner") {
+            if (userProfile.userType == "campsite owner" || userProfile.userType == "admin") {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(

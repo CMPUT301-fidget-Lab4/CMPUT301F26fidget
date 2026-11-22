@@ -1,4 +1,4 @@
-package com.example.myapplication.`Front-End`.theme
+package com.example.myapplication.frontEnd.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

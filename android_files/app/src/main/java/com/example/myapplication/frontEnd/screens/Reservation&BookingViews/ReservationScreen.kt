@@ -1,8 +1,10 @@
 package com.example.myapplication.frontEnd.screens.ReservationBookingViews
 
+import android.util.Log
 import com.example.myapplication.backEnd.time.AlbertaTime
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -38,15 +42,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.navigation.NavController
 import com.example.myapplication.backEnd.featureModels.BookingSchedule
-import com.example.myapplication.backEnd.`firebase-Repositories`.BookingScheduleRepository
+import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.Lottery
 import com.example.myapplication.backEnd.featureModels.Reservation
-import com.example.myapplication.backEnd.`firebase-Repositories`.ReservationRepository
+import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
 import com.example.myapplication.backEnd.featureModels.ReservationStatus
 import com.example.myapplication.backEnd.userModels.User
+import com.google.firebase.firestore.FirebaseFirestoreException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -56,14 +65,15 @@ private val dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy")
 /**
  * Shows reservations grouped by status, with the actions this user can take.
  *
- * Entrant: reserve or decline invitations, cancel active reservations.
- * Owner: see invited, active, past and cancelled reservations, and reject them.
+ * Entrant: reserve or decline invitations, cancel and rebook future stays.
+ * Owner: manage their lotteries' reservations. Admin: manage all reservations.
  *
  * @param navController Used for the back button.
  * @param user The logged-in user.
  * @param campsites All loaded campsites, used to look up occupancy.
  * @param reservationRepository Loads and changes reservations.
  * @param scheduleRepository Loads booking schedules for picking dates.
+ * @param users Loaded profiles used to show entrant names to management.
  */
 @Composable
 fun ReservationScreen(
@@ -71,7 +81,10 @@ fun ReservationScreen(
     user: User?,
     campsites: Map<String, Campsite>,
     reservationRepository: ReservationRepository,
-    scheduleRepository: BookingScheduleRepository
+    scheduleRepository: BookingScheduleRepository,
+    users: List<User> = emptyList(),
+    lotteryRepository: LotteryRepository? = null,
+    category: ReservationCategory? = null
 ) {
     if (user == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -80,21 +93,57 @@ fun ReservationScreen(
         return
     }
 
-    // Change "owner" to whatever value your User class uses for campsite owners.
-    val isOwner = user.userType == "campsite owner"
+    val isAdmin = user.userType.trim().equals("admin", ignoreCase = true)
+    val isOwner = user.userType.trim().equals("campsite owner", ignoreCase = true)
+    val canManage = isOwner || isAdmin
+    var managingPeriods by remember(user.deviceID) { mutableStateOf(false) }
+    if (managingPeriods && lotteryRepository != null) {
+        ManageBookingPeriodsDialog(user, campsites, lotteryRepository) { managingPeriods = false }
+    }
 
-    var reservations by remember { mutableStateOf<List<Reservation>>(emptyList()) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var reserving by remember { mutableStateOf<Reservation?>(null) }   // open dialog
+    var reservations by remember(user.deviceID, user.userType) { mutableStateOf<List<Reservation>>(emptyList()) }
+    var errorMessage by remember(user.deviceID, user.userType) { mutableStateOf<String?>(null) }
+    var loadError by remember(user.deviceID, user.userType) { mutableStateOf<String?>(null) }
+    var loading by remember(user.deviceID, user.userType) { mutableStateOf(true) }
+    var fromCache by remember(user.deviceID, user.userType) { mutableStateOf(true) }
+    var retryCount by remember(user.deviceID, user.userType) { mutableStateOf(0) }
+    var reserving by remember(user.deviceID, user.userType) { mutableStateOf<Reservation?>(null) }
 
     // Listen while the screen is open
-    DisposableEffect(user.deviceID, isOwner) {
-        val registration = if (isOwner) {
-            reservationRepository.listenForOwner(user.deviceID) { reservations = it }
-        } else {
-            reservationRepository.listenForEntrant(user.deviceID) { reservations = it }
+    DisposableEffect(user.deviceID, user.userType, reservationRepository, retryCount) {
+        loading = true
+        loadError = null
+        var listening = true
+        val onReadError: (Exception) -> Unit = { error ->
+            if (listening) {
+                Log.e("Reservations", "Could not load reservations", error)
+                loading = false
+                loadError = when ((error as? FirebaseFirestoreException)?.code) {
+                    FirebaseFirestoreException.Code.PERMISSION_DENIED -> "Your account cannot read these reservations."
+                    FirebaseFirestoreException.Code.UNAVAILABLE -> "Unable to connect. Check your internet connection and try again."
+                    else -> "Unable to load reservations. Please try again."
+                }
+            }
         }
-        onDispose { registration.remove() }
+        val onCacheStatus: (Boolean) -> Unit = { cached -> if (listening) fromCache = cached }
+        val onReservations: (List<Reservation>) -> Unit = { loaded ->
+            if (listening) {
+                reservations = loaded
+                loading = false
+                loadError = null
+            }
+        }
+        val registration = if (isAdmin) {
+            reservationRepository.listenForAdmin(onReadError, onCacheStatus, onReservations)
+        } else if (isOwner) {
+            reservationRepository.listenForOwner(user.deviceID, onReadError, onCacheStatus, onReservations)
+        } else {
+            reservationRepository.listenForEntrant(user.deviceID, onReadError, onCacheStatus, onReservations)
+        }
+        onDispose {
+            listening = false
+            registration.remove()
+        }
     }
 
     val onResult: (Boolean) -> Unit = { saved ->
@@ -109,27 +158,37 @@ fun ReservationScreen(
         ReservationStatus.DECLINED
     )
 
+    val selectedCategory = category.takeIf { canManage }
+    val displayedReservations = selectedCategory?.let { selected ->
+        reservations.filter { selected.includes(it, now) }
+    } ?: reservations
     val sections = listOf(
-        (if (isOwner) "Waiting for an answer" else "Invitations") to
-                reservations.filter { it.status == ReservationStatus.INVITED },
+        (if (canManage) "Waiting for an answer" else "Invitations") to
+                displayedReservations.filter { it.status == ReservationStatus.INVITED },
         "Active" to
-                reservations.filter { it.status == ReservationStatus.RESERVED && it.isActive(now) },
+                displayedReservations.filter { it.status == ReservationStatus.RESERVED && it.isActive(now) },
         "Past" to
-                reservations.filter { it.isPast(now) },
-        (if (isOwner) "Cancelled" else "Cancelled or declined") to
-                reservations.filter { it.status in ended }
+                displayedReservations.filter { it.isPast(now) },
+        (if (canManage) "Cancelled" else "Cancelled or declined") to
+                displayedReservations.filter { it.status in ended }
     )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .safeDrawingPadding()
             .padding(16.dp)
     ) {
         Text(
-            text = if (isOwner) "Reservations for my campsites" else "My reservations",
+            text = selectedCategory?.title ?: if (isAdmin) "All reservations" else if (isOwner) "Reservations for my campsites" else "My reservations",
             fontSize = 22.sp
         )
 
+        if (canManage && lotteryRepository != null) {
+            TextButton(onClick = { managingPeriods = true }, modifier = Modifier.testTag("manageBookingPeriods")) {
+                Text("Manage booking periods")
+            }
+        }
         Spacer(Modifier.height(12.dp))
 
         errorMessage?.let {
@@ -137,9 +196,36 @@ fun ReservationScreen(
             Spacer(Modifier.height(8.dp))
         }
 
-        if (reservations.isEmpty()) {
-            Text("No reservations yet.", modifier = Modifier.weight(1f))
+        loadError?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("reservationLoadError"))
+            TextButton(onClick = { retryCount++ }, modifier = Modifier.testTag("reservationRetryButton")) {
+                Text("Retry")
+            }
+        }
+
+        if (displayedReservations.isEmpty()) {
+            Column(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                when {
+                    loadError != null -> Unit
+                    loading || fromCache -> {
+                        CircularProgressIndicator(modifier = Modifier.testTag("reservationsLoading"))
+                        Text("Checking for reservations...")
+                        if (!loading && fromCache) {
+                            Text("No saved reservations on this device. Check your internet connection to load new invitations.")
+                            TextButton(onClick = { retryCount++ }) { Text("Retry") }
+                        }
+                    }
+                    else -> Text(selectedCategory?.let { "No ${it.title.lowercase()} yet." } ?: "No reservations yet.", modifier = Modifier.testTag("reservationsEmpty"))
+                }
+            }
         } else {
+            if (fromCache && loadError == null) {
+                Text("Showing saved reservations. New invitations will appear when connected.")
+            }
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -160,12 +246,20 @@ fun ReservationScreen(
                     items(list, key = { it.id }) { reservation ->
                         ReservationCard(
                             reservation = reservation,
-                            isOwner = isOwner,
+                            lotteryCampsites = campsites.values.flatMap { campsite ->
+                                campsite.lotteryCollection.orEmpty().filter { it.id == reservation.lotteryId }.flatMap { it.campsiteIds } +
+                                    campsite.bookingSchedules.orEmpty().mapNotNull { it.registration as? Lottery }
+                                        .filter { it.id == reservation.lotteryId }.flatMap { it.campsiteIds }
+                            }.filter { it.isNotBlank() }.distinct(),
+                            scheduleRepository = scheduleRepository,
+                            isOwner = canManage,
+                            entrant = users.firstOrNull { it.deviceID == reservation.entrantId },
                             now = now,
                             onReserve = { reserving = reservation },
                             onDecline = { reservationRepository.decline(reservation, onResult) },
                             onCancel = { reservationRepository.cancel(reservation, onResult) },
-                            onReject = { reservationRepository.reject(reservation, onResult) }
+                            onReject = { reservationRepository.reject(reservation, onResult) },
+                            onUnreject = { reservationRepository.unreject(reservation, onResult) }
                         )
                     }
                 }
@@ -200,30 +294,50 @@ fun ReservationScreen(
 @Composable
 private fun ReservationCard(
     reservation: Reservation,
+    lotteryCampsites: List<String>,
+    scheduleRepository: BookingScheduleRepository,
     isOwner: Boolean,
+    entrant: User?,
     now: LocalDateTime,
     onReserve: () -> Unit,
     onDecline: () -> Unit,
     onCancel: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    onUnreject: () -> Unit
 ) {
     val start = reservation.bookingStartDate
     val end = reservation.bookingEndDate
+    var fetchedCampsites by remember(reservation.lotteryId) { mutableStateOf<List<String>>(emptyList()) }
+    // Old invitations remain identifiable through their schedule after the current lottery changes.
+    LaunchedEffect(reservation.lotteryId, lotteryCampsites.isEmpty()) {
+        if (lotteryCampsites.isEmpty() && reservation.campsiteId.isBlank()) {
+            scheduleRepository.getSchedule(reservation.lotteryId) {
+                fetchedCampsites = it?.registration?.campsiteIds.orEmpty().filter { id -> id.isNotBlank() }.distinct()
+            }
+        }
+    }
+    val names = lotteryCampsites.ifEmpty { fetchedCampsites }
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
 
             Text(
-                text = reservation.campsiteId.ifBlank { "Lottery invitation" },
+                text = if (!isOwner && reservation.status == ReservationStatus.INVITED) "You won a lottery!"
+                    else reservation.campsiteId.ifBlank { "Lottery invitation" },
                 fontSize = 18.sp
             )
+            if (reservation.campsiteId.isBlank() && names.isNotEmpty()) {
+                Text("Campsites: ${names.take(3).joinToString()}", maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (names.size > 3) Text("+${names.size - 3} more")
+            }
 
             if (start != null && end != null) {
-                Text("${start.format(dateFormat)} – ${end.format(dateFormat)}")
+                Text("Check-in: ${start.format(dateFormat)}")
+                Text("Check-out: ${end.format(dateFormat)}")
             }
 
             if (isOwner) {
-                Text("Entrant: ${reservation.entrantId}")
+                Text("Entrant: ${entrant?.name?.takeIf { it.isNotBlank() } ?: "Name unavailable"}")
             }
 
             Text("Status: ${statusLabel(reservation.status)}")
@@ -235,11 +349,17 @@ private fun ReservationCard(
                         (reservation.status == ReservationStatus.RESERVED && reservation.isActive(now))
 
                 if (isOwner) {
+                    if (reservation.status == ReservationStatus.REJECTED) {
+                        OutlinedButton(
+                            onClick = onUnreject,
+                            modifier = Modifier.testTag("unrejectButton")
+                        ) { Text("Unreject") }
+                    }
                     if (canAct) {
                         OutlinedButton(
                             onClick = onReject,
                             modifier = Modifier.testTag("rejectButton")
-                        ) { Text("Reject") }
+                        ) { Text(if (reservation.status == ReservationStatus.RESERVED) "Cancel reservation" else "Reject invitation") }
                     }
                 } else {
                     when (reservation.status) {
@@ -253,6 +373,12 @@ private fun ReservationCard(
                                 onClick = onDecline,
                                 modifier = Modifier.testTag("declineButton")
                             ) { Text("Decline") }
+                        }
+
+                        ReservationStatus.CANCELLED -> {
+                            Button(onClick = onReserve, modifier = Modifier.testTag("rebookButton")) {
+                                Text("Book different dates")
+                            }
                         }
 
                         ReservationStatus.RESERVED -> {
@@ -301,9 +427,14 @@ private fun ReserveDialog(
 
     val loaded = schedule
     val chosenCampsite = campsiteId
+    val selectedCampsite = chosenCampsite?.let { campsites[it] }
+    val policies = selectedCampsite?.termsAndConditions.orEmpty()
+    var acceptedPolicies by remember(chosenCampsite, policies) { mutableStateOf(false) }
     val occupancy = chosenCampsite?.let { campsites[it]?.occupancy } ?: 0
     val available = if (loaded != null && chosenCampsite != null) {
-        loaded.availableDates(chosenCampsite, occupancy)
+        loaded.availableDates(chosenCampsite, occupancy).filter {
+            it.atStartOfDay().isAfter(LocalDateTime.now(AlbertaTime.zone))
+        }
     } else {
         emptyList()
     }
@@ -312,7 +443,7 @@ private fun ReserveDialog(
         onDismissRequest = onDismiss,
         title = { Text("Reserve a campsite") },
         text = {
-            Column {
+            Column(Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState())) {
                 when {
                     loading -> CircularProgressIndicator()
 
@@ -338,6 +469,26 @@ private fun ReserveDialog(
                         }
 
                         if (chosenCampsite != null) {
+                            Text("Rules and policies", style = MaterialTheme.typography.titleMedium)
+                            val policyText = if (selectedCampsite == null) "Campsite policies could not be loaded. Please try again."
+                                else policies.ifBlank { "The owner has not provided any rules or policies for this campsite." }
+                            val linkedPolicies = remember(policyText) {
+                                buildAnnotatedString {
+                                    append(policyText)
+                                    Regex("https?://[^\\s]+").findAll(policyText).forEach { match ->
+                                        addLink(LinkAnnotation.Url(match.value), match.range.first, match.range.last + 1)
+                                    }
+                                }
+                            }
+                            Text(linkedPolicies, modifier = Modifier.fillMaxWidth().heightIn(max = 160.dp)
+                                .verticalScroll(rememberScrollState()).testTag("reservationPolicies"))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = acceptedPolicies, onCheckedChange = { acceptedPolicies = it },
+                                    enabled = selectedCampsite != null, modifier = Modifier.testTag("acceptReservationPolicies"))
+                                Text("I have read and accept this campsite's rules and policies.")
+                            }
+                            val period = loaded.periodFor(chosenCampsite)
+                            Text("Booking period: ${period.startDate.format(dateFormat)} – ${period.endDate.format(dateFormat)}")
                             Spacer(Modifier.height(8.dp))
 
                             if (available.isEmpty()) {
@@ -345,7 +496,7 @@ private fun ReserveDialog(
                             } else {
                                 Text("Tap your first night, then your last night.")
 
-                                LazyColumn(Modifier.heightIn(max = 300.dp)) {
+                                LazyColumn(Modifier.heightIn(max = 180.dp)) {
                                     items(available) { day ->
                                         val first = firstNight
                                         val selected = first != null &&
@@ -382,9 +533,9 @@ private fun ReserveDialog(
         confirmButton = {
             val first = firstNight
             Button(
-                enabled = chosenCampsite != null && first != null,
+                enabled = selectedCampsite != null && first != null && acceptedPolicies,
                 onClick = {
-                    if (chosenCampsite != null && first != null) {
+                    if (chosenCampsite != null && selectedCampsite != null && first != null && acceptedPolicies) {
                         val last = lastNight ?: first
                         onConfirm(
                             chosenCampsite,

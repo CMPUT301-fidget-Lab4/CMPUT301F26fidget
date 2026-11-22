@@ -1,4 +1,5 @@
-package com.example.myapplication.`Front-End`.screens.MainViews
+
+package com.example.myapplication.frontEnd.screens.mainViews
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.backEnd.userModels.User
 
 
 /**
@@ -160,7 +161,11 @@ fun Signup(
 
                     onAddUser(newUser)
 
-                    navController.navigate("MainScreen")
+                    navController.navigate("MainScreen") {
+                        // Completed signup must not remain reachable with Back.
+                        popUpTo("HomeScreen") { inclusive = false }
+                        launchSingleTop = true
+                    }
                 }
 
                 else {

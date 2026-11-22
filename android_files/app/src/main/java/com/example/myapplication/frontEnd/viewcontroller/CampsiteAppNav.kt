@@ -1,29 +1,32 @@
-package com.example.myapplication.`Front-End`.Viewcontroller
+package com.example.myapplication.frontEnd.viewcontroller
 
 import android.content.Context
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.`Back-End`.AuthState
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.BookingScheduleRepository
-import com.example.myapplication.`Back-End`.UserModels.User
-import com.example.myapplication.`Front-End`.screens.ProfileViews.AdminProfilesView
-import com.example.myapplication.`Front-End`.screens.MainViews.HomeScreen
-import com.example.myapplication.`Front-End`.screens.MainViews.MainScreen
-import com.example.myapplication.`Front-End`.screens.ProfileViews.ProfileScreen
-import com.example.myapplication.`Front-End`.screens.MainViews.Signup
+import com.example.myapplication.backEnd.firebaseRepositories.AuthState
+import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
+import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.frontEnd.screens.profileViews.AdminProfilesView
+import com.example.myapplication.frontEnd.screens.mainViews.HomeScreen
+import com.example.myapplication.frontEnd.screens.mainViews.MainScreen
+import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
+import com.example.myapplication.frontEnd.screens.mainViews.Signup
 import kotlinx.coroutines.flow.StateFlow
-import com.example.myapplication.`Back-End`.Campsite
-import com.example.myapplication.`Back-End`.CampsiteLocation
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.ReservationRepository
-import com.example.myapplication.`Front-End`.screens.CampsiteViews.CampsiteListScreen
-import com.example.myapplication.`Front-End`.screens.CampsiteViews.RegisterCampsiteScreen
-import com.example.myapplication.`Front-End`.screens.CampsiteViews.CampsiteDetailsScreen
-import com.example.myapplication.`Front-End`.screens.CampsiteViews.EditCampsiteScreen
-import com.example.myapplication.`Front-End`.screens.`Reservation&BookingViews`.ReservationScreen
-import com.example.myapplication.`Back-End`.`Firebase-Repositories`.LotteryRepository
-import com.example.myapplication.`Front-End`.screens.LotteryViews.CreateLotteryScreen
+import com.example.myapplication.backEnd.featureModels.Campsite
+import com.example.myapplication.backEnd.featureModels.CampsiteLocation
+import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
+import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteListScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.RegisterCampsiteScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.EditCampsiteScreen
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationScreen
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationMenuScreen
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
+import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 
 @Composable
 fun CampsiteApp(
@@ -38,7 +41,7 @@ fun CampsiteApp(
     campsites: Map<String, Campsite>,
     findCampsite: (String) -> Campsite? = { null },
     onAddCampsite: (Campsite) -> Unit = {},
-    onUpdateCampsite: (String, CampsiteLocation, String, Int, String) -> Unit = { _, _, _, _, _ -> },
+    onUpdateCampsite: (String, CampsiteLocation, String, Int, String, String) -> Unit = { _, _, _, _, _, _ -> },
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository,
     lotteryRepository: LotteryRepository
@@ -46,7 +49,14 @@ fun CampsiteApp(
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "HomeScreen") {
+    NavHost(
+        navController = navController,
+        startDestination = "HomeScreen",
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) {
         composable("HomeScreen") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
         composable("MainScreen") { MainScreen(navController, user) }
@@ -98,22 +108,34 @@ fun CampsiteApp(
             )
         }
         composable("Reservations") {
-            ReservationScreen(
+            if (user?.userType?.trim()?.lowercase() in listOf("admin", "campsite owner")) {
+                ReservationMenuScreen(navController)
+            } else ReservationScreen(
                 navController,
                 user,
                 campsites,
                 reservationRepository,
-                scheduleRepository
+                scheduleRepository,
+                users = users,
+                lotteryRepository = lotteryRepository
+            )
+        }
+
+        composable("Reservations/{category}") { entry ->
+            val category = ReservationCategory.entries.firstOrNull { it.route == entry.arguments?.getString("category") }
+            if (category != null) ReservationScreen(
+                navController, user, campsites, reservationRepository, scheduleRepository,
+                users = users, lotteryRepository = lotteryRepository, category = category
             )
         }
 
         composable("CreateLotteryScreen") {
             user?.let { currentUser ->
-                CreateLotteryScreen(
+                CreateLotteryRoute(
                     navController = navController,
+                    lotteryRepository = lotteryRepository,
                     user = currentUser,
-                    campsites = campsites,
-                    lotteryRepository = lotteryRepository
+                    campsites = campsites
                 )
             }
         }
