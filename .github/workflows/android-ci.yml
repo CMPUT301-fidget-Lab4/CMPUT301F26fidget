@@ -1,3 +1,4 @@
+
 name: Android CI
 
 on:
@@ -9,6 +10,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: android_files
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -18,6 +24,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            android_files/**/*.gradle*
+            android_files/gradle/wrapper/gradle-wrapper.properties
+            android_files/gradle/libs.versions.toml
 
       - name: Remove local.properties
         run: rm -f local.properties
@@ -26,17 +37,23 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew test --configuration-cache
+        run: ./gradlew test --no-daemon
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: "**/build/reports/tests/"
+          path: android_files/**/build/reports/tests/
+          if-no-files-found: warn
 
   instrumented-test:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: android_files
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -46,6 +63,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            android_files/**/*.gradle*
+            android_files/gradle/wrapper/gradle-wrapper.properties
+            android_files/gradle/libs.versions.toml
 
       - name: Remove local.properties
         run: rm -f local.properties
@@ -64,11 +86,15 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          script: ./gradlew connectedDebugAndroidTest
+          working-directory: android_files
+          script: ./gradlew connectedDebugAndroidTest --no-daemon
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: instrumented-test-reports
-          path: "**/build/reports/androidTests/"
+          path: |
+            android_files/**/build/reports/androidTests/
+            android_files/**/build/outputs/androidTest-results/
+          if-no-files-found: warn
