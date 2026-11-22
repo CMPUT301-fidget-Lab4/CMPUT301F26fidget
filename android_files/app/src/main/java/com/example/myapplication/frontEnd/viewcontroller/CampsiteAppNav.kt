@@ -1,46 +1,29 @@
-package com.example.myapplication.frontEnd.viewcontroller
+package com.example.myapplication.`Front-End`.Viewcontroller
 
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.backEnd.firebaseRepositories.AuthState
-import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
-import com.example.myapplication.backEnd.userModels.User
-import com.example.myapplication.frontEnd.screens.ProfileViews.AdminProfilesView
-import com.example.myapplication.frontEnd.screens.MainViews.HomeScreen
-import com.example.myapplication.frontEnd.screens.MainViews.MainScreen
-import com.example.myapplication.frontEnd.screens.ProfileViews.ProfileScreen
-import com.example.myapplication.frontEnd.screens.MainViews.Signup
+import com.example.myapplication.`Back-End`.AuthState
+import com.example.myapplication.`Back-End`.`Firebase-Repositories`.BookingScheduleRepository
+import com.example.myapplication.`Back-End`.UserModels.User
+import com.example.myapplication.`Front-End`.screens.ProfileViews.AdminProfilesView
+import com.example.myapplication.`Front-End`.screens.MainViews.HomeScreen
+import com.example.myapplication.`Front-End`.screens.MainViews.MainScreen
+import com.example.myapplication.`Front-End`.screens.ProfileViews.ProfileScreen
+import com.example.myapplication.`Front-End`.screens.MainViews.Signup
 import kotlinx.coroutines.flow.StateFlow
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.CampsiteLocation
-import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
-import com.example.myapplication.frontEnd.screens.CampsiteViews.CampsiteListScreen
-import com.example.myapplication.frontEnd.screens.CampsiteViews.RegisterCampsiteScreen
-import com.example.myapplication.frontEnd.screens.CampsiteViews.CampsiteDetailsScreen
-import com.example.myapplication.frontEnd.screens.CampsiteViews.EditCampsiteScreen
-import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationScreen
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.frontEnd.screens.LotteryViews.CreateLotteryScreen
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.NotificationCompat
-import com.example.myapplication.R
-import com.example.myapplication.backEnd.featureModels.AppNotification
-import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
-import com.example.myapplication.frontEnd.screens.NotificationViews.NotificationsScreen
-import android.Manifest
-import kotlinx.coroutines.delay
-
+import com.example.myapplication.`Back-End`.Campsite
+import com.example.myapplication.`Back-End`.CampsiteLocation
+import com.example.myapplication.`Back-End`.`Firebase-Repositories`.ReservationRepository
+import com.example.myapplication.`Front-End`.screens.CampsiteViews.CampsiteListScreen
+import com.example.myapplication.`Front-End`.screens.CampsiteViews.RegisterCampsiteScreen
+import com.example.myapplication.`Front-End`.screens.CampsiteViews.CampsiteDetailsScreen
+import com.example.myapplication.`Front-End`.screens.CampsiteViews.EditCampsiteScreen
+import com.example.myapplication.`Front-End`.screens.`Reservation&BookingViews`.ReservationScreen
+import com.example.myapplication.`Back-End`.`Firebase-Repositories`.LotteryRepository
+import com.example.myapplication.`Front-End`.screens.LotteryViews.CreateLotteryScreen
 
 @Composable
 fun CampsiteApp(
@@ -63,36 +46,6 @@ fun CampsiteApp(
 
     val navController = rememberNavController()
 
-    val context = LocalContext.current
-    val notificationRepository = remember { NotificationRepository() }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { }
-    LaunchedEffect(user?.deviceID) {
-        if (user != null && Build.VERSION.SDK_INT >= 33) {
-            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
-    DisposableEffect(user?.deviceID) {
-        val registration = user?.let { u ->
-            notificationRepository.listenForUnread(u.deviceID) { n ->
-                showNotification(context, n)
-                notificationRepository.markRead(n.id)
-            }
-        }
-        onDispose { registration?.remove() }
-    }
-
-    LaunchedEffect(user?.deviceID) {
-        if (user != null) {
-            while (true) {
-                lotteryRepository.drawClosedLotteries()
-                delay(30_000)
-            }
-        }
-    }
     NavHost(navController = navController, startDestination = "HomeScreen") {
         composable("HomeScreen") { HomeScreen(navController, authState) }
         composable("Signup") { Signup(navController, onAddUser, getAndroidId) }
@@ -156,7 +109,7 @@ fun CampsiteApp(
 
         composable("CreateLotteryScreen") {
             user?.let { currentUser ->
-                CreateLotteryFlow(
+                CreateLotteryScreen(
                     navController = navController,
                     user = currentUser,
                     campsites = campsites,
@@ -165,27 +118,5 @@ fun CampsiteApp(
             }
         }
 
-        composable("NotificationsScreen") {
-            user?.let { currentUser ->
-                NotificationsScreen(navController, currentUser, notificationRepository)
-            }
-        }
     }
-}
-
-// helper for notification
-val NOTIFICATION_CHANNEL_ID = "lottery_results"
-
-fun showNotification(context: Context, n: AppNotification) {
-    val manager = context.getSystemService(NotificationManager::class.java)
-    manager.createNotificationChannel(
-        NotificationChannel(NOTIFICATION_CHANNEL_ID, "Lottery results", NotificationManager.IMPORTANCE_HIGH)
-    )
-    val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle(if (n.type == "WIN") "You won!" else "Lottery result")
-        .setContentText(n.message)
-        .setAutoCancel(true)
-        .build()
-    manager.notify(n.id.hashCode(), notification)
 }
