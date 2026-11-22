@@ -1,4 +1,4 @@
-package com.example.myapplication.backEnd.firebaseRepositories
+package com.example.myapplication.backEnd.`firebase-Repositories`
 
 import com.example.myapplication.backEnd.time.AlbertaTime
 
@@ -24,8 +24,6 @@ import com.google.firebase.firestore.firestore
 import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import com.example.myapplication.backEnd.featureModels.AppNotification
-import com.example.myapplication.backEnd.featureModels.buildResultNotifications
 
 /**
  * The primary lottery document and the IDs of all campsites sharing it.
@@ -139,9 +137,6 @@ class LotteryRepository(
                 )
                 transaction.set(reservationDocument, invitation)
             }
-            // calls function to send notifications depending on winners and losers
-            for (n in buildResultNotifications(lottery.id, primaryCampsiteId, lottery.waitlist, winners))
-                transaction.set(db.collection("notifications").document(n.id), n)
 
             winners
         }
@@ -162,17 +157,6 @@ class LotteryRepository(
         for (campsiteId in campsiteIds) {
             transaction.update(campsitesCollection.document(campsiteId), mapOf("inLottery" to false))
         }
-    }
-
-    // helper for notifications
-    private fun addResultNotification(
-        transaction: Transaction, lotteryId: String, userId: String, type: String, message: String
-    ) {
-        // Deterministic ID, so a retried transaction can't create duplicates.
-        val ref = db.collection("notifications").document("${lotteryId}_$userId")
-        transaction.set(ref, AppNotification(
-            id = ref.id, userId = userId, lotteryId = lotteryId, type = type, message = message
-        ))
     }
 
     // Joining and leaving the waitlist
