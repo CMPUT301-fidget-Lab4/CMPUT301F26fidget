@@ -7,26 +7,28 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.backEnd.firebaseRepositories.AuthState
-import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
-import com.example.myapplication.backEnd.userModels.User
-import com.example.myapplication.frontEnd.screens.profileViews.AdminProfilesView
-import com.example.myapplication.frontEnd.screens.mainViews.HomeScreen
-import com.example.myapplication.frontEnd.screens.mainViews.MainScreen
-import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
-import com.example.myapplication.frontEnd.screens.mainViews.Signup
-import kotlinx.coroutines.flow.StateFlow
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.CampsiteLocation
-import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
-import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteListScreen
-import com.example.myapplication.frontEnd.screens.campsiteViews.RegisterCampsiteScreen
-import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
-import com.example.myapplication.frontEnd.screens.campsiteViews.EditCampsiteScreen
-import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationScreen
-import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationMenuScreen
-import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
+import com.example.myapplication.backEnd.firebaseRepositories.AuthState
+import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
+import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
+import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.frontEnd.screens.NotificationViews.NotificationsScreen
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationMenuScreen
+import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteListScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.EditCampsiteScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.RegisterCampsiteScreen
+import com.example.myapplication.frontEnd.screens.mainViews.HomeScreen
+import com.example.myapplication.frontEnd.screens.mainViews.MainScreen
+import com.example.myapplication.frontEnd.screens.mainViews.Signup
+import com.example.myapplication.frontEnd.screens.profileViews.AdminProfilesView
+import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun CampsiteApp(
@@ -44,7 +46,8 @@ fun CampsiteApp(
     onUpdateCampsite: (String, CampsiteLocation, String, Int, String, String) -> Unit = { _, _, _, _, _, _ -> },
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository,
-    lotteryRepository: LotteryRepository
+    lotteryRepository: LotteryRepository,
+    notificationRepository: NotificationRepository
 )  {
 
     val navController = rememberNavController()
@@ -140,5 +143,10 @@ fun CampsiteApp(
             }
         }
 
+        composable("NotificationsScreen") {
+            user?.let { currentUser ->
+                NotificationsScreen(navController, currentUser, notificationRepository)
+            }
+        }
     }
 }

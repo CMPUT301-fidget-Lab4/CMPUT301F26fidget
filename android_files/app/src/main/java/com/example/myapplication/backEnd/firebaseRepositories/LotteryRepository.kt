@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.google.firebase.firestore.ListenerRegistration
+import com.example.myapplication.backEnd.featureModels.buildResultNotifications
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.BookingSchedule.Booking
 import com.example.myapplication.backEnd.featureModels.BookingSchedule
@@ -203,6 +204,12 @@ class LotteryRepository(
                     status = ReservationStatus.INVITED
                 )
                 transaction.set(reservationDocument, invitation)
+            }
+            // Commit result notifications with the draw; deterministic IDs prevent duplicates.
+            for (notification in buildResultNotifications(
+                lottery.id, primaryCampsiteId, lottery.waitlistIds, winners
+            )) {
+                transaction.set(db.collection("notifications").document(notification.id), notification)
             }
 
             winners
