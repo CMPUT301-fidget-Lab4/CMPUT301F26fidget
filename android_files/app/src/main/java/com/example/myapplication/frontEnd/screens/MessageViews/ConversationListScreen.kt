@@ -100,8 +100,8 @@ fun ConversationListScreen(
 
         if (conversations.isEmpty()) {
             Text(
-                text = "No messages yet. You can message a Campsite Owner " +
-                        "from a reservation on My Reservations.",
+                text = "No messages yet. You can start messaging from " +
+                        "a reservation on My Reservations.",
                 modifier = Modifier.weight(1f)
             )
         } else {
