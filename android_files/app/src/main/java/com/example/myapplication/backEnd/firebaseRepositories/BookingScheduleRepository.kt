@@ -9,6 +9,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import java.time.LocalDateTime
+import com.google.firebase.firestore.ListenerRegistration
 
 /**
  * Saves and loads booking schedules.
@@ -55,6 +56,18 @@ class BookingScheduleRepository(private val db: FirebaseFirestore = Firebase.fir
             .addOnSuccessListener { doc -> onResult(fromSnapshot(doc)) }
             .addOnFailureListener { onResult(null) }
     }
+
+    /**
+     * Listens to every booking schedule and reports the full list whenever any change.
+     * Call remove() on the returned registration when the listener is no longer needed.
+     */
+    fun listenToAllSchedules(
+        onChange: (List<BookingSchedule<Lottery>>) -> Unit
+    ): ListenerRegistration =
+        scheduleRef.addSnapshotListener { snap, error ->
+            if (error != null || snap == null) return@addSnapshotListener
+            onChange(snap.documents.mapNotNull { fromSnapshot(it) })
+        }
 
     companion object {
 

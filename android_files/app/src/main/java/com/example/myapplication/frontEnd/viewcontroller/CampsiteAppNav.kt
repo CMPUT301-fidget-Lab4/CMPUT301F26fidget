@@ -77,7 +77,8 @@ fun CampsiteApp(
                 navController,
                 user,
                 campsites,
-                ownedOnly = false
+                ownedOnly = false,
+                scheduleRepository = scheduleRepository
             )
         }
         composable("MyCampsiteList") {
@@ -85,7 +86,8 @@ fun CampsiteApp(
                 navController,
                 user,
                 campsites,
-                ownedOnly = true
+                ownedOnly = true,
+                scheduleRepository = scheduleRepository
             )
         }
         composable("RegisterCampsite") {
