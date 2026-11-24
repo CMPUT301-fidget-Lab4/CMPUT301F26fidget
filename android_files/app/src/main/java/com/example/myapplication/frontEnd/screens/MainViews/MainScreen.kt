@@ -100,9 +100,8 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    return@Button
-                }
+                onClick = { navController.navigate("Messages") },
+                modifier = Modifier.testTag("viewMessages")
             ) {
                 Text("View Messages")
             }

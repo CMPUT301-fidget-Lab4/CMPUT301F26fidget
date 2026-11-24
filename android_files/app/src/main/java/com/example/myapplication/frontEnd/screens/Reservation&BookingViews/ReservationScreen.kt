@@ -259,7 +259,12 @@ fun ReservationScreen(
                             onDecline = { reservationRepository.decline(reservation, onResult) },
                             onCancel = { reservationRepository.cancel(reservation, onResult) },
                             onReject = { reservationRepository.reject(reservation, onResult) },
-                            onUnreject = { reservationRepository.unreject(reservation, onResult) }
+                            onUnreject = { reservationRepository.unreject(reservation, onResult) },
+                            onMessage = if (user.deviceID == reservation.ownerId ||
+                                user.deviceID == reservation.entrantId
+                            ) {
+                                { navController.navigate("Conversation/${reservation.id}") }
+                            } else null
                         )
                     }
                 }
@@ -303,7 +308,8 @@ private fun ReservationCard(
     onDecline: () -> Unit,
     onCancel: () -> Unit,
     onReject: () -> Unit,
-    onUnreject: () -> Unit
+    onUnreject: () -> Unit,
+    onMessage: (() -> Unit)? = null
 ) {
     val start = reservation.bookingStartDate
     val end = reservation.bookingEndDate
@@ -394,6 +400,12 @@ private fun ReservationCard(
                         else -> {}   // nothing left to do
                     }
                 }
+            }
+            if (onMessage != null && reservation.isActive(now)) {
+                TextButton(
+                    onClick = onMessage,
+                    modifier = Modifier.testTag("messageButton")
+                ) { Text("Message") }
             }
         }
     }
