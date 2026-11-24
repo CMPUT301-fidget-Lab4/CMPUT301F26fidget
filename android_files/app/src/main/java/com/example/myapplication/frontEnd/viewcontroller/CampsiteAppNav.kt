@@ -14,6 +14,7 @@ import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRep
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
 import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
+import com.example.myapplication.backEnd.firebaseRepositories.MessageRepository
 import com.example.myapplication.backEnd.userModels.User
 import com.example.myapplication.frontEnd.screens.NotificationViews.NotificationsScreen
 import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
@@ -28,6 +29,9 @@ import com.example.myapplication.frontEnd.screens.mainViews.MainScreen
 import com.example.myapplication.frontEnd.screens.mainViews.Signup
 import com.example.myapplication.frontEnd.screens.profileViews.AdminProfilesView
 import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
+import com.example.myapplication.frontEnd.screens.MessageViews.ConversationListScreen
+import com.example.myapplication.frontEnd.screens.MessageViews.ConversationScreen
+import com.example.myapplication.frontEnd.screens.MessageViews.MessageLogScreen
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -47,7 +51,8 @@ fun CampsiteApp(
     reservationRepository: ReservationRepository,
     scheduleRepository: BookingScheduleRepository,
     lotteryRepository: LotteryRepository,
-    notificationRepository: NotificationRepository
+    notificationRepository: NotificationRepository,
+    messageRepository: MessageRepository
 )  {
 
     val navController = rememberNavController()
@@ -147,6 +152,17 @@ fun CampsiteApp(
             user?.let { currentUser ->
                 NotificationsScreen(navController, currentUser, notificationRepository)
             }
+        }
+
+        composable("Messages") {
+            ConversationListScreen(navController, user, findUser, messageRepository)
+        }
+        composable("Conversation/{reservationId}") { backStackEntry ->
+            val reservationId = backStackEntry.arguments?.getString("reservationId") ?: ""
+            ConversationScreen(navController, reservationId, user, findUser, messageRepository)
+        }
+        composable("MessageLog") {
+            MessageLogScreen(navController, user, findUser, messageRepository)
         }
     }
 }

@@ -14,6 +14,7 @@ import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
 import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
 import com.example.myapplication.backEnd.firebaseRepositories.UserRepository
+import com.example.myapplication.backEnd.firebaseRepositories.MessageRepository
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         val reservationRepository = ReservationRepository(scheduleRepository)
         val userRepository = UserRepository(currentDeviceID)
         val notificationRepository = NotificationRepository()
+        val messageRepository = MessageRepository()
         lateinit var campsiteRepository: CampsiteRepository
         val lotteryRepository = LotteryRepository(campsiteLookup = { campsiteRepository.campsitesMap[it] }, userLookup = userRepository::findUser)
         campsiteRepository = CampsiteRepository(sharedLotteryRepository = lotteryRepository)
@@ -57,7 +59,8 @@ class MainActivity : ComponentActivity() {
                     reservationRepository = reservationRepository,
                     scheduleRepository = scheduleRepository,
                     lotteryRepository = lotteryRepository,
-                    notificationRepository = notificationRepository
+                    notificationRepository = notificationRepository,
+                    messageRepository = messageRepository
                 )
             }
         }
