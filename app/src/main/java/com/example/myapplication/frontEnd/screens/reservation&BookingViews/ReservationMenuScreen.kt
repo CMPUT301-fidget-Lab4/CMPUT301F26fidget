@@ -34,12 +34,19 @@ fun ReservationMenuScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("View reservations", style = MaterialTheme.typography.headlineMedium)
+
+        
+        Button(
+                onClick = { navController.navigate("Reservations/ReservedDates") { launchSingleTop = true } },
+                modifier = Modifier.fillMaxWidth().testTag("ReservedDates")
+            ) { Text("Reserved Dates") }
         ReservationCategory.entries.forEach { category ->
             Button(
                 onClick = { navController.navigate("Reservations/${category.route}") { launchSingleTop = true } },
                 modifier = Modifier.fillMaxWidth().testTag("${category.route}Reservations")
             ) { Text(category.title) }
         }
+
         Button(onClick = { navController.popBackStack() }, modifier = Modifier.testTag("reservationMenuBack")) { Text("Back") }
     }
 }
