@@ -37,7 +37,6 @@ import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.Lottery
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.firebaseRepositories.FeedbackRepository
-import com.example.myapplication.frontEnd.screens.CampsiteViews.CampsiteFeedbackSection
 import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -64,8 +63,8 @@ fun CampsiteDetailsScreen(
     userProfile: User?,
     findCampsite: (String) -> Campsite?,
     lotteryRepository: LotteryRepository? = null,
-    findUser: (String) -> User?,
-    feedbackRepository: FeedbackRepository
+    findUser: (String) -> User? = { null },
+    feedbackRepository: FeedbackRepository? = null
 ) {
 
     val campsite = findCampsite(campsiteName)
@@ -159,12 +158,14 @@ fun CampsiteDetailsScreen(
 
             // Display existing campsite information.
             CampsiteDetails(campsite)
-            CampsiteFeedbackSection(
-                campsiteId = campsite.name,
-                user = userProfile,
-                findUser = findUser,
-                feedbackRepository = feedbackRepository
-            )
+            feedbackRepository?.let { repository ->
+                CampsiteFeedbackSection(
+                    campsiteId = campsite.name,
+                    user = userProfile,
+                    findUser = findUser,
+                    feedbackRepository = repository
+                )
+            }
             /**
              * Only entrants or admins can see the Join Waitlist button.
              */

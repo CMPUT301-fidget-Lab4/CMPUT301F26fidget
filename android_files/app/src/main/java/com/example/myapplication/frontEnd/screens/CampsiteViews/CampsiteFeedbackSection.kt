@@ -1,4 +1,4 @@
-package com.example.myapplication.frontEnd.screens.CampsiteViews
+package com.example.myapplication.frontEnd.screens.campsiteViews
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
