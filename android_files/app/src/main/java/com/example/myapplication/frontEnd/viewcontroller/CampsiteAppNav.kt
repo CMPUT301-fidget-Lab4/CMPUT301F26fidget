@@ -118,17 +118,7 @@ fun CampsiteApp(
             )
         }
         composable("Reservations") {
-            if (user?.userType?.trim()?.lowercase() in listOf("admin", "campsite owner")) {
-                ReservationMenuScreen(navController)
-            } else ReservationScreen(
-                navController,
-                user,
-                campsites,
-                reservationRepository,
-                scheduleRepository,
-                users = users,
-                lotteryRepository = lotteryRepository
-            )
+            ReservationMenuScreen(navController)
         }
 
         composable("Reservations/{category}") { entry ->

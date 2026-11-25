@@ -28,7 +28,10 @@ internal fun ManageBookingPeriodsDialog(
     repository: LotteryRepository,
     onDismiss: () -> Unit
 ) {
-    val admin = user.userType.equals("admin", true)
+    // Guard the dialog itself as well as the button that opens it.
+    val role = user.userType.trim().lowercase()
+    if (role !in setOf("admin", "campsite owner")) return
+    val admin = role == "admin"
     val lotteries = campsites.values.flatMap { it.lotteryCollection.orEmpty() }.distinctBy { it.id }
         .filter { lottery -> lottery.campsiteIds.all { id -> admin || campsites[id]?.ownerID == user.deviceID } }
     var selectedId by remember { mutableStateOf<String?>(null) }

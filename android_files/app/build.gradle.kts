@@ -96,7 +96,7 @@ dependencies {
 
     // MockK for Kotlin Android Tests
     androidTestImplementation(
-        "io.mockk:mockk-android:1.13.17"
+        "io.mockk:mockk-android:1.14.3"
     )
 
     // Debug Dependencies
