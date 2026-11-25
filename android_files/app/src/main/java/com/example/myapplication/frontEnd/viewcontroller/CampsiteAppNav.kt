@@ -20,7 +20,6 @@ import com.example.myapplication.frontEnd.screens.NotificationViews.Notification
 import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
 import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationMenuScreen
 import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationScreen
-import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
 import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteListScreen
 import com.example.myapplication.frontEnd.screens.campsiteViews.EditCampsiteScreen
 import com.example.myapplication.frontEnd.screens.campsiteViews.RegisterCampsiteScreen
@@ -32,6 +31,7 @@ import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.ConversationListScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.ConversationScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.MessageLogScreen
+import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -52,7 +52,8 @@ fun CampsiteApp(
     scheduleRepository: BookingScheduleRepository,
     lotteryRepository: LotteryRepository,
     notificationRepository: NotificationRepository,
-    messageRepository: MessageRepository
+    messageRepository: MessageRepository,
+    onDeleteCampsite: (Campsite) -> Unit
 )  {
 
     val navController = rememberNavController()
@@ -114,7 +115,8 @@ fun CampsiteApp(
                 campsiteName = campsiteName,
                 userProfile = user,
                 findCampsite = findCampsite,
-                lotteryRepository = lotteryRepository
+                lotteryRepository = lotteryRepository,
+                onDeleteCampsite = onDeleteCampsite
             )
         }
         composable("Reservations") {

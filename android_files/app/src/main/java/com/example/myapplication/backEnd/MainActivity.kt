@@ -57,7 +57,8 @@ class MainActivity : ComponentActivity() {
                     scheduleRepository = scheduleRepository,
                     lotteryRepository = lotteryRepository,
                     notificationRepository = notificationRepository,
-                    messageRepository = messageRepository
+                    messageRepository = messageRepository,
+                    onDeleteCampsite = campsiteRepository::deleteCampsite
                 )
             }
         }
