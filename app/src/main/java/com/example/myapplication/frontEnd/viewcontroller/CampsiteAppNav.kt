@@ -129,6 +129,15 @@ fun CampsiteApp(
             )
         }
 
+        composable("Reservations/ReservedDates") {
+            ReservationScreen(
+                navController: NavController,
+                user: User?,
+                reservationRepository: ReservationRepository,
+                users = users,
+            )
+            
+        }
         composable("CreateLotteryScreen") {
             user?.let { currentUser ->
                 CreateLotteryRoute(
