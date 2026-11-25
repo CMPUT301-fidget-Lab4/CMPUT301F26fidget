@@ -36,6 +36,8 @@ import androidx.navigation.NavController
 import com.example.myapplication.backEnd.featureModels.Campsite
 import com.example.myapplication.backEnd.featureModels.Lottery
 import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
+import com.example.myapplication.backEnd.firebaseRepositories.FeedbackRepository
+import com.example.myapplication.frontEnd.screens.CampsiteViews.CampsiteFeedbackSection
 import com.example.myapplication.backEnd.userModels.User
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -61,7 +63,9 @@ fun CampsiteDetailsScreen(
     campsiteName: String,
     userProfile: User?,
     findCampsite: (String) -> Campsite?,
-    lotteryRepository: LotteryRepository? = null
+    lotteryRepository: LotteryRepository? = null,
+    findUser: (String) -> User?,
+    feedbackRepository: FeedbackRepository
 ) {
 
     val campsite = findCampsite(campsiteName)
@@ -155,7 +159,12 @@ fun CampsiteDetailsScreen(
 
             // Display existing campsite information.
             CampsiteDetails(campsite)
-
+            CampsiteFeedbackSection(
+                campsiteId = campsite.name,
+                user = userProfile,
+                findUser = findUser,
+                feedbackRepository = feedbackRepository
+            )
             /**
              * Only entrants or admins can see the Join Waitlist button.
              */
