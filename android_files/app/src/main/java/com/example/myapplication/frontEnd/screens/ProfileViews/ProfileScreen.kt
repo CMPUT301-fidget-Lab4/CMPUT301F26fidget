@@ -42,7 +42,7 @@ fun ProfileScreen(
     navController: NavController,
     userProfile: User?,
     onUpdateUser: (User, User) -> Unit,
-    onDeleteUser: (User) -> Unit
+    onDeleteUser: (User) -> com.google.android.gms.tasks.Task<Void>
 ) {
 
     if (userProfile == null){
@@ -77,6 +77,8 @@ fun ProfileScreen(
         var displayUserEmail by remember { mutableStateOf(userProfileState.email)}
         var displayUserPhone by remember { mutableStateOf(userProfileState.phoneNumber)}
         var showDeleteDialog by remember { mutableStateOf(false) }
+        var deleting by remember { mutableStateOf(false) }
+        var deletionError by remember { mutableStateOf<String?>(null) }
         var incompleteChanges by remember { mutableStateOf(false) }
 
 
@@ -238,13 +240,19 @@ fun ProfileScreen(
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
                     title = { Text("Delete Profile?") },
-                    text = { Text("This action cannot be undone.") },
+                    text = { Text(deletionError ?: "This action cannot be undone.") },
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                onDeleteUser(userProfile)
-                                navController.navigate("HomeScreen")
+                                deleting = true
+                                deletionError = null
+                                onDeleteUser(userProfile).addOnCompleteListener { task ->
+                                    deleting = false
+                                    if (task.isSuccessful) navController.navigate("HomeScreen")
+                                    else deletionError = task.exception?.message ?: "Could not delete profile. Try again."
+                                }
                             },
+                            enabled = !deleting,
                             modifier = Modifier.testTag("confirmDeleteProfile")
                             ) {
                             Text("Confirm")

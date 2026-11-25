@@ -62,7 +62,7 @@ class AdminProfileScreenTests {
                     AdminProfilesView(
                         navController = navController,
                         users = usersList,
-                        onDeleteUser = { selectedUser -> usersList.remove(selectedUser) }
+                        onDeleteUser = { selectedUser -> usersList.remove(selectedUser); com.google.android.gms.tasks.Tasks.forResult<Void>(null) }
                     )
                 }
             }

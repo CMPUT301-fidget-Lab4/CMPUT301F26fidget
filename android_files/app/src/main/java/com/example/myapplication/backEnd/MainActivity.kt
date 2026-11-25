@@ -44,10 +44,7 @@ class MainActivity : ComponentActivity() {
                     user = userRepository.currentUser,
                     users = userRepository.users,
                     onAddUser = userRepository::addUser,
-                    onDeleteUser = { user ->
-                        campsiteRepository.deleteCampsitesByOwner(user.deviceID)
-                        userRepository.deleteUser(user)
-                    },
+                    onDeleteUser = userRepository::deleteUser,
                     onUpdateCampsite = campsiteRepository::updateCampsiteDetails,
                     onUpdateUser = userRepository::updateUser,
                     findUser = userRepository::findUser,

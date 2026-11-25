@@ -35,10 +35,12 @@ import androidx.compose.runtime.setValue
 fun AdminProfilesView(
     navController: NavController,
     users: List<User>,
-    onDeleteUser: (User) -> Unit
+    onDeleteUser: (User) -> com.google.android.gms.tasks.Task<Void>
 ){
 
     var userToDelete by remember { mutableStateOf<User?>(null) }
+    var deleting by remember { mutableStateOf(false) }
+    var deletionError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -78,13 +80,19 @@ fun AdminProfilesView(
         AlertDialog(
             onDismissRequest = { userToDelete = null },
             title = { Text("Delete Profile?") },
-            text = { Text("This action cannot be undone.") },
+            text = { Text(deletionError ?: "This action cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onDeleteUser(userToDelete!!)
-                        userToDelete = null
+                        deleting = true
+                        deletionError = null
+                        onDeleteUser(userToDelete!!).addOnCompleteListener { task ->
+                            deleting = false
+                            if (task.isSuccessful) userToDelete = null
+                            else deletionError = task.exception?.message ?: "Could not delete profile. Try again."
+                        }
                     },
+                    enabled = !deleting,
                     modifier = Modifier.testTag("confirmUserDelete")
                 ) {
                     Text("Confirm")

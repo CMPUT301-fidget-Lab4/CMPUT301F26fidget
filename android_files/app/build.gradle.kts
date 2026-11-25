@@ -107,3 +107,10 @@ dependencies {
         libs.androidx.compose.ui.tooling
     )
 }
+
+// Mockito 5.11 uses Byte Buddy instrumentation compatible with Java 21.
+tasks.withType<Test>().configureEach {
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
+}

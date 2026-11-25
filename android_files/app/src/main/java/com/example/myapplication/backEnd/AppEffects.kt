@@ -64,7 +64,7 @@ fun AppEffects(
     }
 
     DisposableEffect(campsiteRepository) {
-        onDispose { campsiteRepository.close() }
+        onDispose { campsiteRepository.close(); userRepository.close() }
     }
 
     LaunchedEffect(lotteryRepository) {
