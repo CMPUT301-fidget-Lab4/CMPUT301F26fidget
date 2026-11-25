@@ -39,7 +39,7 @@ fun CampsiteApp(
     user: User?,
     users: List<User>,
     onAddUser: (User) -> Unit,
-    onDeleteUser: (User) -> Unit,
+    onDeleteUser: (User) -> com.google.android.gms.tasks.Task<Void>,
     onUpdateUser: (User, User) -> Unit,
     findUser: (String) -> User?,
     getAndroidId: (Context) -> String,

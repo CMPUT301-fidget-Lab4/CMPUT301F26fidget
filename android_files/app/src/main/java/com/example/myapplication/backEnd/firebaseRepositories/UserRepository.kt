@@ -5,6 +5,12 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.MetadataChanges
+import com.google.firebase.firestore.Source
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import android.content.Context
 
 import android.provider.Settings.Secure
@@ -19,12 +25,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * UserRepository populates the users list from Firestore and continues to listen for
  * updates. UserRepository has add, delete, update and find methods for users.
  */
-class UserRepository(currentDeviceID: String) {
+class UserRepository(private val currentDeviceID: String, private val db: FirebaseFirestore = Firebase.firestore) {
 
     private val _users = mutableStateListOf<User>()
 
     private val _currentUser = mutableStateOf<User?>(null)
-    private val db = Firebase.firestore
     private val userDataBase = db.collection("users")
      var authState = MutableStateFlow<AuthState>(AuthState.Loading)
 
@@ -49,15 +54,64 @@ class UserRepository(currentDeviceID: String) {
     }
 
     /**
-     * Removes a user from Firestore.
+     * Deletes a profile and applies related cleanup through [ProfileDeletionPlan].
      *
-     * @param user The user to delete. Looks up user by [com.example.myapplication.Back.deviceID].
+     * Reads users, campsites, lotteries, schedules, reservations, notifications, and
+     * messages from the server. Re-reads discovered documents in a transaction, then
+     * commits cleanup and profile deletion together. Requires server access and
+     * permission to read and change the affected collections.
+     *
+     * Rejects more than 450 discovered document references. Transaction retries
+     * protect discovered records against concurrent edits, but records created after
+     * the initial queries may be missed. Larger datasets and coordination with
+     * concurrent creation require server-side cleanup.
+     *
+     * On success, removes the deleted user from the local list. Clears the current
+     * profile and authentication state only when deleting this device's profile;
+     * deleting another user does not log out the current administrator. Failure
+     * does not explicitly clear local profile state.
+     *
+     * @param user Profile to delete, identified by [User.deviceID].
+     * @return Task that succeeds after cleanup commits, or fails for an invalid ID,
+     * failed server access, the document limit, or transaction errors.
      */
-    fun deleteUser(user: User) {
-        userDataBase.document(user.deviceID).delete()
-        authState.value = AuthState.NotRegistered
-        _currentUser.value = null
+    fun deleteUser(user: User): Task<Void> {
+        if (user.deviceID.isBlank() || user.deviceID.contains('/')) {
+            return Tasks.forException(IllegalArgumentException("Invalid profile ID"))
+        }
+        val reads = listOf("users", "campsites", "bookingSchedules", "reservations", "notifications", "messages")
+            .map { db.collection(it).get(Source.SERVER) } +
+            db.collectionGroup("lottery").get(Source.SERVER)
+        return Tasks.whenAllSuccess<QuerySnapshot>(reads)
+            .onSuccessTask { snapshots ->
+                val refs = (snapshots.flatMap { it.documents }.map { it.reference } +
+                    userDataBase.document(user.deviceID)).distinctBy { it.path }
+                check(refs.size <= 450) { "Profile cleanup exceeds the client transaction limit; server cleanup is required." }
+                db.runTransaction<Void> { transaction ->
+                    val docs = refs.map { transaction.get(it) }
+                        .filter { it.exists() }.associate { it.reference.path to it.data.orEmpty() }
+                    ProfileDeletionPlan.build(user.deviceID, docs, System.currentTimeMillis()).forEach { (path, fields) ->
+                        if (fields == null) transaction.delete(db.document(path))
+                        else transaction.update(db.document(path), fields)
+                    }
+                    null
+                }
+            }.addOnSuccessListener {
+                _users.removeAll { it.deviceID == user.deviceID }
+                if (currentDeviceID == user.deviceID) {
+                    _currentUser.value = null
+                    authState.value = AuthState.NotRegistered
+                }
+            }
     }
+
+    /**
+     * Stops listening for user changes in Firestore.
+     *
+     * Call when this repository is no longer used. This releases the listener without
+     * deleting user data, clearing the last loaded state, or cancelling pending writes.
+     */
+    fun close() = userListener.remove()
 
     /**
      * Updates a user in Firestore.
@@ -106,41 +160,40 @@ class UserRepository(currentDeviceID: String) {
      * @return Returns the UserRepositories AuthState value
      */
 
-    init {
-        userDataBase.addSnapshotListener { snapshots, error ->
-            if (error != null) {
-                authState.value = AuthState.Error
-                return@addSnapshotListener
+    private val userListener = userDataBase.addSnapshotListener(MetadataChanges.INCLUDE) { snapshots, error ->
+        if (error != null) {
+            authState.value = AuthState.Error
+            return@addSnapshotListener
+        }
+
+        // Cached profiles may have been deleted on another device. Authenticate only
+        // after a server snapshot, including when an empty server result matches cache.
+        if (snapshots == null || snapshots.metadata.isFromCache) return@addSnapshotListener
+        _users.clear()
+        _currentUser.value = null
+
+        snapshots.documents.forEach { document ->
+            val user = try {
+                document.toObject(User::class.java)
+            } catch (e: Exception) {
+                Log.e("UserRepository", "Skipping doc ${document.id}: ${e.message}", e)
+                null
             }
-
-            _users.clear()
-            _currentUser.value = null
-
-            snapshots?.documents?.forEach { document ->
-                val user = try {
-                    document.toObject(User::class.java)
-                } catch (e: Exception) {
-                    Log.e("UserRepository", "Skipping doc ${document.id}: ${e.message}", e)
-                    null
+            if (user != null) {
+                _users.add(user)
+                if (user.deviceID == currentDeviceID) {
+                    _currentUser.value = user
                 }
-                if (user != null) {
-                    _users.add(user)
-                    if (user.deviceID == currentDeviceID) {
-                        _currentUser.value = user
-                    }
-                }
-            }
-
-            if (_currentUser.value != null) {
-                authState.value = AuthState.LoggedIn(_currentUser.value!!)
-            }
-
-            else {
-                authState.value = AuthState.NotRegistered
             }
         }
 
-        authState.value = AuthState.NotRegistered
+        if (_currentUser.value != null) {
+            authState.value = AuthState.LoggedIn(_currentUser.value!!)
+        }
+
+        else {
+            authState.value = AuthState.NotRegistered
+        }
     }
 }
 

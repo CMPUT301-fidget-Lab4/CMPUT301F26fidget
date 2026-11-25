@@ -79,6 +79,7 @@ class ProfileScreenTests {
                         onDeleteUser = { _ ->
                             currentUser = null
                             authFlow.value = AuthState.NotRegistered
+                            com.google.android.gms.tasks.Tasks.forResult<Void>(null)
                         }
                     )
                 }
