@@ -5,6 +5,7 @@ import android.util.Base64
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.myapplication.backEnd.featureModels.Campsite
@@ -13,6 +14,7 @@ import com.example.myapplication.backEnd.featureModels.Lottery
 import com.example.myapplication.backEnd.featureModels.Registration
 import com.example.myapplication.backEnd.userModels.User
 import com.example.myapplication.frontEnd.screens.campsiteViews.CampsiteDetailsScreen
+import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,6 +32,10 @@ import java.time.LocalDateTime
 class CampsiteDetailsTests {
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private var deleted: Campsite? = null
+
+    private val adminTestUser = User("admin", "admin-test", "admin-test@ualberta.ca", "123", "admin-test-device")
 
     private fun makeCampsite(
         photo: String = "",
@@ -60,7 +66,8 @@ class CampsiteDetailsTests {
                 navController = rememberNavController(),
                 campsiteName = "Pine Ridge",
                 userProfile = user,
-                findCampsite = { campsite }
+                findCampsite = { campsite },
+                onDeleteCampsite = { deleted = it }
             )
         }
     }
@@ -241,5 +248,32 @@ class CampsiteDetailsTests {
 
         composeTestRule.onNodeWithTag("campsiteNotFound").assertExists()
         composeTestRule.onNodeWithTag("campsiteDetailsName").assertDoesNotExist()
+    }
+
+    @Test
+    fun delete_Campsite() {
+        showScreen(makeCampsite(), adminTestUser)
+
+        composeTestRule.onNodeWithTag("deleteCampsiteButton").performClick()
+
+        composeTestRule.onNodeWithTag("confirmDeleteCampsite").performClick()
+
+        composeTestRule.runOnIdle { assertEquals("Pine Ridge", deleted?.name) }
+
+        composeTestRule.onNodeWithTag("confirmDeleteCampsite").assertDoesNotExist()
+    }
+
+    @Test
+    fun cancel_campsite_delete(){
+
+        showScreen(makeCampsite(), adminTestUser)
+
+        composeTestRule.onNodeWithTag("deleteCampsiteButton").performClick()
+
+        composeTestRule.onNodeWithTag("cancelCampsiteDelete").performClick()
+
+        composeTestRule.onNodeWithTag("campsiteDetailsName").assertExists()
+
+        composeTestRule.onNodeWithTag("confirmDeleteCampsite").assertDoesNotExist()
     }
 }
