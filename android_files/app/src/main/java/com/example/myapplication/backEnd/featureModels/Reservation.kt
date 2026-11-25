@@ -37,6 +37,7 @@ enum class ReservationStatus { INVITED, RESERVED, DECLINED, CANCELLED, REJECTED 
  * @param status Current status.
  * @param createdAt When the invitation was made, in milliseconds.
  * @param updatedAt When the status last changed, in milliseconds.
+ * @param cancellationReason Stored reason for cancellation; PROFILE_DELETED permanently blocks booking.
  */
 data class Reservation(
     var id: String = "",
@@ -48,7 +49,8 @@ data class Reservation(
     var bookingEnd: String = "",
     var status: ReservationStatus = ReservationStatus.INVITED,
     var createdAt: Long = System.currentTimeMillis(),
-    var updatedAt: Long = createdAt
+    var updatedAt: Long = createdAt,
+    var cancellationReason: String = ""
 ) {
 
     /** Start of the stay as a date, or null if not reserved yet. */
@@ -108,7 +110,7 @@ data class Reservation(
     ): Boolean {
 
         // Entrant cancellation preserves the lottery win for rebooking.
-        if (status != ReservationStatus.INVITED && status != ReservationStatus.CANCELLED) {
+        if (!canChooseDates()) {
             return false
         }
 
@@ -209,9 +211,17 @@ data class Reservation(
     }
 
 
+    /**
+     * Whether this invitation or entrant-cancelled reservation can accept new dates.
+     * Profile deletion ends the booking entitlement even if schedule history remains.
+     * The caller must also check that a live campsite and valid schedule are available.
+     */
+    fun canChooseDates(): Boolean = cancellationReason != "PROFILE_DELETED" &&
+        status in setOf(ReservationStatus.INVITED, ReservationStatus.CANCELLED)
+
     /** Restores the invitation; previously released dates must be chosen again. */
     fun unreject(): Boolean {
-        if (status != ReservationStatus.REJECTED) return false
+        if (status != ReservationStatus.REJECTED || cancellationReason == "PROFILE_DELETED") return false
         campsiteId = ""
         bookingStart = ""
         bookingEnd = ""

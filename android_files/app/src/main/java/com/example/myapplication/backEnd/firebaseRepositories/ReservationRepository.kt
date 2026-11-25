@@ -130,7 +130,7 @@ class ReservationRepository(
         end: LocalDateTime,
         occupancy: Int,
         onResult: (Boolean) -> Unit
-    ) = update(reservation, onResult) { current, schedule ->
+    ) = update(reservation, onResult, requiredCampsiteId = campsiteId) { current, schedule ->
         schedule != null &&
                 current.reserve(schedule, campsiteId, start, end, occupancy)
     }
@@ -191,11 +191,14 @@ class ReservationRepository(
      * reruns the whole thing with the new data, so the checks in
      * Reservation and BookingSchedule always see the latest bookings.
      *
+     * @param requiredCampsiteId For booking actions, verifies this campsite still exists
+     * inside the transaction so deletion causes a retry or a rejected booking.
      * @param action Applies the change. Returns false if it isn't allowed.
      */
     private fun update(
         reservation: Reservation,
         onResult: (Boolean) -> Unit,
+        requiredCampsiteId: String? = null,
         action: (Reservation, BookingSchedule<Lottery>?) -> Boolean
     ) {
         if (reservation.id.isBlank()) {
@@ -214,6 +217,11 @@ class ReservationRepository(
                 ?: return@runTransaction false
 
             val schedule = BookingScheduleRepository.fromSnapshot(tx.get(scheduleDoc))
+            // Retained schedules and stale UI state must not allow booking a deleted campsite.
+            if (requiredCampsiteId != null &&
+                !tx.get(db.collection("campsites").document(requiredCampsiteId)).exists()) {
+                return@runTransaction false
+            }
 
             if (!action(current, schedule)) {
                 return@runTransaction false

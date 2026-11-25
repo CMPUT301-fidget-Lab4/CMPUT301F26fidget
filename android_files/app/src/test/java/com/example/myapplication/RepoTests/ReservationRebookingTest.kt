@@ -196,4 +196,37 @@ class ReservationRebookingTest {
             )
         )
     }
+    @Test
+    fun profileDeletionBlocksBookingEvenWhenScheduleAndCampsiteRemain() {
+        val reservation = reservation().apply {
+            status = ReservationStatus.CANCELLED
+            cancellationReason = "PROFILE_DELETED"
+        }
+        val schedule = schedule()
+        Assert.assertFalse(reservation.canChooseDates())
+        Assert.assertFalse(reservation.reserve(schedule, "camp", now.plusDays(1), now.plusDays(2), 1, now))
+        Assert.assertTrue(schedule.getBookings().isEmpty())
+        Assert.assertEquals(ReservationStatus.CANCELLED, reservation.status)
+        Assert.assertEquals("PROFILE_DELETED", reservation.copy().cancellationReason)
+    }
+
+    @Test
+    fun profileDeletionCannotBeRestoredToAnInvitation() {
+        val reservation = reservation().apply {
+            status = ReservationStatus.REJECTED
+            cancellationReason = "PROFILE_DELETED"
+        }
+        Assert.assertFalse(reservation.unreject())
+        Assert.assertEquals(ReservationStatus.REJECTED, reservation.status)
+    }
+
+    @Test
+    fun onlyInvitationsAndEntrantCancellationsAllowChoosingDates() {
+        ReservationStatus.entries.forEach { status ->
+            val reservation = reservation().apply { this.status = status }
+            Assert.assertEquals(status in setOf(ReservationStatus.INVITED, ReservationStatus.CANCELLED), reservation.canChooseDates())
+            reservation.cancellationReason = "PROFILE_DELETED"
+            Assert.assertFalse(reservation.canChooseDates())
+        }
+    }
 }

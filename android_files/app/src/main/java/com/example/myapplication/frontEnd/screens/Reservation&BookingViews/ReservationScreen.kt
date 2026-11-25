@@ -97,7 +97,7 @@ fun ReservationScreen(
     val isOwner = user.userType.trim().equals("campsite owner", ignoreCase = true)
     val canManage = isOwner || isAdmin
     var managingPeriods by remember(user.deviceID) { mutableStateOf(false) }
-    if (managingPeriods && lotteryRepository != null) {
+    if (canManage && managingPeriods && lotteryRepository != null) {
         ManageBookingPeriodsDialog(user, campsites, lotteryRepository) { managingPeriods = false }
     }
 
@@ -158,7 +158,7 @@ fun ReservationScreen(
         ReservationStatus.DECLINED
     )
 
-    val selectedCategory = category.takeIf { canManage }
+    val selectedCategory = category
     val displayedReservations = selectedCategory?.let { selected ->
         reservations.filter { selected.includes(it, now) }
     } ?: reservations
@@ -251,6 +251,7 @@ fun ReservationScreen(
                                     campsite.bookingSchedules.orEmpty().mapNotNull { it.registration as? Lottery }
                                         .filter { it.id == reservation.lotteryId }.flatMap { it.campsiteIds }
                             }.filter { it.isNotBlank() }.distinct(),
+                            existingCampsiteIds = campsites.keys,
                             scheduleRepository = scheduleRepository,
                             isOwner = canManage,
                             entrant = users.firstOrNull { it.deviceID == reservation.entrantId },
@@ -278,8 +279,14 @@ fun ReservationScreen(
         }
     }
 
-    // Date picker dialog for accepting an invitation
-    reserving?.let { invitation ->
+    // Re-check the live reservation so deletion also closes an already-open date picker.
+    val bookableReservation = reserving?.let { selected ->
+        reservations.firstOrNull { it.id == selected.id }?.takeIf { !canManage && it.canChooseDates() }
+    }
+    LaunchedEffect(bookableReservation) {
+        if (bookableReservation == null) reserving = null
+    }
+    bookableReservation?.let { invitation ->
         ReserveDialog(
             reservation = invitation,
             campsites = campsites,
@@ -300,6 +307,7 @@ fun ReservationScreen(
 private fun ReservationCard(
     reservation: Reservation,
     lotteryCampsites: List<String>,
+    existingCampsiteIds: Set<String>,
     scheduleRepository: BookingScheduleRepository,
     isOwner: Boolean,
     entrant: User?,
@@ -316,13 +324,14 @@ private fun ReservationCard(
     var fetchedCampsites by remember(reservation.lotteryId) { mutableStateOf<List<String>>(emptyList()) }
     // Old invitations remain identifiable through their schedule after the current lottery changes.
     LaunchedEffect(reservation.lotteryId, lotteryCampsites.isEmpty()) {
-        if (lotteryCampsites.isEmpty() && reservation.campsiteId.isBlank()) {
+        if (lotteryCampsites.isEmpty()) {
             scheduleRepository.getSchedule(reservation.lotteryId) {
                 fetchedCampsites = it?.registration?.campsiteIds.orEmpty().filter { id -> id.isNotBlank() }.distinct()
             }
         }
     }
-    val names = lotteryCampsites.ifEmpty { fetchedCampsites }
+    val names = lotteryCampsites.ifEmpty { fetchedCampsites }.filter { it in existingCampsiteIds }
+    val canChooseDates = reservation.canChooseDates() && names.isNotEmpty()
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
@@ -347,6 +356,9 @@ private fun ReservationCard(
             }
 
             Text("Status: ${statusLabel(reservation.status)}")
+            if (reservation.cancellationReason == "PROFILE_DELETED") {
+                Text("Cancelled because a related profile was deleted. This reservation cannot be booked again.")
+            }
 
             Spacer(Modifier.height(8.dp))
 
@@ -355,7 +367,7 @@ private fun ReservationCard(
                         (reservation.status == ReservationStatus.RESERVED && reservation.isActive(now))
 
                 if (isOwner) {
-                    if (reservation.status == ReservationStatus.REJECTED) {
+                    if (reservation.status == ReservationStatus.REJECTED && reservation.cancellationReason != "PROFILE_DELETED") {
                         OutlinedButton(
                             onClick = onUnreject,
                             modifier = Modifier.testTag("unrejectButton")
@@ -370,10 +382,12 @@ private fun ReservationCard(
                 } else {
                     when (reservation.status) {
                         ReservationStatus.INVITED -> {
-                            Button(
-                                onClick = onReserve,
-                                modifier = Modifier.testTag("reserveButton")
-                            ) { Text("Reserve") }
+                            if (canChooseDates) {
+                                Button(
+                                    onClick = onReserve,
+                                    modifier = Modifier.testTag("reserveButton")
+                                ) { Text("Reserve") }
+                            }
 
                             OutlinedButton(
                                 onClick = onDecline,
@@ -382,8 +396,10 @@ private fun ReservationCard(
                         }
 
                         ReservationStatus.CANCELLED -> {
-                            Button(onClick = onReserve, modifier = Modifier.testTag("rebookButton")) {
-                                Text("Book different dates")
+                            if (canChooseDates) {
+                                Button(onClick = onReserve, modifier = Modifier.testTag("rebookButton")) {
+                                    Text("Book different dates")
+                                }
                             }
                         }
 
@@ -460,6 +476,8 @@ private fun ReserveDialog(
                     loading -> CircularProgressIndicator()
 
                     loaded == null -> Text("Couldn't load available dates.")
+                    loaded.registration.campsiteIds.none { it in campsites } ->
+                        Text("This reservation no longer has any available campsites.")
 
                     else -> {
                         Text("Campsite")
@@ -467,7 +485,7 @@ private fun ReserveDialog(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            loaded.registration.campsiteIds.forEach { id ->
+                            loaded.registration.campsiteIds.filter { it in campsites }.forEach { id ->
                                 FilterChip(
                                     selected = chosenCampsite == id,
                                     onClick = {
