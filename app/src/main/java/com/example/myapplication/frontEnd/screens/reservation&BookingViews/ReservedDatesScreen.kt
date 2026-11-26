@@ -67,8 +67,11 @@ fun ReservedDatesScreen(
     }
 
     val isOwner = user.userType.trim().equals("campsite owner", ignoreCase = true)
+    val isAdmin = user.userType.trim().equals("admin", ignoreCase = true)
+    val canView = isOwner || isAdmin
+    
 
-    if(!isOwner){
+    if(canView){
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("You need to be a owner to see the reserved dates.")
         }
