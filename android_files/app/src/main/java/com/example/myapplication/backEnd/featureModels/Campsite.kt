@@ -50,5 +50,6 @@ class Campsite(
     var bookingSchedules: MutableList<BookingSchedule<*>>? by mutableStateOf(null)
 
     var inLottery: Boolean = false
-
+    var ratingTotal: Long = 0
+    var ratingCount: Long = 0
 }

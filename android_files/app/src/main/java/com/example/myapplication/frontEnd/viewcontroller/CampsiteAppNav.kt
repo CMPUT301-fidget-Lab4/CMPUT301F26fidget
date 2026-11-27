@@ -15,6 +15,7 @@ import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
 import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
 import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
 import com.example.myapplication.backEnd.firebaseRepositories.MessageRepository
+import com.example.myapplication.backEnd.firebaseRepositories.FeedbackRepository
 import com.example.myapplication.backEnd.userModels.User
 import com.example.myapplication.frontEnd.screens.NotificationViews.NotificationsScreen
 import com.example.myapplication.frontEnd.screens.ReservationBookingViews.ReservationCategory
@@ -52,7 +53,8 @@ fun CampsiteApp(
     scheduleRepository: BookingScheduleRepository,
     lotteryRepository: LotteryRepository,
     notificationRepository: NotificationRepository,
-    messageRepository: MessageRepository
+    messageRepository: MessageRepository,
+    feedbackRepository: FeedbackRepository
 )  {
 
     val navController = rememberNavController()
@@ -114,7 +116,9 @@ fun CampsiteApp(
                 campsiteName = campsiteName,
                 userProfile = user,
                 findCampsite = findCampsite,
-                lotteryRepository = lotteryRepository
+                lotteryRepository = lotteryRepository,
+                findUser = findUser,
+                feedbackRepository = feedbackRepository
             )
         }
         composable("Reservations") {

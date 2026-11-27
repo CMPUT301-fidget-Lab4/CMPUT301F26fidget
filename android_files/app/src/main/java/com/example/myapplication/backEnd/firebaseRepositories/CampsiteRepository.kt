@@ -22,10 +22,7 @@ class CampsiteRepository(private val db: FirebaseFirestore = Firebase.firestore,
         "occupancy",
         "photo",
         "tags",
-        "rating",
-        "inLottery",
-        "reservationSet",
-        "bookingSet"
+        "inLottery"
     )
     private val campsiteRef = db.collection("campsites")
 
