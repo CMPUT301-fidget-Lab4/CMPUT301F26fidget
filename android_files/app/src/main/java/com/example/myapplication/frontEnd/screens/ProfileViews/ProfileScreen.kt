@@ -2,12 +2,16 @@ package com.example.myapplication.frontEnd.screens.profileViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -15,13 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.profile.User
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextButton
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
+import com.google.android.gms.tasks.Task
 
 /**
  * ProfileScreen allows the user to view and update their profile.
@@ -34,116 +40,127 @@ import androidx.compose.material3.TextButton
  *
  * @param navController
  * @param userProfile The current user's [User] object
- * @param onUpdateUser [UserRepository] method to update a user's profile in Firestore
- * @param onDeleteUser [UserRepository] method to delete a user's profile from Firestore
+ * @param onUpdateUser writes the profile's editable fields
+ * @param onDeleteUser deletes the profile and its related records
  */
 @Composable
 fun ProfileScreen(
     navController: NavController,
     userProfile: User?,
-    onUpdateUser: (User, User) -> Unit,
-    onDeleteUser: (User) -> com.google.android.gms.tasks.Task<Void>
+    onUpdateUser: (User, User) -> Task<Void>,
+    onDeleteUser: (User) -> Task<Void>
 ) {
-
-    if (userProfile == null){
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Profile Display Error")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    navController.navigate("MainScreen")
-                },
-                modifier = Modifier.testTag("profileErrorReturn") // for testing
+    AdaptiveContent(maxWidth = AppLayout.FormWidth) {
+        if (userProfile == null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(AppLayout.Medium),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Medium, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Return to Main Screen")
+                Text("Profile Display Error")
+
+                Button(
+                    onClick = { navController.navigate("MainScreen") { launchSingleTop = true } },
+                    modifier = Modifier.testTag("profileErrorReturn")
+                ) {
+                    Text("Return to Main Screen")
+                }
             }
+            return@AdaptiveContent
         }
-    }
 
-    else {
-
-        var isEditing by remember { mutableStateOf(true) }
-        var userProfileState by remember { mutableStateOf(userProfile) }
-        var displayUserType by remember { mutableStateOf(userProfileState.userType) }
-        var displayUserName by remember { mutableStateOf(userProfileState.name)}
-        var displayUserEmail by remember { mutableStateOf(userProfileState.email)}
-        var displayUserPhone by remember { mutableStateOf(userProfileState.phoneNumber)}
-        var showDeleteDialog by remember { mutableStateOf(false) }
-        var deleting by remember { mutableStateOf(false) }
-        var deletionError by remember { mutableStateOf<String?>(null) }
-        var incompleteChanges by remember { mutableStateOf(false) }
+        var editing by remember(userProfile.deviceID) { mutableStateOf(false) }
+        var editBase by remember(userProfile.deviceID) { mutableStateOf(userProfile) }
+        var displayUserName by remember(userProfile.deviceID) { mutableStateOf(userProfile.name) }
+        var displayUserEmail by remember(userProfile.deviceID) { mutableStateOf(userProfile.email) }
+        var displayUserPhone by remember(userProfile.deviceID) { mutableStateOf(userProfile.phoneNumber) }
+        var alertsEnabled by remember(userProfile.deviceID) { mutableStateOf(userProfile.lotteryAlertsEnabled) }
+        var saving by remember(userProfile.deviceID) { mutableStateOf(false) }
+        var saveError by remember(userProfile.deviceID) { mutableStateOf<String?>(null) }
+        var showDeleteDialog by remember(userProfile.deviceID) { mutableStateOf(false) }
+        var deleting by remember(userProfile.deviceID) { mutableStateOf(false) }
+        var deletionError by remember(userProfile.deviceID) { mutableStateOf<String?>(null) }
 
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+                .verticalScroll(rememberScrollState())
+                .padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Medium, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("User Profile")
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Text("User Profile", style = MaterialTheme.typography.headlineSmall)
 
             OutlinedTextField(
                 value = userProfile.userType,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Account Type") },
-                modifier = Modifier.testTag("profileUserType")
+                modifier = Modifier.fillMaxWidth().testTag("profileUserType")
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
-                value = displayUserName,
+                value = if (editing) displayUserName else userProfile.name,
                 onValueChange = { displayUserName = it },
                 label = { Text("Name") },
-                readOnly = isEditing,
-                modifier = Modifier.testTag("profileName")
+                readOnly = !editing || saving,
+                modifier = Modifier.fillMaxWidth().testTag("profileName")
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
-                value = displayUserEmail,
+                value = if (editing) displayUserEmail else userProfile.email,
                 onValueChange = { displayUserEmail = it },
                 label = { Text("Email") },
-                readOnly = isEditing,
-                modifier = Modifier.testTag("profileEmail")
+                readOnly = !editing || saving,
+                modifier = Modifier.fillMaxWidth().testTag("profileEmail")
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = displayUserPhone,
+                value = if (editing) displayUserPhone else userProfile.phoneNumber,
                 onValueChange = { displayUserPhone = it },
                 label = { Text("Phone Number") },
-                readOnly = isEditing,
-                modifier = Modifier.testTag("profilePhoneNumber")
+                readOnly = !editing || saving,
+                modifier = Modifier.fillMaxWidth().testTag("profilePhoneNumber")
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AppLayout.Small)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(AppLayout.Small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Lottery result alerts", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = if (editing) alertsEnabled else userProfile.lotteryAlertsEnabled,
+                        onCheckedChange = { alertsEnabled = it },
+                        enabled = editing && !saving,
+                        modifier = Modifier.testTag("lotteryAlertsEnabled")
+                    )
+                }
+                Text(
+                    "Lottery results are always available in Notifications.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-            if (isEditing) {
+            if (!editing) {
                 Button(
                     onClick = {
-                        isEditing = !isEditing
+                        editBase = userProfile
+                        displayUserName = userProfile.name
+                        displayUserEmail = userProfile.email
+                        displayUserPhone = userProfile.phoneNumber
+                        alertsEnabled = userProfile.lotteryAlertsEnabled
+                        editing = true
                     },
                     modifier = Modifier.testTag("editProfile")
                 ) {
                     Text("Edit Profile")
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
@@ -157,63 +174,54 @@ fun ProfileScreen(
 
             else {
 
-                if (incompleteChanges) {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text("Fill all fields to save changes")
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (saveError != null) {
+                    Text(saveError.orEmpty(), color = MaterialTheme.colorScheme.error)
                 }
 
                 Button(
                     onClick = {
                         if (displayUserName.isNotEmpty() && displayUserEmail.isNotEmpty() && displayUserPhone.isNotEmpty()) {
 
-                            isEditing = !isEditing
-
-                            val updatedUser = User(
-                                displayUserType,
-                                displayUserName,
-                                displayUserEmail,
-                                displayUserPhone,
-                                userProfile.deviceID
+                            val updatedUser = editBase.copy(
+                                name = displayUserName,
+                                email = displayUserEmail,
+                                phoneNumber = displayUserPhone,
+                                lotteryAlertsEnabled = alertsEnabled
                             )
 
-                            onUpdateUser(updatedUser, userProfile)
-
-                            userProfileState = updatedUser
-
-                            incompleteChanges = false
+                            saving = true
+                            saveError = null
+                            onUpdateUser(updatedUser, editBase).addOnCompleteListener { task ->
+                                saving = false
+                                if (task.isSuccessful) {
+                                    editing = false
+                                } else {
+                                    saveError = "Could not save profile changes. Try again."
+                                }
+                            }
                         }
 
                         else {
-                           incompleteChanges = true
+                            saveError = "Fill all fields to save changes"
                         }
                     },
+                    enabled = !saving,
                     modifier = Modifier.testTag("saveProfileEdits")
                 ) {
-                    Text("Save Changes")
+                    Text(if (saving) "Saving…" else "Save Changes")
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        isEditing = !isEditing
-
-                        displayUserName = userProfileState.name
-                        displayUserEmail = userProfileState.email
-                        displayUserPhone = userProfileState.phoneNumber
-
-                        incompleteChanges = false
+                        editing = false
+                        saveError = null
                     },
+                    enabled = !saving,
                     modifier = Modifier.testTag("cancelProfileChanges")
                 ) {
                     Text("Cancel Changes")
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
@@ -223,8 +231,6 @@ fun ProfileScreen(
             ) {
                 Text("App Policy & Guidelines")
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
@@ -240,7 +246,12 @@ fun ProfileScreen(
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
                     title = { Text("Delete Profile?") },
-                    text = { Text(deletionError ?: "This action cannot be undone.") },
+                    text = {
+                        Text(
+                            deletionError ?: "This action cannot be undone.",
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        )
+                    },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -248,8 +259,14 @@ fun ProfileScreen(
                                 deletionError = null
                                 onDeleteUser(userProfile).addOnCompleteListener { task ->
                                     deleting = false
-                                    if (task.isSuccessful) navController.navigate("HomeScreen")
-                                    else deletionError = task.exception?.message ?: "Could not delete profile. Try again."
+                                    if (task.isSuccessful) {
+                                        navController.navigate("HomeScreen") {
+                                            popUpTo(navController.graph.id) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    } else {
+                                        deletionError = task.exception?.message ?: "Could not delete profile. Try again."
+                                    }
                                 }
                             },
                             enabled = !deleting,

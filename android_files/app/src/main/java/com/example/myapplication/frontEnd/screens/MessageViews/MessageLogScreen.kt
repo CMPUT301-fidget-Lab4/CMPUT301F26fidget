@@ -2,14 +2,9 @@ package com.example.myapplication.frontEnd.screens.MessageViews
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,12 +17,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.Message
-import com.example.myapplication.backEnd.firebaseRepositories.MessageRepository
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.messaging.Message
+import com.example.myapplication.data.firebase.MessageRepository
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AppLayout
 
 /**
  * Admin log of every message sent from a campsite owner to an entrant,
@@ -59,52 +53,19 @@ fun MessageLogScreen(
         onDispose { registration?.remove() }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    MessageListLayout(
+        title = "Owner message log",
+        subtitle = "Every message sent from a campsite owner to an entrant.",
+        backTag = "returnFromMessageLog",
+        onBack = { navController.popBackStack() },
+        modifier = Modifier.testTag("messageLogList")
     ) {
-        Text("Owner message log", fontSize = 22.sp)
-        Text(
-            text = "Every message sent from a campsite owner to an entrant.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(Modifier.height(12.dp))
-
         when {
-            !allowed -> Text(
-                text = "Only admins can view this log.",
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("messageLogNotAllowed")
-            )
-
-            messages.isEmpty() -> Text(
-                text = "No messages yet.",
-                modifier = Modifier.weight(1f)
-            )
-
-            else -> LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("messageLogList"),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(messages, key = { it.id }) { message ->
-                    LogEntry(message, findUser)
-                }
+            !allowed -> item {
+                Text("Only admins can view this log.", modifier = Modifier.testTag("messageLogNotAllowed"))
             }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.testTag("returnFromMessageLog")
-        ) {
-            Text("Back")
+            messages.isEmpty() -> item { Text("No messages yet.") }
+            else -> items(messages, key = { it.id }) { message -> LogEntry(message, findUser) }
         }
     }
 }
@@ -115,7 +76,10 @@ fun MessageLogScreen(
 @Composable
 private fun LogEntry(message: Message, findUser: (String) -> User?) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
+        Column(
+            modifier = Modifier.padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
             Text(
                 text = "${displayName(message.senderId, findUser)} → " +
                         displayName(message.recipientId, findUser),
@@ -129,8 +93,6 @@ private fun LogEntry(message: Message, findUser: (String) -> User?) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            Spacer(Modifier.height(4.dp))
 
             Text(message.text)
 

@@ -4,44 +4,46 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.userModels.User
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import com.example.myapplication.backEnd.featureModels.BookingSchedule
-import com.example.myapplication.backEnd.featureModels.Lottery
-import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
-import java.time.Instant
+import androidx.navigation.NavController
+import com.example.myapplication.features.booking.BookingSchedule
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.lottery.Lottery
+import com.example.myapplication.data.firebase.BookingScheduleRepository
+import com.example.myapplication.data.firebase.LotteryRepository.Companion.currentCampsiteLottery
+import com.example.myapplication.core.datetime.AlbertaTime
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.screens.LotteryViews.lotteryInfoDateFormat
+import com.example.myapplication.frontEnd.screens.LotteryViews.lotteryRegistrationStatus
+import com.example.myapplication.frontEnd.screens.LotteryViews.waitlistSummary
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AdaptiveDatePickerDialog
+import com.example.myapplication.frontEnd.theme.AppLayout
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.LocalDateTime
 
 /**
  * CampsiteListScreen displays a list of campsites.
@@ -56,58 +58,81 @@ import java.time.ZoneOffset
  * @param ownedOnly: If true, only campsites owned by the current user are shown.
  */
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CampsiteListScreen(
     navController: NavController,
     userProfile: User?,
     campsites: Map<String, Campsite>,
     ownedOnly: Boolean,
-    scheduleRepository: BookingScheduleRepository? = null
+    bookingSchedules: BookingScheduleRepository.Catalog = BookingScheduleRepository.Catalog(),
+    onRetrySchedules: () -> Unit = {}
 ) {
-    var filter by remember { mutableStateOf(CampsiteFilter()) }
-    var schedules by remember {
-        mutableStateOf<Map<String, List<BookingSchedule<Lottery>>>?>(null)
-    }
-
-    DisposableEffect(scheduleRepository) {
-        val registration = scheduleRepository?.listenToAllSchedules { loaded ->
-            schedules = loaded
-                .flatMap { s -> s.registration.campsiteIds.map { id -> id to s } }
-                .groupBy({ it.first }, { it.second })
-        }
-        onDispose { registration?.remove() }
-    }
+    var filter by rememberSaveable(stateSaver = CampsiteFilterSaver) { mutableStateOf(CampsiteFilter()) }
+    var draft by rememberSaveable(stateSaver = CampsiteFilterSaver) { mutableStateOf(CampsiteFilter()) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
     val shownCampsites = campsites.entries.filter { !ownedOnly || it.value.ownerID == userProfile?.deviceID }
         .filter { (id, campsite) ->
             matchesLocation(campsite, filter.location) &&
                     matchesCapacity(campsite, filter.capacity) &&
-                    matchesDate(id, campsite, filter.date, schedules)
+                    matchesDate(id, campsite, filter.date, bookingSchedules.byCampsite)
         }
         .map { it.value }
-        if (ownedOnly) {
-            campsites.values.filter { it.ownerID == userProfile?.deviceID }
-        } else {
-            campsites.values.toList()
-        }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Displaying ${shownCampsites.size} campsites")
-
-        FilterBar(
-            onApply = { filter = it },
-            onReset = { filter = CampsiteFilter() }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+    AdaptiveContent {
         LazyColumn(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize().testTag("campsiteListScroll"),
+            contentPadding = PaddingValues(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Medium),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item("availability") {
+                val availability = if (filter.date != null) bookingSchedules.availabilityMessage() else null
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(availability ?: "Displaying ${shownCampsites.size} campsites")
+                    if (filter.date != null && bookingSchedules.error != null) {
+                        TextButton(onClick = onRetrySchedules) { Text("Retry date availability") }
+                    }
+                }
+            }
+            item("filters") {
+                FilterBar(
+                    draft = draft,
+                    onDraftChange = { draft = it },
+                    onChooseDate = {
+                        focusManager.clearFocus()
+                        showDatePicker = true
+                    },
+                    onApply = {
+                        filter = draft
+                        focusManager.clearFocus()
+                    },
+                    onReset = {
+                        val emptyFilter = CampsiteFilter()
+                        draft = emptyFilter
+                        filter = emptyFilter
+                        focusManager.clearFocus()
+                    }
+                )
+            }
+            item("actions") {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(AppLayout.Small, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+                ) {
+                    if (userProfile?.userType == "campsite owner" || userProfile?.userType == "admin") {
+                        Button(
+                            onClick = { navController.navigate("RegisterCampsite") },
+                            modifier = Modifier.testTag("registerNewCampsite")
+                        ) { Text("Register a new campsite") }
+                    }
+                    Button(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.testTag("returnFromCampsiteList")
+                    ) { Text("Back To Main Screen") }
+                }
+            }
             items(shownCampsites) { campsite ->
                 Column(modifier = Modifier.fillMaxWidth().clickable {
                     navController.navigate("CampsiteDetails/${Uri.encode(campsite.name)}") }
@@ -115,37 +140,58 @@ fun CampsiteListScreen(
                 ) {
 
                     Text(campsite.name)
-                    Text("Capacity ${campsite.occupancy}")
+                    Text("Campsite capacity: ${campsite.occupancy} people", modifier = Modifier.testTag("campsiteCapacity_${campsite.name}"))
+                    val lottery = currentCampsiteLottery(campsite)
+                    when {
+                        campsite.lotteryCollection == null -> Text("Loading waitlist information...")
+                        lottery == null -> Text("No active lottery")
+                        else -> {
+                            Text(waitlistSummary(lottery), modifier = Modifier.testTag("campsiteWaitlist_${campsite.name}"))
+                            if (lottery.campsiteIds.size > 1) Text("Shared across ${lottery.campsiteIds.size} campsites")
+                            Text(lotteryRegistrationStatus(lottery, LocalDateTime.now(AlbertaTime.zone)))
+                            Text("Registration ends: ${lottery.period.registrationEnd.format(lotteryInfoDateFormat)} (Alberta time)")
+                        }
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (userProfile?.userType == "campsite owner" || userProfile?.userType == "admin") {
-            Button(
-                onClick = { navController.navigate("RegisterCampsite") },
-                modifier = Modifier.testTag("registerNewCampsite") // for testing
-            ) {
-                Text("Register a new campsite")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.testTag("returnFromCampsiteList") // for testing
-        ) {
-            Text("Back To Main Screen")
-        }
     }
+    if (showDatePicker) {
+        AdaptiveDatePickerDialog(
+            selectedDate = draft.date,
+            onConfirm = {
+                draft = draft.copy(date = it)
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+}
+
+internal fun BookingScheduleRepository.Catalog.availabilityMessage(): String? = when {
+    error != null && schedules == null -> "Couldn't verify date availability. Showing location and capacity matches."
+    error != null -> "Couldn't refresh date availability. Showing previously loaded matches."
+    checking && schedules == null -> "Checking date availability. Showing location and capacity matches."
+    checking -> "Checking date availability. Showing previously loaded matches."
+    fromCache -> "Showing saved date availability. Connect to verify these matches."
+    else -> null
 }
 
 data class CampsiteFilter(
     val location: String = "",
     val date: LocalDate? = null,
     val capacity: Int? = null
+)
+
+private val CampsiteFilterSaver = listSaver<CampsiteFilter, String>(
+    save = { listOf(it.location, it.date?.toString().orEmpty(), it.capacity?.toString().orEmpty()) },
+    restore = {
+        CampsiteFilter(
+            location = it[0],
+            date = it[1].takeIf(String::isNotEmpty)?.let(LocalDate::parse),
+            capacity = it[2].toIntOrNull()
+        )
+    }
 )
 
 /** Every word typed must appear somewhere in the campsite's address. */
@@ -171,79 +217,52 @@ internal fun matchesDate(
     return schedules[id].orEmpty().any { it.availableDates(id, campsite.occupancy).contains(date) }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FilterBar(
-    onApply: (CampsiteFilter) -> Unit,
+    draft: CampsiteFilter,
+    onDraftChange: (CampsiteFilter) -> Unit,
+    onChooseDate: () -> Unit,
+    onApply: () -> Unit,
     onReset: () -> Unit
 ) {
-    // What's typed in the boxes right now; not applied until the button is pressed
-    var draft by remember { mutableStateOf(CampsiteFilter()) }
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = draft.location,
-        onValueChange = { draft = draft.copy(location = it) },
-        label = { Text("Location") },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth().testTag("filterLocation")
-    )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
     ) {
-        Box(modifier = Modifier.weight(1f)) {
-            OutlinedTextField(
-                value = draft.date?.toString() ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Date") },
-                modifier = Modifier.fillMaxWidth().testTag("filterDate")
-            )
-            Box(modifier = Modifier.matchParentSize().clickable { showDatePicker = true })
-        }
         OutlinedTextField(
-            value = draft.capacity?.toString() ?: "",
-            onValueChange = { text ->
-                draft = draft.copy(capacity = text.filter(Char::isDigit).toIntOrNull())
-            },
-            label = { Text("Minimum Capacity") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            value = draft.location,
+            onValueChange = { onDraftChange(draft.copy(location = it)) },
+            label = { Text("Location") },
             singleLine = true,
-            modifier = Modifier.weight(1f).testTag("filterCapacity")
+            modifier = Modifier.fillMaxWidth().testTag("filterLocation")
         )
-    }
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = { onApply(draft) },
-            modifier = Modifier.testTag("filterApply")
-        ) { Text("Filter") }
-        TextButton(
-            onClick = {
-                draft = CampsiteFilter()   // clear the boxes
-                onReset()                  // and show every campsite again
+        CampsiteFieldPair(
+            first = { field ->
+                OutlinedButton(onClick = onChooseDate, modifier = field.testTag("filterDate")) {
+                    Text(draft.date?.let { "Date: $it" } ?: "Choose date")
+                }
             },
-            modifier = Modifier.testTag("filterReset")
-        ) { Text("Reset") }
-    }
-
-    if (showDatePicker) {
-        val pickerState = rememberDatePickerState()
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    pickerState.selectedDateMillis?.let { millis ->
-                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                        draft = draft.copy(date = picked)
-                    }
-                    showDatePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Cancel") } }
-        ) { DatePicker(state = pickerState) }
+            second = { field ->
+                OutlinedTextField(
+                    value = draft.capacity?.toString() ?: "",
+                    onValueChange = { text ->
+                        onDraftChange(draft.copy(capacity = text.filter(Char::isDigit).toIntOrNull()))
+                    },
+                    label = { Text("Minimum Capacity") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = field.testTag("filterCapacity")
+                )
+            }
+        )
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(AppLayout.Small, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
+            Button(onClick = onApply, modifier = Modifier.testTag("filterApply")) { Text("Filter") }
+            TextButton(onClick = onReset, modifier = Modifier.testTag("filterReset")) { Text("Reset") }
+        }
     }
 }

@@ -1,60 +1,72 @@
 package com.example.myapplication.frontEnd.screens.NotificationViews
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.AppNotification
-import com.example.myapplication.backEnd.firebaseRepositories.NotificationRepository
-import com.example.myapplication.backEnd.userModels.User
+import androidx.compose.ui.platform.testTag
+import com.example.myapplication.features.notification.LotteryNotificationInbox
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 
-/**
- * Shows the user's lottery result notifications, newest first.
- *
- * Listens to the notifications collection for [user] while the screen is
- * visible and stops listening when it leaves the screen. Shows a message
- * when there are no notifications yet.
- *
- * @param navController used to return to the previous screen
- * @param user the logged-in user whose notifications are shown
- * @param notificationRepository source of the user's notifications
- */
+internal const val NOTIFICATIONS_ROUTE = "NotificationsScreen"
+
+/** Shows persisted lottery outcomes independently of the device alert preference. */
 @Composable
 fun NotificationsScreen(
-    navController: NavController,
-    user: User,
-    notificationRepository: NotificationRepository
+    inbox: LotteryNotificationInbox?,
+    onBack: () -> Unit
 ) {
-    var notifications by remember { mutableStateOf<List<AppNotification>>(emptyList()) }
-
-    DisposableEffect(user.deviceID) {
-        val registration = notificationRepository.listenForAll(user.deviceID) { notifications = it }
-        onDispose { registration.remove() }
+    val notice = when {
+        inbox == null || inbox.loading -> "Loading notifications…"
+        inbox.loadFailed -> "Could not load all notifications."
+        inbox.fromCache -> "Showing saved notifications while checking for updates."
+        inbox.notifications.isEmpty() -> "No notifications yet."
+        else -> null
     }
-
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { navController.popBackStack() }) { Text("Back") }
-            Text("Notifications", style = MaterialTheme.typography.headlineSmall)
-        }
-        Spacer(Modifier.height(8.dp))
-        if (notifications.isEmpty()) {
-            Text("No notifications yet.")
-        } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(notifications, key = { it.id }) { n ->
+    AdaptiveContent {
+        Column(
+            Modifier.fillMaxSize().padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppLayout.Small),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onBack, modifier = Modifier.testTag("notificationsBack")) {
+                    Text("Back")
+                }
+                Text(
+                    "Notifications",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
+            LazyColumn(
+                Modifier.weight(1f).fillMaxWidth().testTag("notificationsList"),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+            ) {
+                notice?.let { message -> item { Text(message) } }
+                items(inbox?.notifications.orEmpty(), key = { it.id }) { notification ->
                     Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(12.dp)) {
+                        Column(Modifier.padding(AppLayout.Medium)) {
                             Text(
-                                if (n.type == "WIN") "You won!" else "Lottery result",
+                                if (notification.type == "WIN") "You won!" else "Lottery result",
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            Text(n.message)
+                            Text(notification.message)
                         }
                     }
                 }

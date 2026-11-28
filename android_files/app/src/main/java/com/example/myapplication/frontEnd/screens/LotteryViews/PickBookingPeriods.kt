@@ -4,10 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +24,8 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -55,15 +55,12 @@ fun PickBookingPeriodsScreen(
     // A pending save must finish before leaving; pressing back never submits a second request.
     BackHandler { if (!isCreating) onBack() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-            .testTag("pickBookingPeriodsScreen"),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    AdaptiveContent(maxWidth = AppLayout.FormWidth) {
+        Column(
+            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                .padding(AppLayout.Medium).testTag("pickBookingPeriodsScreen"),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Medium)
+        ) {
         TextButton(
             onClick = onBack,
             enabled = !isCreating,
@@ -125,6 +122,7 @@ fun PickBookingPeriodsScreen(
                 }
                 Text(if (isCreating) "Creating lottery..." else "Create Lottery")
             }
+        }
         }
     }
 }

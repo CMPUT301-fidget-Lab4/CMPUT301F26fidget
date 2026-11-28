@@ -1,18 +1,22 @@
 package com.example.myapplication.frontEnd.screens.campsiteViews
 
-import com.example.myapplication.backEnd.time.AlbertaTime
+import com.example.myapplication.core.datetime.AlbertaTime
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -31,15 +35,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.Lottery
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.backEnd.firebaseRepositories.FeedbackRepository
-import com.example.myapplication.backEnd.userModels.User
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.lottery.JoinWaitlistResult
+import com.example.myapplication.data.firebase.LotteryRepository.Companion.canJoinWaitlist
+import com.example.myapplication.frontEnd.screens.LotteryViews.LeaveWaitlistButton
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
+import com.example.myapplication.data.firebase.FeedbackRepository
 import java.time.LocalDateTime
 
 /**
@@ -54,7 +58,12 @@ import java.time.LocalDateTime
  * @param campsiteName Name of the campsite.
  * @param userProfile Currently signed-in user.
  * @param findCampsite Finds the campsite by name.
- * @param lotteryRepository Handles lottery operations.
+ * @param waitingForLotteries True before the shared lottery projection has loaded.
+ * @param lotteryLoadFailed True when the shared lottery projection could not refresh.
+ * @param onJoinWaitlist Join action pinned to the displayed lottery ID.
+ * @param onLeaveWaitlist Leave action pinned to the selected lottery ID by the controller.
+ * @param findUser Finds the author of a review by device ID.
+ * @param feedbackRepository Loads and saves campsite ratings and reviews.
  */
 @Composable
 fun CampsiteDetailsScreen(
@@ -62,10 +71,13 @@ fun CampsiteDetailsScreen(
     campsiteName: String,
     userProfile: User?,
     findCampsite: (String) -> Campsite?,
-    lotteryRepository: LotteryRepository? = null,
+    waitingForLotteries: Boolean = false,
+    lotteryLoadFailed: Boolean = false,
+    onJoinWaitlist: ((String, User, String, (JoinWaitlistResult) -> Unit) -> Unit)? = null,
+    onLeaveWaitlist: ((String, User, String, (Boolean) -> Unit) -> Unit)? = null,
     findUser: (String) -> User? = { null },
     feedbackRepository: FeedbackRepository? = null
-) {
+) = AdaptiveContent {
 
     val campsite = findCampsite(campsiteName)
     val associatedLotteries = campsite?.lotteryCollection.orEmpty()
@@ -96,55 +108,29 @@ fun CampsiteDetailsScreen(
     var joinedThisSession by remember(
         campsiteName,
         userProfile?.deviceID,
-        lottery?.id
+        associatedLottery?.id
     ) {
         mutableStateOf(false)
     }
 
-    var joinMessage by remember(campsiteName) {
+    var leftThisSession by remember(campsiteName, userProfile?.deviceID, associatedLottery?.id) { mutableStateOf(false) }
+    var leaveMessage by remember(campsiteName, userProfile?.deviceID, associatedLottery?.id) { mutableStateOf<String?>(null) }
+    var joinMessage by remember(campsiteName, userProfile?.deviceID) {
         mutableStateOf<String?>(null)
     }
 
-    /**
-     * Start with the campsite's matching lottery and refresh its saved status.
-     * The campsite flag does not determine whether a waitlist can be joined.
-     */
-    LaunchedEffect(
-        campsiteName,
-        campsite,
-        associatedLottery,
-        isEntrantOrAdmin,
-        userProfile?.deviceID,
-        lotteryRepository
-    ) {
-        lottery = associatedLottery
-        joinMessage = null
-
-
-        if (
-            isEntrantOrAdmin &&
-            campsite != null &&
-            lotteryRepository != null
-        ) {
-            loadingLottery = true
-
-            val currentLottery = suspendCancellableCoroutine<Lottery?> { continuation ->
-                lotteryRepository.getLottery(campsiteName) { savedLottery ->
-                    if (continuation.isActive) continuation.resume(savedLottery)
-                }
-            }
-            lottery = currentLottery?.takeIf { campsiteName in it.campsiteIds }
-            loadingLottery = false
-        } else {
-            loadingLottery = false
-        }
+    LaunchedEffect(associatedLottery, userProfile?.deviceID) {
+        // Clear temporary membership flags once the canonical listener reflects the write.
+        val canonicalJoined = associatedLottery?.waitlist?.containsKey(userProfile?.deviceID) == true
+        if (!canonicalJoined) leftThisSession = false
+        if (canonicalJoined) joinedThisSession = false
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(AppLayout.Medium),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -175,23 +161,27 @@ fun CampsiteDetailsScreen(
             // fact follow MVC though it does not follow modularity of the code.
 
             if (isEntrantOrAdmin) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(AppLayout.Medium))
 
-                val currentLottery = lottery
+                val currentLottery = associatedLottery
 
                 val now = LocalDateTime.now(
                     AlbertaTime.zone
                 )
 
-                val alreadyJoined = joinedThisSession ||
+                val alreadyJoined = !leftThisSession && (joinedThisSession ||
                         (
                                 currentLottery?.waitlist
                                     ?.contains(userProfile.deviceID) == true
-                                )
+                                ))
 
                 when {
 
-                    loadingLottery -> {
+                    lotteryLoadFailed && currentLottery == null -> {
+                        Text("Could not load lottery details.", modifier = Modifier.testTag("waitlistStatus"))
+                    }
+
+                    waitingForLotteries -> {
                         CircularProgressIndicator(
                             modifier = Modifier.testTag(
                                 "lotteryLoadingIndicator"
@@ -218,6 +208,23 @@ fun CampsiteDetailsScreen(
                             text = "You are on the waitlist.",
                             modifier = Modifier.testTag("alreadyOnWaitlist")
                         )
+                        if (onLeaveWaitlist != null) {
+                            LeaveWaitlistButton(userProfile, currentLottery,
+                                testTag = "leaveWaitlistButton",
+                                onLeave = { complete ->
+                                    leaveMessage = null
+                                    joinMessage = null
+                                    onLeaveWaitlist(campsite.name, userProfile, currentLottery.id, complete)
+                                },
+                                onResult = { success ->
+                                    if (success) {
+                                        joinedThisSession = false
+                                        leftThisSession = true
+                                    }
+                                    leaveMessage = if (success) "You have left this lottery's waitlist."
+                                        else "Could not leave the waitlist. It may have been drawn or changed. Please try again."
+                                })
+                        }
                     }
 
                     !currentLottery.period.registrationIsOpen(now) -> {
@@ -247,7 +254,14 @@ fun CampsiteDetailsScreen(
                         )
                     }
 
-                    //
+                    !canJoinWaitlist(currentLottery, userProfile.deviceID,
+                        currentLottery.campsiteIds.mapNotNull { findCampsite(it)?.ownerID }) -> {
+                        Text(
+                            "You are not eligible to join this lottery's waitlist.",
+                            modifier = Modifier.testTag("waitlistStatus")
+                        )
+                    }
+
                     else -> {
                         Button(
                             onClick = {
@@ -255,38 +269,25 @@ fun CampsiteDetailsScreen(
                                     isJoining = true
                                     joinMessage = null
 
-                                    lotteryRepository?.let { repository ->
-
-                                        // Join the waitlist in Firestore.
-                                        repository.joinLotteryWaitlist(
-                                            campsiteName = campsite.name,
-                                            user = userProfile
-                                        ) { success ->
-
-                                            isJoining = false
-
-                                            if (success) {
-                                                joinedThisSession = true
-
-                                                joinMessage =
-                                                    "Successfully joined the waitlist."
-                                            } else {
-                                                joinMessage =
-                                                    "Could not join the waitlist. It may be full, closed, or already joined."
-                                            }
-
-                                            // Refresh the actual lottery.
-                                            // This does not attempt another join.
-                                            repository.getLottery(
-                                                campsite.name
-                                            ) { updated ->
-                                                lottery = updated
-                                            }
+                                    onJoinWaitlist?.invoke(campsite.name, userProfile, currentLottery.id) { result ->
+                                        isJoining = false
+                                        if (result == JoinWaitlistResult.JOINED) {
+                                            joinedThisSession = true
+                                            leftThisSession = false
+                                            leaveMessage = null
+                                        }
+                                        joinMessage = when (result) {
+                                            JoinWaitlistResult.JOINED -> "Successfully joined the waitlist."
+                                            JoinWaitlistResult.LISTING_CHANGED ->
+                                                "This listing changed. Review the current lottery before joining."
+                                            JoinWaitlistResult.INELIGIBLE ->
+                                                "Could not join. The waitlist may be full, closed, or already joined."
+                                            JoinWaitlistResult.FAILED -> "Could not save your entry. Try again."
                                         }
                                     }
                                 }
                             },
-                            enabled = !isJoining && lotteryRepository != null,
+                            enabled = !isJoining && onJoinWaitlist != null,
                             modifier = Modifier.testTag(
                                 "joinWaitlistButton"
                             )
@@ -302,9 +303,17 @@ fun CampsiteDetailsScreen(
                     }
                 }
 
+                if (lotteryLoadFailed && currentLottery != null) {
+                    Text("Lottery details could not refresh. Showing the last loaded details.")
+                }
+
+                leaveMessage?.let { message ->
+                    Spacer(modifier = Modifier.height(AppLayout.Small))
+                    Text(message, modifier = Modifier.testTag("waitlistLeaveMessage"))
+                }
                 // Display the result of joining.
                 joinMessage?.let { message ->
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(AppLayout.Small))
 
                     Text(
                         text = message,
@@ -319,12 +328,12 @@ fun CampsiteDetailsScreen(
              * Keep the Edit Campsite button for the owner.
              */
             if (userProfile?.deviceID == campsite.ownerID) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(AppLayout.Medium))
 
                 Button(
                     onClick = {
                         navController.navigate(
-                            "EditCampsite/${campsite.name}"
+                            "EditCampsite/${Uri.encode(campsite.name)}"
                         )
                     },
                     modifier = Modifier.testTag(
@@ -336,7 +345,7 @@ fun CampsiteDetailsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(AppLayout.Medium))
 
         Button(
             onClick = {
@@ -367,18 +376,10 @@ private fun CampsiteDetails(campsite: Campsite) {
         modifier = Modifier.testTag("campsiteDetailsName")
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(AppLayout.Medium))
 
     if (photoBitmap != null) {
-        Image(
-            bitmap = photoBitmap.asImageBitmap(),
-            contentDescription = "Photo of ${campsite.name}",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .testTag("campsiteDetailsPhoto")
-        )
+        CampsitePhoto(photoBitmap, campsite.name)
     } else {
         Text(
             text = "No photo",
@@ -388,7 +389,7 @@ private fun CampsiteDetails(campsite: Campsite) {
         )
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(AppLayout.Medium))
 
     DetailRow(
         label = "Location",
@@ -449,6 +450,22 @@ private fun CampsiteDetails(campsite: Campsite) {
     )
 }
 
+@Composable
+private fun CampsitePhoto(bitmap: Bitmap, campsiteName: String) {
+    val image = remember(bitmap) { bitmap.asImageBitmap() }
+    val aspectRatio = image.width.toFloat() / image.height
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        // Portrait images use a narrower column so that even a tall photo has a bounded height.
+        val photoWidth = maxWidth * minOf(aspectRatio, 1f)
+        Image(
+            bitmap = image,
+            contentDescription = "Photo of $campsiteName",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.width(photoWidth).aspectRatio(aspectRatio).testTag("campsiteDetailsPhoto")
+        )
+    }
+}
+
 /**
  * Displays one labelled campsite detail.
  */
@@ -461,7 +478,7 @@ private fun DetailRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
+            .padding(vertical = AppLayout.Small)
     ) {
         Text(
             text = label,
@@ -476,9 +493,6 @@ private fun DetailRow(
 }
 
 
-//  This should go into the image class. It is not the role of the CampsiteScreen.kt to
-//  decode the image though there is a image class which you can just place this as function.
-//  THough we should develop this in milestone 2 .
 /**
  * Converts a Base64 photo string into a Bitmap.
  *

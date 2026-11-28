@@ -1,6 +1,6 @@
 package com.example.myapplication.frontEnd.viewcontroller
 
-import com.example.myapplication.backEnd.time.AlbertaTime
+import com.example.myapplication.core.datetime.AlbertaTime
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -12,9 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.data.firebase.LotteryRepository
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.profile.User
 import com.example.myapplication.frontEnd.screens.LotteryViews.CreateLotteryScreen
 import com.example.myapplication.frontEnd.screens.LotteryViews.PickBookingPeriodsScreen
 import java.time.LocalDateTime
@@ -82,14 +82,24 @@ fun CreateLotteryFlow(
     var campsiteEnds by rememberSaveable(user.deviceID) { mutableStateOf(hashMapOf<String, String>()) }
     var pickingBookingPeriod by rememberSaveable(user.deviceID) { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    // In side my controller there exist a read-one
     val creationState by controller.creationState.collectAsState()
     val isCreating = creationState.isCreating
+    val goBack: () -> Unit = {
+        if (!isCreating) {
+            if (pickingBookingPeriod) {
+                pickingBookingPeriod = false
+                errorMessage = null
+            } else {
+                navController.popBackStack()
+            }
+        }
+    }
+    BackHandler(onBack = goBack)
 
     LaunchedEffect(controller, creationState.result) {
         val result = controller.consumeCreationResult(lotteryId) ?: return@LaunchedEffect
         result.onSuccess {
-            navController.popBackStack("HomeScreen", inclusive = false)
+            navController.popBackStack()
         }.onFailure { error ->
             errorMessage = error.message ?: "Unable to create the lottery. Please try again."
         }
@@ -119,12 +129,7 @@ fun CreateLotteryFlow(
                 bookingEnd = it
                 errorMessage = null
             },
-            onBack = {
-                if (!isCreating) {
-                    pickingBookingPeriod = false
-                    errorMessage = null
-                }
-            },
+            onBack = goBack,
             onCreate = {
                 // Guard the callback as well as disabling the button during submission.
                 if (!isCreating) {
@@ -148,10 +153,6 @@ fun CreateLotteryFlow(
             }
         )
     } else {
-        // Go all the way back to the home screen
-        BackHandler {
-            navController.popBackStack("HomeScreen", inclusive = false)
-        }
         CreateLotteryScreen(
             campsiteName = campsiteName,
             additionalCampsiteIds = additionalCampsiteIds,
@@ -200,7 +201,7 @@ fun CreateLotteryFlow(
                 )
                 if (errorMessage == null) pickingBookingPeriod = true
             },
-            onBack = { navController.popBackStack("HomeScreen", inclusive = false) }
+            onBack = goBack
         )
     }
 }

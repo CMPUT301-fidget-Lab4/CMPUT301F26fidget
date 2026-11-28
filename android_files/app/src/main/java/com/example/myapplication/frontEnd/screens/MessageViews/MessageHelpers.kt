@@ -1,13 +1,63 @@
 package com.example.myapplication.frontEnd.screens.MessageViews
 
-import com.example.myapplication.backEnd.time.AlbertaTime
-import com.example.myapplication.backEnd.userModels.User
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import com.example.myapplication.core.datetime.AlbertaTime
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val timeOnly = DateTimeFormatter.ofPattern("h:mm a")
 private val dateAndTime = DateTimeFormatter.ofPattern("MMM d, h:mm a")
+
+@Composable
+internal fun MessageListLayout(
+    title: String,
+    backTag: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    content: LazyListScope.() -> Unit
+) {
+    AdaptiveContent {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
+            LazyColumn(
+                modifier = modifier.fillMaxWidth().weight(1f),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+            ) {
+                item { Text(title, style = MaterialTheme.typography.titleLarge) }
+                subtitle?.let {
+                    item {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                content()
+            }
+            Button(onClick = onBack, modifier = Modifier.testTag(backTag)) { Text("Back") }
+        }
+    }
+}
 
 /**
  * A user's name for showing in the message screens.

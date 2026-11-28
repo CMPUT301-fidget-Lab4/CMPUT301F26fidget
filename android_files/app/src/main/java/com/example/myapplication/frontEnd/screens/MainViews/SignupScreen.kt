@@ -1,187 +1,137 @@
-
 package com.example.myapplication.frontEnd.screens.mainViews
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import com.example.myapplication.backEnd.userModels.User
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavController
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 
+private data class AccountTypeOption(val value: String, val label: String, val testTag: String)
 
-/**
- * Signup screen where new users enter their account type, name, email address, and phone number.
- * User's Android ID is fetched automatically.
- *
- * When a user has entered all fields, and presses Create Account, their already fetched Android ID
- * and input information is compiled into a [User] object and added to the Firestore collection.
- * The user is directed to the main page.
- *
- * @param navController
- * @param onAddUser Function to add a [User] object to the Firestore "users" collection.
- * @param getAndroidId Function to fetch a user's Android ID.
- */
+private val accountTypeOptions = listOf(
+    AccountTypeOption("entrant", "Entrant", "entrantButton"),
+    AccountTypeOption("campsite owner", "Campsite Owner", "campsiteOwnerButton"),
+    AccountTypeOption("admin", "Admin", "adminButton")
+)
+
+/** Registers a user for the current device and opens their main screen. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Signup(
     navController: NavController,
     onAddUser: (User) -> Unit,
     getAndroidId: (Context) -> String
 ) {
-    var userName by remember { mutableStateOf("") }
-    var userPhoneNumber by remember { mutableStateOf("") }
-    var userEmail by remember { mutableStateOf("") }
-    var userType by remember { mutableStateOf("") }
-    var incompleteEntry by remember { mutableStateOf(false) }
-    var isCampsiteOwnerClicked by remember { mutableStateOf(false) }
-    var isEntrantClicked by remember { mutableStateOf(false) }
-    var isAdminClicked by remember { mutableStateOf(false) }
+    var userName by rememberSaveable { mutableStateOf("") }
+    var userPhoneNumber by rememberSaveable { mutableStateOf("") }
+    var userEmail by rememberSaveable { mutableStateOf("") }
+    var userType by rememberSaveable { mutableStateOf("") }
+    var incompleteEntry by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val userContext: Context = LocalContext.current
+    AdaptiveContent(maxWidth = AppLayout.FormWidth) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Medium, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Sign Up", style = MaterialTheme.typography.headlineSmall)
 
-        val userDeviceID: String = getAndroidId(userContext)
-
-        Text("Sign Up")
-
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp)){
-
-            Button(
-                onClick = {
-                    userType = "entrant"
-                    isCampsiteOwnerClicked = false
-                    isEntrantClicked = true
-                    isAdminClicked = false
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isEntrantClicked) Color.DarkGray else Color.Unspecified),
-                modifier = Modifier.testTag("entrantButton") // for testing
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppLayout.Small, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
             ) {
-                Text("Entrant")
-            }
-
-
-            Spacer(modifier = Modifier.width(7.dp))
-
-            Button(
-                onClick = {
-                    userType = "campsite owner"
-                    isCampsiteOwnerClicked = true
-                    isEntrantClicked = false
-                    isAdminClicked = false
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isCampsiteOwnerClicked) Color.DarkGray else Color.Unspecified),
-                modifier = Modifier.testTag("campsiteOwnerButton") // for testing
-            ) {
-                Text("Campsite Owner")
-            }
-
-            Spacer(modifier = Modifier.width(7.dp))
-
-            Button(
-                onClick = {
-                    userType = "admin"
-                    isCampsiteOwnerClicked = false
-                    isEntrantClicked = false
-                    isAdminClicked = true
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isAdminClicked) Color.DarkGray else Color.Unspecified),
-                modifier = Modifier.testTag("adminButton") // for testing
-            ) {
-                Text("Admin")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = userName,
-            onValueChange = { userName = it },
-            label = { Text("Enter Name") },
-            modifier = Modifier.testTag("nameTextField") // for testing
-        )
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = userEmail,
-            onValueChange = { userEmail = it },
-            label = { Text("Enter Email") },
-            modifier = Modifier.testTag("emailTextField") // for testing
-        )
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = userPhoneNumber,
-            onValueChange = { userPhoneNumber = it },
-            label = { Text("Enter Phone Number") },
-            modifier = Modifier.testTag("phoneNumberTextField") // for testing
-        )
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (userName.isNotEmpty() && userType.isNotEmpty() && userPhoneNumber.isNotEmpty() && userEmail.isNotEmpty()){
-
-                        val newUser = User(
-                            userType,
-                            userName,
-                            userEmail,
-                            userPhoneNumber,
-                            userDeviceID
-                        )
-
-                    onAddUser(newUser)
-
-                    navController.navigate("MainScreen") {
-                        // Completed signup must not remain reachable with Back.
-                        popUpTo("HomeScreen") { inclusive = false }
-                        launchSingleTop = true
+                accountTypeOptions.forEach { option ->
+                    val selectedType = userType == option.value
+                    Button(
+                        onClick = { userType = option.value },
+                        colors = if (selectedType) ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) else ButtonDefaults.buttonColors(),
+                        modifier = Modifier.testTag(option.testTag).semantics { selected = selectedType }
+                    ) {
+                        Text(option.label, textAlign = TextAlign.Center)
                     }
                 }
+            }
 
-                else {
-                    incompleteEntry = true
-                }
-            },
-            modifier = Modifier.testTag("createAccountButton") // for testing
-        ) {
-            Text("Create account")
-        }
+            OutlinedTextField(
+                value = userName,
+                onValueChange = { userName = it },
+                label = { Text("Enter Name") },
+                modifier = Modifier.fillMaxWidth().testTag("nameTextField")
+            )
 
+            OutlinedTextField(
+                value = userEmail,
+                onValueChange = { userEmail = it },
+                label = { Text("Enter Email") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth().testTag("emailTextField")
+            )
 
-        if (incompleteEntry){
-            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = userPhoneNumber,
+                onValueChange = { userPhoneNumber = it },
+                label = { Text("Enter Phone Number") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth().testTag("phoneNumberTextField")
+            )
 
-            Text("Complete all fields to sign up")
+            if (incompleteEntry) {
+                Text("Complete all fields to sign up", color = MaterialTheme.colorScheme.error)
+            }
+
+            Button(
+                onClick = {
+                    if (userName.isEmpty() || userType.isEmpty() || userPhoneNumber.isEmpty() || userEmail.isEmpty()) {
+                        incompleteEntry = true
+                        return@Button
+                    }
+                    onAddUser(User(userType, userName, userEmail, userPhoneNumber, getAndroidId(context)))
+                    navController.navigate("MainScreen") {
+                        // Completed signup must not remain reachable with Back.
+                        popUpTo("HomeScreen") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier.testTag("createAccountButton")
+            ) {
+                Text("Create account")
+            }
         }
     }
 }
