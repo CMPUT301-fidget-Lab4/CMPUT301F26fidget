@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -216,10 +217,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    //TODO Implement app guidelines
-                },
-                modifier = Modifier.testTag("appGuidelines")
+                onClick = { navController.navigate("ProfileScreen/AppPolicy") { launchSingleTop = true } },
+                modifier = Modifier.testTag("guidelinesScreen")
             ) {
                 Text("App Policy & Guidelines")
             }

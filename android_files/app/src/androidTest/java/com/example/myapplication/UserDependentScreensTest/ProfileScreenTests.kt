@@ -18,6 +18,7 @@ import com.example.myapplication.backEnd.firebaseRepositories.AuthState
 import com.example.myapplication.backEnd.userModels.User
 import com.example.myapplication.frontEnd.screens.mainViews.HomeScreen
 import com.example.myapplication.frontEnd.screens.mainViews.MainScreen
+import com.example.myapplication.frontEnd.screens.profileViews.AppPolicyScreen
 import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert
@@ -25,6 +26,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
+
 
 /**
  * UI tests for profile navigation, display, edits, and deletion.
@@ -83,7 +86,9 @@ class ProfileScreenTests {
                         }
                     )
                 }
-
+                composable("ProfileScreen/AppPolicy") {
+                    AppPolicyScreen(navController = navController)
+                }
                 composable("HomeScreen") {
                     HomeScreen(
                         navController = navController,
@@ -200,6 +205,20 @@ class ProfileScreenTests {
         composeTestRule.onNodeWithText("Test User").assertExists()
         composeTestRule.onNodeWithText("1234567890").assertExists()
         composeTestRule.onNodeWithText("testuser@ualberta.ca").assertExists()
+    }
+
+    /**  Confirming that user can view app policy and return*/
+    @Test
+    fun go_to_app_policy_and_back(){
+        openProfile()
+
+        composeTestRule.onNodeWithTag("guidelinesScreen").performClick()
+        composeTestRule.onNodeWithText("App Policy & Guidelines").assertExists()
+        composeTestRule
+            .onNodeWithTag("PolicyMenuBack")
+            .performClick()
+        composeTestRule.onNodeWithText("User Profile").assertExists()
+
     }
 
     /** Confirming deletion clears the current user and opens HomeScreen. */

@@ -1298,4 +1298,11 @@ class LotteryRepository(
 
     /** Repository IDs must contain a nonwhitespace character and cannot include a path separator. */
     private fun isValidDocumentId(value: String): Boolean = value.isNotBlank() && '/' !in value
+    fun listenForLottery(
+        deviceID: String,
+        onReadError: (Exception) -> Unit,
+        onCacheStatus: (Boolean) -> Unit,
+        onLotteries: (kotlin.collections.List<com.example.myapplication.backEnd.featureModels.Lottery>) -> Unit
+    ) {
+    }
 }

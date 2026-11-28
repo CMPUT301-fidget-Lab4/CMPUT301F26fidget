@@ -32,6 +32,7 @@ import com.example.myapplication.frontEnd.screens.profileViews.ProfileScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.ConversationListScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.ConversationScreen
 import com.example.myapplication.frontEnd.screens.MessageViews.MessageLogScreen
+import com.example.myapplication.frontEnd.screens.profileViews.AppPolicyScreen
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -75,6 +76,12 @@ fun CampsiteApp(
                 user,
                 onUpdateUser,
                 onDeleteUser
+            )
+        }
+
+        composable("ProfileScreen/AppPolicy") {
+            AppPolicyScreen(
+                navController,
             )
         }
         composable("CampsiteList") {
