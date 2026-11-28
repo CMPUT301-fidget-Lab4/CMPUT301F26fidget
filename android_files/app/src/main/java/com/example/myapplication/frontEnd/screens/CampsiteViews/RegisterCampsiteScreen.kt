@@ -1,17 +1,9 @@
 package com.example.myapplication.frontEnd.screens.campsiteViews
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,16 +11,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.CampsiteLocation
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.campsite.CampsiteLocation
+import com.example.myapplication.features.profile.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,16 +53,8 @@ fun RegisterCampsiteScreen(
             (userProfile.userType == "campsite owner" || userProfile.userType == "admin")
 
     if (userProfile == null || !canRegister) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        CampsiteFormLayout {
             Text("Only campsite owners can register a campsite")
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { navController.popBackStack() },
@@ -92,31 +75,22 @@ private fun RegisterCampsiteForm(
     onAddCampsite: (Campsite) -> Unit,
     findCampsite: (String) -> Campsite?
 ) {
-    var name by remember { mutableStateOf("") }
-    var addressNumber by remember { mutableStateOf("") }
-    var streetName by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var province by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var occupancy by remember { mutableStateOf("") }
-    var tags by remember { mutableStateOf("") }
-    var policies by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+    var name by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var addressNumber by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var streetName by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var city by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var province by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var description by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var occupancy by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var tags by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var policies by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
+    var errorMessage by rememberSaveable(userProfile.deviceID) { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Register Campsite")
-
-        Spacer(modifier = Modifier.height(16.dp))
+    CampsiteFormLayout {
+        Text("Register Campsite", style = MaterialTheme.typography.headlineSmall)
 
         OutlinedTextField(
             value = name,
@@ -125,61 +99,47 @@ private fun RegisterCampsiteForm(
             modifier = Modifier.fillMaxWidth().testTag("registerCampsiteName")
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        CampsiteFieldPair(
+            first = { field ->
+                OutlinedTextField(
+                    value = addressNumber,
+                    onValueChange = { addressNumber = it },
+                    label = { Text("Address Number") },
+                    singleLine = true,
+                    modifier = field.testTag("registerCampsiteAddressNumber")
+                )
+            },
+            second = { field ->
+                OutlinedTextField(
+                    value = streetName,
+                    onValueChange = { streetName = it },
+                    label = { Text("Street Name") },
+                    singleLine = true,
+                    modifier = field.testTag("registerCampsiteStreetName")
+                )
+            }
+        )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = addressNumber,
-                onValueChange = { addressNumber = it },
-                label = { Text("Address Number") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("registerCampsiteAddressNumber")
-            )
-
-            OutlinedTextField(
-                value = streetName,
-                onValueChange = { streetName = it },
-                label = { Text("Street Name") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("registerCampsiteStreetName")
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = city,
-                onValueChange = { city = it },
-                label = { Text("City") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("registerCampsiteCity")
-            )
-
-            OutlinedTextField(
-                value = province,
-                onValueChange = { province = it },
-                label = { Text("Province") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("registerCampsiteProvince")
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        CampsiteFieldPair(
+            first = { field ->
+                OutlinedTextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("City") },
+                    singleLine = true,
+                    modifier = field.testTag("registerCampsiteCity")
+                )
+            },
+            second = { field ->
+                OutlinedTextField(
+                    value = province,
+                    onValueChange = { province = it },
+                    label = { Text("Province") },
+                    singleLine = true,
+                    modifier = field.testTag("registerCampsiteProvince")
+                )
+            }
+        )
 
         OutlinedTextField(
             value = description,
@@ -188,8 +148,6 @@ private fun RegisterCampsiteForm(
             modifier = Modifier.fillMaxWidth().testTag("registerCampsiteDescription")
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         OutlinedTextField(
             value = occupancy,
             onValueChange = { occupancy = it },
@@ -197,8 +155,6 @@ private fun RegisterCampsiteForm(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth().testTag("registerCampsiteOccupancy")
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = tags,
@@ -215,12 +171,8 @@ private fun RegisterCampsiteForm(
         )
 
         if (errorMessage.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(errorMessage, modifier = Modifier.testTag("registerCampsiteError"))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             enabled = !isSaving,
@@ -280,8 +232,6 @@ private fun RegisterCampsiteForm(
         ) {
             Text("Register Campsite")
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { navController.popBackStack() },

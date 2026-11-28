@@ -1,9 +1,12 @@
 package com.example.myapplication.frontEnd.screens.ReservationBookingViews
 
-import com.example.myapplication.backEnd.featureModels.BookingSchedule.Booking
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.lottery.Lottery
+import com.example.myapplication.features.lottery.Registration
+import com.example.myapplication.features.booking.BookingSchedule.Booking
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -13,11 +16,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import com.example.myapplication.backEnd.featureModels.*
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.data.firebase.LotteryRepository
+import com.example.myapplication.features.profile.User
 import com.example.myapplication.frontEnd.screens.LotteryViews.BookingPeriodFields
+import com.example.myapplication.frontEnd.theme.AppLayout
 import java.time.LocalDateTime
 
 /** Uses the campsite collections kept current by CampsiteRepository. */
@@ -50,7 +52,10 @@ internal fun ManageBookingPeriodsDialog(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("Manage booking periods") },
         text = {
-            Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+            ) {
                 if (lottery == null) {
                     Text("Choose a lottery by its campsites.")
                     if (lotteries.isEmpty()) Text("No manageable lotteries loaded. Check your connection and try again.")

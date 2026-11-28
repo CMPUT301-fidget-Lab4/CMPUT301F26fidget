@@ -52,6 +52,8 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    // Play services also brings Fragment. Align it with Activity Result support.
+    implementation(libs.androidx.fragment)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.remote.creation.core)
     implementation(libs.androidx.compose.ui)
@@ -66,6 +68,7 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:35.0.2"))
     implementation("com.google.firebase:firebase-firestore")
+    implementation(libs.kotlinx.coroutines.play.services)
     // Local Unit Tests
     testImplementation(libs.junit)
     testImplementation(

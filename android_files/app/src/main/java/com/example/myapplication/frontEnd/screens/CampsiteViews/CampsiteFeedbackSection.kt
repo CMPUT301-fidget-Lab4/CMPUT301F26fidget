@@ -28,11 +28,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.backEnd.featureModels.Rating
-import com.example.myapplication.backEnd.featureModels.Review
-import com.example.myapplication.backEnd.firebaseRepositories.FeedbackRepository
-import com.example.myapplication.backEnd.time.AlbertaTime
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.feedback.Rating
+import com.example.myapplication.features.feedback.Review
+import com.example.myapplication.data.firebase.FeedbackRepository
+import com.example.myapplication.core.datetime.AlbertaTime
+import com.example.myapplication.features.profile.User
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 

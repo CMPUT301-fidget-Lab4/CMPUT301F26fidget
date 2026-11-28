@@ -1,25 +1,22 @@
 package com.example.myapplication.frontEnd.screens.ReservationBookingViews
 
 import android.util.Log
-import com.example.myapplication.backEnd.time.AlbertaTime
+import com.example.myapplication.core.datetime.AlbertaTime
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -39,22 +36,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.BookingSchedule
-import com.example.myapplication.backEnd.firebaseRepositories.BookingScheduleRepository
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.Lottery
-import com.example.myapplication.backEnd.featureModels.Reservation
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.backEnd.firebaseRepositories.ReservationRepository
-import com.example.myapplication.backEnd.featureModels.ReservationStatus
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.booking.BookingSchedule
+import com.example.myapplication.data.firebase.BookingScheduleRepository
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.lottery.Lottery
+import com.example.myapplication.features.booking.Reservation
+import com.example.myapplication.data.firebase.LotteryRepository
+import com.example.myapplication.data.firebase.ReservationRepository
+import com.example.myapplication.features.booking.ReservationStatus
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 import com.google.firebase.firestore.FirebaseFirestoreException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -87,8 +87,10 @@ fun ReservationScreen(
     category: ReservationCategory? = null
 ) {
     if (user == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("You need to be logged in to see reservations.")
+        AdaptiveContent {
+            Box(Modifier.fillMaxSize().padding(AppLayout.Medium), contentAlignment = Alignment.Center) {
+                Text("You need to be logged in to see reservations.")
+            }
         }
         return
     }
@@ -173,77 +175,79 @@ fun ReservationScreen(
                 displayedReservations.filter { it.status in ended }
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = selectedCategory?.title ?: if (isAdmin) "All reservations" else if (isOwner) "Reservations for my campsites" else "My reservations",
-            fontSize = 22.sp
-        )
-
-        if (canManage && lotteryRepository != null) {
-            TextButton(onClick = { managingPeriods = true }, modifier = Modifier.testTag("manageBookingPeriods")) {
-                Text("Manage booking periods")
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-
-        errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
-            Spacer(Modifier.height(8.dp))
-        }
-
-        loadError?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("reservationLoadError"))
-            TextButton(onClick = { retryCount++ }, modifier = Modifier.testTag("reservationRetryButton")) {
-                Text("Retry")
-            }
-        }
-
-        if (displayedReservations.isEmpty()) {
-            Column(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
+    val listState = rememberLazyListState()
+    LaunchedEffect(errorMessage, loadError) {
+        if (errorMessage != null || loadError != null) listState.scrollToItem(0)
+    }
+    AdaptiveContent {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f).testTag("reservationList"),
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
             ) {
-                when {
-                    loadError != null -> Unit
-                    loading || fromCache -> {
-                        CircularProgressIndicator(modifier = Modifier.testTag("reservationsLoading"))
-                        Text("Checking for reservations...")
-                        if (!loading && fromCache) {
-                            Text("No saved reservations on this device. Check your internet connection to load new invitations.")
-                            TextButton(onClick = { retryCount++ }) { Text("Retry") }
+                item(key = "heading") {
+                    val title = selectedCategory?.title ?: when {
+                        isAdmin -> "All reservations"
+                        isOwner -> "Reservations for my campsites"
+                        else -> "My reservations"
+                    }
+                    Text(title, style = MaterialTheme.typography.headlineSmall)
+                }
+                if (canManage && lotteryRepository != null) {
+                    item(key = "manage") {
+                        TextButton(onClick = { managingPeriods = true }, modifier = Modifier.testTag("manageBookingPeriods")) {
+                            Text("Manage booking periods")
                         }
                     }
-                    else -> Text(selectedCategory?.let { "No ${it.title.lowercase()} yet." } ?: "No reservations yet.", modifier = Modifier.testTag("reservationsEmpty"))
                 }
-            }
-        } else {
-            if (fromCache && loadError == null) {
-                Text("Showing saved reservations. New invitations will appear when connected.")
-            }
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("reservationList"),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                errorMessage?.let { message ->
+                    item(key = "action-error") { Text(message, color = MaterialTheme.colorScheme.error) }
+                }
+                loadError?.let { message ->
+                    item(key = "load-error") {
+                        Column {
+                            Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("reservationLoadError"))
+                            TextButton(onClick = { retryCount++ }, modifier = Modifier.testTag("reservationRetryButton")) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                if (displayedReservations.isEmpty() && loadError == null) {
+                    item(key = "empty") {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = AppLayout.Medium),
+                            verticalArrangement = Arrangement.spacedBy(AppLayout.Small),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (loading || fromCache) {
+                                CircularProgressIndicator(modifier = Modifier.testTag("reservationsLoading"))
+                                Text("Checking for reservations...")
+                                if (!loading && fromCache) {
+                                    Text("No saved reservations on this device. Check your internet connection to load new invitations.")
+                                    TextButton(onClick = { retryCount++ }) { Text("Retry") }
+                                }
+                            } else {
+                                Text(
+                                    selectedCategory?.let { "No ${it.title.lowercase()} yet." } ?: "No reservations yet.",
+                                    modifier = Modifier.testTag("reservationsEmpty")
+                                )
+                            }
+                        }
+                    }
+                } else if (displayedReservations.isNotEmpty() && fromCache && loadError == null) {
+                    item(key = "cached") { Text("Showing saved reservations. New invitations will appear when connected.") }
+                }
                 for ((title, list) in sections) {
                     if (list.isEmpty()) continue
-
-                    item(key = title) {
-                        Text(
-                            title,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                    item(key = "section-$title") {
+                        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = AppLayout.Small))
                     }
-
-                    items(list, key = { it.id }) { reservation ->
+                    items(list, key = { "reservation-${it.id}" }) { reservation ->
                         ReservationCard(
                             reservation = reservation,
                             lotteryCampsites = campsites.values.flatMap { campsite ->
@@ -270,12 +274,10 @@ fun ReservationScreen(
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
-
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Back")
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Back")
+            }
         }
     }
 
@@ -287,13 +289,29 @@ fun ReservationScreen(
         if (bookableReservation == null) reserving = null
     }
     bookableReservation?.let { invitation ->
+        var saving by remember(invitation.id) { mutableStateOf(false) }
+        var bookingError by remember(invitation.id) { mutableStateOf<String?>(null) }
+        var scheduleRefresh by remember(invitation.id) { mutableStateOf(0) }
         ReserveDialog(
             reservation = invitation,
             campsites = campsites,
             scheduleRepository = scheduleRepository,
-            onConfirm = { campsiteId, start, end, occupancy ->
-                reservationRepository.reserve(invitation, campsiteId, start, end, occupancy, onResult)
-                reserving = null
+            saving = saving,
+            bookingError = bookingError,
+            scheduleRefresh = scheduleRefresh,
+            onConfirm = book@{ campsiteId, start, end, occupancy ->
+                if (saving) return@book
+                saving = true
+                bookingError = null
+                reservationRepository.reserve(invitation, campsiteId, start, end, occupancy) { saved ->
+                    saving = false
+                    if (saved) {
+                        if (reserving?.id == invitation.id) reserving = null
+                    } else {
+                        bookingError = "Couldn't save this stay. Check availability and try again."
+                        scheduleRefresh++
+                    }
+                }
             },
             onDismiss = { reserving = null }
         )
@@ -334,15 +352,15 @@ private fun ReservationCard(
     val canChooseDates = reservation.canChooseDates() && names.isNotEmpty()
 
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
+        Column(Modifier.padding(AppLayout.Medium)) {
 
             Text(
                 text = if (!isOwner && reservation.status == ReservationStatus.INVITED) "You won a lottery!"
                     else reservation.campsiteId.ifBlank { "Lottery invitation" },
-                fontSize = 18.sp
+                style = MaterialTheme.typography.titleMedium
             )
             if (reservation.campsiteId.isBlank() && names.isNotEmpty()) {
-                Text("Campsites: ${names.take(3).joinToString()}", maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text("Campsites: ${names.take(3).joinToString()}")
                 if (names.size > 3) Text("+${names.size - 3} more")
             }
 
@@ -360,9 +378,12 @@ private fun ReservationCard(
                 Text("Cancelled because a related profile was deleted. This reservation cannot be booked again.")
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(AppLayout.Small))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(AppLayout.Small),
+                verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+            ) {
                 val canAct = reservation.status == ReservationStatus.INVITED ||
                         (reservation.status == ReservationStatus.RESERVED && reservation.isActive(now))
 
@@ -437,6 +458,9 @@ private fun ReserveDialog(
     reservation: Reservation,
     campsites: Map<String, Campsite>,
     scheduleRepository: BookingScheduleRepository,
+    saving: Boolean,
+    bookingError: String?,
+    scheduleRefresh: Int,
     onConfirm: (campsiteId: String, start: LocalDateTime, end: LocalDateTime, occupancy: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -446,7 +470,8 @@ private fun ReserveDialog(
     var firstNight by remember { mutableStateOf<LocalDate?>(null) }
     var lastNight by remember { mutableStateOf<LocalDate?>(null) }
 
-    LaunchedEffect(reservation.lotteryId) {
+    LaunchedEffect(reservation.lotteryId, scheduleRefresh) {
+        loading = true
         scheduleRepository.getSchedule(reservation.lotteryId) {
             schedule = it
             loading = false
@@ -459,98 +484,136 @@ private fun ReserveDialog(
     val policies = selectedCampsite?.termsAndConditions.orEmpty()
     var acceptedPolicies by remember(chosenCampsite, policies) { mutableStateOf(false) }
     val occupancy = chosenCampsite?.let { campsites[it]?.occupancy } ?: 0
+    val now = LocalDateTime.now(AlbertaTime.zone)
+    val start = firstNight?.atStartOfDay()
+    val end = (lastNight ?: firstNight)?.plusDays(1)?.atStartOfDay()
+    val stayAvailable = loaded != null && chosenCampsite != null && start != null && end != null &&
+        start.isAfter(now) && loaded.isStayAvailable(chosenCampsite, start, end, occupancy)
     val available = if (loaded != null && chosenCampsite != null) {
         loaded.availableDates(chosenCampsite, occupancy).filter {
-            it.atStartOfDay().isAfter(LocalDateTime.now(AlbertaTime.zone))
+            it.atStartOfDay().isAfter(now)
         }
     } else {
         emptyList()
     }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("Reserve a campsite") },
         text = {
-            Column(Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState())) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(AppLayout.Small)) {
+                bookingError?.let { message ->
+                    item(key = "booking-error") { Text(message, color = MaterialTheme.colorScheme.error) }
+                }
+                if (!loading && start != null && loaded != null && !stayAvailable) {
+                    item(key = "availability-error") {
+                        Text("Choose dates with availability on every night of your stay.", color = MaterialTheme.colorScheme.error)
+                    }
+                }
                 when {
-                    loading -> CircularProgressIndicator()
-
-                    loaded == null -> Text("Couldn't load available dates.")
-                    loaded.registration.campsiteIds.none { it in campsites } ->
+                    loading -> item(key = "loading") { CircularProgressIndicator() }
+                    loaded == null -> item(key = "load-error") { Text("Couldn't load available dates.") }
+                    loaded.registration.campsiteIds.none { it in campsites } -> item(key = "no-campsites") {
                         Text("This reservation no longer has any available campsites.")
-
+                    }
                     else -> {
-                        Text("Campsite")
-                        Row(
-                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            loaded.registration.campsiteIds.filter { it in campsites }.forEach { id ->
-                                FilterChip(
-                                    selected = chosenCampsite == id,
-                                    onClick = {
-                                        campsiteId = id
-                                        firstNight = null
-                                        lastNight = null
-                                    },
-                                    label = { Text(id) }
-                                )
+                        item(key = "campsites") {
+                            Column {
+                                Text("Campsite")
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(AppLayout.Small)
+                                ) {
+                                    loaded.registration.campsiteIds.filter { it in campsites }.forEach { id ->
+                                        FilterChip(
+                                            enabled = !saving,
+                                            selected = chosenCampsite == id,
+                                            onClick = {
+                                                campsiteId = id
+                                                firstNight = null
+                                                lastNight = null
+                                            },
+                                            label = { Text(id) }
+                                        )
+                                    }
+                                }
                             }
                         }
 
                         if (chosenCampsite != null) {
-                            Text("Rules and policies", style = MaterialTheme.typography.titleMedium)
-                            val policyText = if (selectedCampsite == null) "Campsite policies could not be loaded. Please try again."
-                                else policies.ifBlank { "The owner has not provided any rules or policies for this campsite." }
-                            val linkedPolicies = remember(policyText) {
-                                buildAnnotatedString {
-                                    append(policyText)
-                                    Regex("https?://[^\\s]+").findAll(policyText).forEach { match ->
-                                        addLink(LinkAnnotation.Url(match.value), match.range.first, match.range.last + 1)
+                            item(key = "policy-heading") {
+                                Text("Rules and policies", style = MaterialTheme.typography.titleMedium)
+                            }
+                            item(key = "policies") {
+                                val policyText = if (selectedCampsite == null) {
+                                    "Campsite policies could not be loaded. Please try again."
+                                } else {
+                                    policies.ifBlank { "The owner has not provided any rules or policies for this campsite." }
+                                }
+                                val linkedPolicies = remember(policyText) {
+                                    buildAnnotatedString {
+                                        append(policyText)
+                                        Regex("https?://[^\\s]+").findAll(policyText).forEach { match ->
+                                            addLink(LinkAnnotation.Url(match.value), match.range.first, match.range.last + 1)
+                                        }
                                     }
                                 }
+                                Text(linkedPolicies, modifier = Modifier.fillMaxWidth().testTag("reservationPolicies"))
                             }
-                            Text(linkedPolicies, modifier = Modifier.fillMaxWidth().heightIn(max = 160.dp)
-                                .verticalScroll(rememberScrollState()).testTag("reservationPolicies"))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = acceptedPolicies, onCheckedChange = { acceptedPolicies = it },
-                                    enabled = selectedCampsite != null, modifier = Modifier.testTag("acceptReservationPolicies"))
-                                Text("I have read and accept this campsite's rules and policies.")
+                            item(key = "accept-policies") {
+                                val canAccept = !saving && selectedCampsite != null
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .toggleable(
+                                            value = acceptedPolicies,
+                                            enabled = canAccept,
+                                            role = Role.Checkbox,
+                                            onValueChange = { acceptedPolicies = it }
+                                        )
+                                        .testTag("acceptReservationPolicies"),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(checked = acceptedPolicies, onCheckedChange = null, enabled = canAccept)
+                                    Text(
+                                        "I have read and accept this campsite's rules and policies.",
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
                             }
-                            val period = loaded.periodFor(chosenCampsite)
-                            Text("Booking period: ${period.startDate.format(dateFormat)} – ${period.endDate.format(dateFormat)}")
-                            Spacer(Modifier.height(8.dp))
+                            item(key = "period") {
+                                val period = loaded.periodFor(chosenCampsite)
+                                Text("Booking period: ${period.startDate.format(dateFormat)} – ${period.endDate.format(dateFormat)}")
+                            }
 
                             if (available.isEmpty()) {
-                                Text("No dates left at this campsite.")
+                                item(key = "no-dates") { Text("No dates left at this campsite.") }
                             } else {
-                                Text("Tap your first night, then your last night.")
-
-                                LazyColumn(Modifier.heightIn(max = 180.dp)) {
-                                    items(available) { day ->
-                                        val first = firstNight
-                                        val selected = first != null &&
-                                                !day.isBefore(first) &&
-                                                !day.isAfter(lastNight ?: first)
-
-                                        Text(
-                                            text = (if (selected) "✓ " else "") + day.format(dateFormat),
-                                            color = if (selected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    when {
-                                                        // start a new range
-                                                        first == null || lastNight != null -> {
-                                                            firstNight = day
-                                                            lastNight = null
-                                                        }
-                                                        day.isBefore(first) -> firstNight = day
-                                                        else -> lastNight = day
-                                                    }
+                                item(key = "date-instructions") { Text("Tap your first night, then your last night.") }
+                                items(available, key = { "night-$it" }) { day ->
+                                    val first = firstNight
+                                    val dateSelected = first != null && !day.isBefore(first) && !day.isAfter(lastNight ?: first)
+                                    TextButton(
+                                        onClick = {
+                                            when {
+                                                first == null || lastNight != null -> {
+                                                    firstNight = day
+                                                    lastNight = null
                                                 }
-                                                .padding(vertical = 8.dp)
+                                                day.isBefore(first) -> firstNight = day
+                                                else -> lastNight = day
+                                            }
+                                        },
+                                        enabled = !saving,
+                                        modifier = Modifier.fillMaxWidth().semantics { selected = dateSelected }
+                                    ) {
+                                        Text(
+                                            text = (if (dateSelected) "✓ " else "") + day.format(dateFormat),
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = when {
+                                                saving -> Color.Unspecified
+                                                dateSelected -> MaterialTheme.colorScheme.primary
+                                                else -> MaterialTheme.colorScheme.onSurface
+                                            }
                                         )
                                     }
                                 }
@@ -561,24 +624,17 @@ private fun ReserveDialog(
             }
         },
         confirmButton = {
-            val first = firstNight
             Button(
-                enabled = selectedCampsite != null && first != null && acceptedPolicies,
+                enabled = !saving && !loading && selectedCampsite != null && stayAvailable && acceptedPolicies,
                 onClick = {
-                    if (chosenCampsite != null && selectedCampsite != null && first != null && acceptedPolicies) {
-                        val last = lastNight ?: first
-                        onConfirm(
-                            chosenCampsite,
-                            first.atStartOfDay(),
-                            last.plusDays(1).atStartOfDay(),   // checkout the morning after the last night
-                            occupancy
-                        )
+                    if (chosenCampsite != null && start != null && end != null) {
+                        onConfirm(chosenCampsite, start, end, occupancy)
                     }
                 }
-            ) { Text("Confirm") }
+            ) { Text(if (saving) "Saving…" else "Confirm") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("Close") }
         }
     )
 }

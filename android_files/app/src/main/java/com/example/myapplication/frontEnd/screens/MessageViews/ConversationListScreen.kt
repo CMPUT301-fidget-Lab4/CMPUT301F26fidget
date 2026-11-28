@@ -2,17 +2,10 @@ package com.example.myapplication.frontEnd.screens.MessageViews
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -23,17 +16,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.backEnd.featureModels.Message
-import com.example.myapplication.backEnd.firebaseRepositories.MessageRepository
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.features.messaging.Message
+import com.example.myapplication.data.firebase.MessageRepository
+import com.example.myapplication.features.profile.User
+import com.example.myapplication.frontEnd.theme.AppLayout
 
 /**
  * Lists every conversation the user is part of, newest first.
@@ -60,8 +51,8 @@ fun ConversationListScreen(
     messageRepository: MessageRepository
 ) {
     if (user == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("You need to be logged in to see messages.")
+        MessageListLayout("Messages", "returnFromMessages", onBack = { navController.popBackStack() }) {
+            item { Text("You need to be logged in to see messages.") }
         }
         return
     }
@@ -79,63 +70,43 @@ fun ConversationListScreen(
     val conversations = messages.groupBy { it.reservationId }.entries.toList()
     val isAdmin = user.userType.equals("admin", ignoreCase = true)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    MessageListLayout(
+        title = "Messages",
+        backTag = "returnFromMessages",
+        onBack = { navController.popBackStack() },
+        modifier = Modifier.testTag("conversationList")
     ) {
-        Text("Messages", fontSize = 22.sp)
-
-        Spacer(Modifier.height(12.dp))
-
         if (isAdmin) {
-            OutlinedButton(
-                onClick = { navController.navigate("MessageLog") },
-                modifier = Modifier.testTag("messageLogButton")
-            ) {
-                Text("Owner message log")
-            }
-            Spacer(Modifier.height(12.dp))
-        }
-
-        if (conversations.isEmpty()) {
-            Text(
-                text = "No messages yet. You can start messaging from " +
-                        "a reservation on My Reservations.",
-                modifier = Modifier.weight(1f)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("conversationList"),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(conversations, key = { it.key }) { (reservationId, thread) ->
-                    val latest = thread.first()
-                    val otherId = latest.otherParticipant(user.deviceID).orEmpty()
-                    val unread = thread.count { it.recipientId == user.deviceID && !it.read }
-                    val preview = (if (latest.isFrom(user.deviceID)) "You: " else "") + latest.text
-
-                    ConversationRow(
-                        name = displayName(otherId, findUser),
-                        campsite = latest.campsiteId,
-                        preview = preview,
-                        time = formatMessageTime(latest.sentAt),
-                        unread = unread,
-                        onClick = { navController.navigate("Conversation/$reservationId") }
-                    )
+            item {
+                OutlinedButton(
+                    onClick = { navController.navigate("MessageLog") { launchSingleTop = true } },
+                    modifier = Modifier.testTag("messageLogButton")
+                ) {
+                    Text("Owner message log")
                 }
             }
         }
 
-        Spacer(Modifier.height(12.dp))
+        if (conversations.isEmpty()) {
+            item { Text("No messages yet. You can start messaging from a reservation on My Reservations.") }
+        } else {
+            items(conversations, key = { it.key }) { (reservationId, thread) ->
+                val latest = thread.first()
+                val otherId = latest.otherParticipant(user.deviceID).orEmpty()
+                val unread = thread.count { it.recipientId == user.deviceID && !it.read }
+                val preview = (if (latest.isFrom(user.deviceID)) "You: " else "") + latest.text
 
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.testTag("returnFromMessages")
-        ) {
-            Text("Back")
+                ConversationRow(
+                    name = displayName(otherId, findUser),
+                    campsite = latest.campsiteId,
+                    preview = preview,
+                    time = formatMessageTime(latest.sentAt),
+                    unread = unread,
+                    onClick = {
+                        navController.navigate("Conversation/$reservationId") { launchSingleTop = true }
+                    }
+                )
+            }
         }
     }
 }
@@ -158,19 +129,16 @@ private fun ConversationRow(
             .clickable(onClick = onClick)
             .testTag("conversationRow")
     ) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = name,
-                    fontWeight = if (unread > 0) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = time,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Column(
+            modifier = Modifier.padding(AppLayout.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Small)
+        ) {
+            Text(text = name, fontWeight = if (unread > 0) FontWeight.Bold else FontWeight.Normal)
+            Text(
+                text = time,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             if (campsite.isNotBlank()) {
                 Text(
@@ -182,7 +150,7 @@ private fun ConversationRow(
 
             Text(
                 text = preview,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 

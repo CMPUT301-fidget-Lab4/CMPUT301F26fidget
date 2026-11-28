@@ -1,12 +1,12 @@
 package com.example.myapplication.frontEnd.viewcontroller
 
-import com.example.myapplication.backEnd.time.AlbertaTime
+import com.example.myapplication.core.datetime.AlbertaTime
 
-import com.example.myapplication.backEnd.firebaseRepositories.LotteryRepository
-import com.example.myapplication.backEnd.featureModels.BookingSchedule.Booking
-import com.example.myapplication.backEnd.featureModels.Campsite
-import com.example.myapplication.backEnd.featureModels.Registration
-import com.example.myapplication.backEnd.userModels.User
+import com.example.myapplication.data.firebase.LotteryRepository
+import com.example.myapplication.features.booking.BookingSchedule.Booking
+import com.example.myapplication.features.campsite.Campsite
+import com.example.myapplication.features.lottery.Registration
+import com.example.myapplication.features.profile.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

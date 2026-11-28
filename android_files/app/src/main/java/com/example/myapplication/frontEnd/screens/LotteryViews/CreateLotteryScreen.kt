@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -37,6 +35,8 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.frontEnd.theme.AdaptiveContent
+import com.example.myapplication.frontEnd.theme.AppLayout
 
 /**
  * First creation step: collects campsite, lottery, and registration options.
@@ -65,15 +65,12 @@ fun CreateLotteryScreen(
     var dropdownExpanded by remember { mutableStateOf(false) }
     val sortedCampsiteNames = campsiteNames.distinct().sorted()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-            .testTag("createLotteryScreen"),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    AdaptiveContent(maxWidth = AppLayout.FormWidth) {
+        Column(
+            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                .padding(AppLayout.Medium).testTag("createLotteryScreen"),
+            verticalArrangement = Arrangement.spacedBy(AppLayout.Medium)
+        ) {
         TextButton(
             onClick = onBack,
             modifier = Modifier
@@ -151,7 +148,7 @@ fun CreateLotteryScreen(
                         onCheckedChange = null,
                         modifier = Modifier.testTag("createLotteryAdditionalCheckbox_$name")
                     )
-                    Text(name)
+                    Text(name, modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -207,5 +204,6 @@ fun CreateLotteryScreen(
             enabled = sortedCampsiteNames.isNotEmpty(),
             modifier = Modifier.fillMaxWidth().testTag("createLotteryNextButton")
         ) { Text("Next: Pick Booking Periods") }
+        }
     }
 }
